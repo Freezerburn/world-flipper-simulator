@@ -21,13 +21,6 @@ class DamageFormulaContext:
         self.created_by_skill_action = False
         self.created_by_ad = False
 
-        # Unit attack is a bit special. While all the other sources of damage will be added to when applying
-        # multiple contexts together, this one should be set by the "parent" context that all the others will
-        # be applied into to represent a single character.
-        # Also, a unison should be added into a main character's context since a portion of their stats are
-        # bundled together into the main unit.
-        self.unit_attack = 0
-
         self.attack_modifier = 0
         self.created_by_skill_action = 0
         self.skill_base_damage = 0
