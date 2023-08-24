@@ -6,17 +6,9 @@ from wfchar import Character
 
 
 class Vagner(Character):
-    def __init__(self):
-        super().__init__()
-        self.stars = 5
-        self.base_hp = 532
-        self.base_atk = 112
-        self.element = wfenum.Element.FIRE
-        self.skill_base_damage = 300
+    def __init__(self, char_json):
+        super().__init__(char_json)
         self.skill_multiplier = 27
-        self.skill_base_cost = 600
-        self.skill_evolve_cost = 550
-
         self.total_power_flips = 0
         self.total_lv3_power_flips = 0
 

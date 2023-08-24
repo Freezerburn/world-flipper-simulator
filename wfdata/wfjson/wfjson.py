@@ -1,4 +1,5 @@
 import json
+from wfdata.wfenum import PowerFlip, Element
 
 
 class WfJsonCharacter:
@@ -9,6 +10,33 @@ class WfJsonCharacter:
         self.races = data_arr[4].split(",")
         self.gender = data_arr[7]
         self.leader_skill_name = data_arr[10]
+        self.stars = int(data_arr[2])
+
+        pf_id = data_arr[6]
+        if pf_id == "0":
+            self.pf_type = PowerFlip.SWORD
+        elif pf_id == "1":
+            self.pf_type = PowerFlip.FIST
+        elif pf_id == "2":
+            self.pf_type = PowerFlip.BOW
+        elif pf_id == "3":
+            self.pf_type = PowerFlip.SUPPORT
+        elif pf_id == "4":
+            self.pf_type = PowerFlip.SPECIAL
+
+        element_id = data_arr[3]
+        if element_id == "0":
+            self.element = Element.FIRE
+        elif element_id == "1":
+            self.element = Element.WATER
+        elif element_id == "2":
+            self.element = Element.THUNDER
+        elif element_id == "3":
+            self.element = Element.WIND
+        elif element_id == "4":
+            self.element = Element.LIGHT
+        elif element_id == "5":
+            self.element = Element.DARK
 
         self.name = None
         self.base_atk = 0
@@ -34,8 +62,10 @@ class WfJson:
         self.characters_by_internal_name = {}
         self.characters_by_name = {}
 
+        # Most of the base data/attributes of any individual character. Stuff like stars, power flip type, element, etc.
         with open(f"{data_dir}/character/character.json", "r") as f:
             character_json = json.load(f)
+        # Holds a bunch of user-facing description text, most importantly for our purposes: The name.
         with open(f"{data_dir}/character/character_text.json", "r") as f:
             character_text_json = json.load(f)
         # Character status file purely includes the atk/hp curves for characters.
@@ -69,3 +99,12 @@ class WfJson:
             self.characters[char.id] = char
             self.characters_by_internal_name[char.internal_name] = char
             self.characters_by_name[char.name] = char
+
+    def find(self, key):
+        if key in self.characters:
+            return self.characters[key]
+        elif key in self.characters_by_internal_name:
+            return self.characters_by_internal_name[key]
+        elif key in self.characters_by_name:
+            return self.characters_by_name[key]
+        raise IndexError(f"No character with key {key} in database.")

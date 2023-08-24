@@ -4,21 +4,27 @@ from wfdata.wfdmgformula import DamageFormulaContext
 
 
 class Character(ABC):
-    def __init__(self):
+    def __init__(self, char_json):
         self.position = None
         self.a_lv = [0, 0, 0, 0, 0, 0]
-
-        self.stars = 3
         self.level = 1
         self.uncaps = 0
         self.evolved = False
-        self.base_atk = 100
-        self.base_hp = 100
-        self.element = None
-        self.skill_base_cost = 0
-        self.skill_evolve_cost = 0
         self.skill_multiplier = 0
-        self.skill_base_damage = 0
+
+        self.stars = char_json.stars
+        self.races = char_json.races
+        self.gender = char_json.gender
+        self.base_atk = char_json.base_atk
+        self.base_hp = char_json.base_hp
+        self.element = char_json.element
+        self.leader_skill_name = char_json.leader_skill_name
+        self.skill_name = char_json.skill_name
+        self.skill_name_evolve = char_json.skill_name_evolve
+        self.skill_base_cost = char_json.skill_base_cost
+        self.skill_evolve_cost = char_json.skill_evolve_cost
+        self.skill_base_dmg = char_json.skill_base_dmg
+        self.pf_type = char_json.pf_type
 
     def attack(self) -> float:
         evol_atk = 0
