@@ -108,7 +108,11 @@ class DamageFormulaContext:
         # 1
         if self.char is None:
             raise RuntimeError("Can only calculate damage if formula was given a character.")
-        dmg = self.char.attack() * (1 + max(-0.5, self.attack_modifier))
+        atk = self.char.attack()
+        # Main units inherit a quarter of a unison's attack, make sure to include that in the calculation.
+        if self.unison is not None:
+            atk += self.unison.attack() * 0.25
+        dmg = atk * (1 + max(-0.5, self.attack_modifier))
         # 2
         if self.created_by_skill_action:
             # dmg += random.randint(0, 2) + self.skill_base_damage
