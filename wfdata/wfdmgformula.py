@@ -105,9 +105,10 @@ class DamageFormulaContext:
         """
         # All lines of Python are preceded by a comment with a number. That number corresponds to the same line in
         # the above formula.
-        # 1
         if self.char is None:
             raise RuntimeError("Can only calculate damage if formula was given a character.")
+
+        # 1
         atk = self.char.attack()
         # Main units inherit a quarter of a unison's attack, make sure to include that in the calculation.
         if self.unison is not None:
@@ -115,8 +116,7 @@ class DamageFormulaContext:
         dmg = atk * (1 + max(-0.5, self.attack_modifier))
         # 2
         if self.created_by_skill_action:
-            # dmg += random.randint(0, 2) + self.skill_base_damage
-            # [0, 2]
+            # Random range: [0, 2]
             dmg += skill_rand + self.skill_base_damage
         # 3
         if self.weak:
@@ -176,8 +176,7 @@ class DamageFormulaContext:
         if self.created_by_ad:
             dmg *= (1 + self.stat_mod_ad_damage) * self.stat_mod_ad_resist_mult
         # 21
-        # dmg *= 1 + random.randint(-5, 5) / 100.0
-        # [-0.05, 0.05]
+        # Random range: [-0.05, 0.05]
         dmg *= 1 + dmg_rand
         # 22
         dmg -= self.element_damage_cut
