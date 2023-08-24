@@ -76,7 +76,14 @@ class DamageFormulaContext:
         if ctx.element is not None and ctx.element != char.element:
             return
 
-    def calculate(self) -> float:
+    def calculate(self) -> (float, float):
+        # Find the lowest possible random damage and the highest possible. Allows for displaying the full range
+        # in a UI.
+        low_range = self._calculate_internal(0, -0.05)
+        high_range = self._calculate_internal(2, 0.05)
+        return low_range, high_range
+
+    def _calculate_internal(self, skill_rand, dmg_rand) -> float:
         """
         1 unitAttack * (1 + max ( -0.5 , attackModifier ) )
         2 + createdBySkillAction ? ( randomInt (0 , 2) + skillBaseDamage )
@@ -111,7 +118,9 @@ class DamageFormulaContext:
         dmg = self.char.attack() * (1 + max(-0.5, self.attack_modifier))
         # 2
         if self.created_by_skill_action:
-            dmg += random.randint(0, 2) + self.skill_base_damage
+            # dmg += random.randint(0, 2) + self.skill_base_damage
+            # [0, 2]
+            dmg += skill_rand + self.skill_base_damage
         # 3
         if self.weak:
             dmg *= 1.5
@@ -125,44 +134,54 @@ class DamageFormulaContext:
             dmg *= 1.5 * (1 + self.stat_mod_pinch_slayer)
         # 6: Ignore this line, only calculate damage against enemies.
         # 7
-        dmg *= (1 + self.condition_slayer)
+        dmg *= 1 + self.condition_slayer
         # 8
-        dmg *= (1 + self.character_slayer)
+        dmg *= 1 + self.character_slayer
         # 9
-        dmg *= (1 + self.stat_mod_adversity * self.attacker_fraction_health_lost)
+        dmg *= 1 + self.stat_mod_adversity * self.attacker_fraction_health_lost
         # 10, 11
         if self.created_by_da:
-            dmg *= (1 + self.stat_mod_da_damage) * self.stat_mod_da_resist_mult * (
-                    1 + self.stat_mod_additional_da_damage) / self.stat_mod_additional_da_times
+            dmg *= (
+                (1 + self.stat_mod_da_damage)
+                * self.stat_mod_da_resist_mult
+                * (1 + self.stat_mod_additional_da_damage)
+                / self.stat_mod_additional_da_times
+            )
         # 12
         if self.created_by_pf_action:
             dmg *= (1 + self.stat_mod_pf_damage) * self.stat_mod_pf_resist_mult
         # 13
         if self.created_by_pf_action and self.charge_level > 0:
-            dmg *= (1 + self.stat_mod_pf_lv_damage * (1 + self.stat_mod_pf_lv_damage_slayer))
+            dmg *= 1 + self.stat_mod_pf_lv_damage * (1 + self.stat_mod_pf_lv_damage_slayer)
         # 14 - 19
         if self.created_by_skill_action:
             # 14, 15
-            sdmg = (1 + self.stat_mod_sd_damage) * self.stat_mod_sd_resist_mult * self.skill_multiplier * (
-                        1 + self.skill_slayer)
+            sdmg = (
+                (1 + self.stat_mod_sd_damage)
+                * self.stat_mod_sd_resist_mult
+                * self.skill_multiplier
+                * (1 + self.skill_slayer)
+            )
             # 16
             if self.enables_combo_bonus:
-                sdmg *= (1 + 0.005 * self.current_combos)
+                sdmg *= 1 + 0.005 * self.current_combos
             # 17
             if self.enables_coffin_count_bonus:
-                sdmg *= (1 + 0.026 * self.total_coffin_counts)
+                sdmg *= 1 + 0.026 * self.total_coffin_counts
             # 18
             if self.enables_buff_count_bonus:
-                sdmg *= (1 + 0.1 * self.total_buff_counts)
+                sdmg *= 1 + 0.1 * self.total_buff_counts
             # 19
             if self.enables_range_bonus:
-                sdmg *= (1 + min(0.5, self.distance * self.distance / 700))
+                sdmg *= 1 + min(0.5, self.distance * self.distance / 700)
             dmg *= sdmg
         # 20
         if self.created_by_ad:
             dmg *= (1 + self.stat_mod_ad_damage) * self.stat_mod_ad_resist_mult
         # 21
-        dmg *= (1 + random.randint(-5, 5) / 100.0)
+        # dmg *= 1 + random.randint(-5, 5) / 100.0
+        # [-0.05, 0.05]
+        dmg *= 1 + dmg_rand
         # 22
         dmg -= self.element_damage_cut
         # 23: Ignore this line: We don't care about invincibility state.
