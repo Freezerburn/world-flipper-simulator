@@ -1,6 +1,6 @@
 import json
 from wfdata.wfenum import PowerFlip, Element
-from wfdata.wfjson.wfabilities import AbilityJson
+from wfdata.wfjson.wfability.wfability import AbilityJson
 
 
 class WfJsonCharacter:
