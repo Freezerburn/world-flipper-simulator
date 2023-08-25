@@ -9,11 +9,6 @@ EffectEnum = Literal[
 ]
 
 
-# TODO: Look for what changes between different instances of main effect 156.
-# This is the type for extending the time of buffs, and one of the arguments to the
-# UI scripting language is a target index indicating the type of buff to modify.
-# So there's going to be a changing number somewhere that will allow me to figure
-# out a new slot.
 # TODO: Figure out if continuous effect 45 always has 2 as the direct hits count.
 # See: brown_fighter_3 (Sonia)
 # I don't see a count anywhere in the data structure to indicate number of direct
