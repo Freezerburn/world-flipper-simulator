@@ -1,23 +1,132 @@
+from typing import LiteralString
+
+main_effect_mapping: dict[str, list[str]] = {
+    "0": [
+        "ability_description_for_second",
+        "ability_description_common_content_attack",
+    ],
+    "1": [],
+    "112": [],
+    "116": [],
+    "117": [],
+    "118": [],
+    "123": [],
+    "144": [],
+    "152": ["ability_description_common_content_power_flip_damage_lv"],
+    "155": [],
+    # NOTE: This ALWAYS sets "Attack Buff" as the condition.
+    "156": ["ability_description_common_content_condition_extend"],
+    "158": [],
+    "16": [],
+    "162": [],
+    "164": [],
+    "17": [],
+    "176": [],
+    "189": [],
+    "190": [],
+    "191": [],
+    "193": [],
+    "195": [],
+    "196": [],
+    "198": ["ability_description_common_content_power_flip_combo_count_down"],
+    "199": [],
+    "2": [],
+    "201": [],
+    "203": ["ability_description_instant_content_hp"],
+    "204": [],
+    "207": [],
+    "209": ["ability_description_instant_content_skill_gauge"],
+    "21": [],
+    "211": [],
+    "212": [],
+    "218": [],
+    "221": [],
+    "222": [],
+    "224": [],
+    "225": [],
+    "24": [],
+    "243": [],
+    "245": [],
+    "249": [],
+    "251": [],
+    "253": [],
+    "26": [
+        "ability_description_for_second",
+        "ability_description_condition_content_piercing",
+    ],
+    "265": [],
+    "27": [],
+    "28": [
+        "ability_description_for_second",
+        "ability_description_common_content_power_flip_damage",
+    ],
+    "289": [],
+    "307": [],
+    "31": ["ability_description_common_content_attack"],
+    "32": [],
+    "33": ["ability_description_common_content_skill_damage"],
+    "330": [],
+    "34": [],
+    "35": [],
+    "354": [],
+    "36": [],
+    "366": [],
+    "37": [],
+    "38": [],
+    "386": [],
+    "388": [],
+    "389": [],
+    "39": [],
+    "391": [],
+    "4": [],
+    "40": [],
+    "41": [],
+    "411": [],
+    "459": [],
+    "460": [],
+    "466": [],
+    "468": [],
+    "487": [],
+    "489": [],
+    "49": ["ability_description_common_content_fever_point"],
+    "5": [],
+    "50": [],
+    "501": [],
+    "503": [],
+    "504": [],
+    "505": [],
+    "506": [],
+    "51": [],
+    "510": ["ability_description_common_content_condition_slayer"],
+    "512": [],
+    "518": [],
+    "52": [],
+    "522": [],
+    "525": [],
+    "533": [],
+    "54": ["ability_description_common_content_power_flip_damage"],
+    "55": [],
+    "58": [],
+    "61": [],
+    "66": [],
+    "67": [],
+    "68": [],
+    "69": [],
+    "7": [],
+    "8": [],
+    "95": [],
+    "98": [],
+}
+
+
 class AbilityJson:
     def __init__(self, data):
-        # TODO: Look for what changes between different instances of main condition 156.
-        # This is the type for extending the time of buffs, and one of the arguments to the
-        # UI scripting language is a target index indicating the type of buff to modify.
-        # So there's going to be a changing number somewhere that will allow me to figure
-        # out a new slot.
-        # TODO: Figure out if continuous effect 45 always has 2 as the direct hits count.
-        # See: brown_fighter_3 (Sonia)
-        # I don't see a count anywhere in the data structure to indicate number of direct
-        # hits, so it seems like that number might be hard-coded right now.
-        # TODO: Figure out how "Poisoned" gets passed to effect 510.
-        # See: onmyoji_boy_2 (Water Suizen), which has the condition of applying the buff
-        # when the foe is Poisoned. Nothing obvious in the ability shows up when I saw
-        # it the first time. Have to find someone else with it to see if I can find a
-        # difference in the ability data.
         self.name = data[0]
         self.is_main = data[1] == "true"
         self.ability_statue_group = data[2]
-        self.effect_type = data[3]  # 0 for "main effect", 1 for continuous?
+        self.effect_type: LiteralString["0", "1"] = data[
+            3
+        ]  # 0 for "main effect", 1 for continuous
         self.party_condition_index = data[4]  # TODO: Verify
         self.slot5 = data[5]
         self.slot6 = data[6]
@@ -62,6 +171,9 @@ class AbilityJson:
         self.slot41 = data[41]
         self.main_effect_index = data[42]
         self.main_effect_target = data[43]
+        # Element here is used when the effect target needs to discriminate on which characters
+        # it's going to actually do something to. e.g.: Increase attack damage for all
+        # Water units, versus all units.
         self.main_effect_element = data[44]
         self.main_effect_min = data[45]
         self.main_effect_max = data[46]
@@ -149,45 +261,24 @@ class AbilityJson:
     def main_condition_ui(self):
         if self.effect_type != "0":
             return "(None)"
-
-        if self.main_condition_index == "0":
-            return "ability_description_instant_trigger_kind_first_flip"
-        elif self.main_condition_index == "1":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_power_flip",
-            ]
-        elif self.main_condition_index == "3":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_ball_flip",
-            ]
-        elif self.main_condition_index == "4":
-            return "ability_description_instant_trigger_kind_fever"
-        elif self.main_condition_index == "6":
-            return "ability_description_instant_trigger_kind_enemy_kill"
-        elif self.main_condition_index == "7":
-            return "ability_description_instant_trigger_kind_combo"
-        elif self.main_condition_index == "18":
-            return "ability_description_instant_trigger_kind_skill_invoke"
-        elif self.main_condition_index == "100":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_skill_hit"
-            ]
-        else:
+        if (
+            self.main_condition_index not in main_effect_mapping
+            or len(main_effect_mapping[self.main_condition_index]) == 0
+        ):
             raise RuntimeError(
                 f"[{self.name}] Unknown main condition index: {self.main_condition_index}"
             )
 
-    def main_effect_ui(self):
+        return main_effect_mapping[self.main_condition_index]
+
+    def main_effect_ui(self) -> list[str]:
         if self.effect_type != "0":
-            return "(None)"
+            return []
 
         if self.main_effect_index == "0":
             return [
                 "ability_description_for_second",
-                "ability_description_common_content_attack"
+                "ability_description_common_content_attack",
             ]
         elif self.main_effect_index == "26":
             return [
@@ -200,25 +291,25 @@ class AbilityJson:
                 "ability_description_common_content_power_flip_damage",
             ]
         elif self.main_effect_index == "31":
-            return "ability_description_common_content_attack"
+            return ["ability_description_common_content_attack"]
         elif self.main_effect_index == "33":
-            return "ability_description_common_content_skill_damage"
+            return ["ability_description_common_content_skill_damage"]
         elif self.main_effect_index == "49":
-            return "ability_description_common_content_fever_point"
+            return ["ability_description_common_content_fever_point"]
         elif self.main_effect_index == "54":
-            return "ability_description_common_content_power_flip_damage"
+            return ["ability_description_common_content_power_flip_damage"]
         elif self.main_effect_index == "152":
-            return "ability_description_common_content_power_flip_damage_lv"
+            return ["ability_description_common_content_power_flip_damage_lv"]
         elif self.main_effect_index == "156":
-            return "ability_description_common_content_condition_extend"
+            return ["ability_description_common_content_condition_extend"]
         elif self.main_effect_index == "198":
-            return "ability_description_common_content_power_flip_combo_count_down"
+            return ["ability_description_common_content_power_flip_combo_count_down"]
         elif self.main_effect_index == "203":
-            return "ability_description_instant_content_hp"
+            return ["ability_description_instant_content_hp"]
         elif self.main_effect_index == "209":
-            return "ability_description_instant_content_skill_gauge"
+            return ["ability_description_instant_content_skill_gauge"]
         elif self.main_effect_index == "510":
-            return "ability_description_common_content_condition_slayer"
+            return ["ability_description_common_content_condition_slayer"]
         else:
             raise RuntimeError(
                 f"[{self.name}] Unknown main effect index: {self.main_effect_index}"
@@ -244,7 +335,9 @@ class AbilityJson:
         if self.continuous_effect_index == "0":
             return "ability_description_common_content_attack"
         elif self.continuous_effect_index == "45":
-            return "ability_description_common_content_aditional_direct_attack_and_damage"
+            return (
+                "ability_description_common_content_aditional_direct_attack_and_damage"
+            )
         else:
             raise RuntimeError(
                 f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
