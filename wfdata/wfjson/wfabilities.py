@@ -1,5 +1,19 @@
 class AbilityJson:
     def __init__(self, data):
+        # TODO: Look for what changes between different instances of main condition 156.
+        # This is the type for extending the time of buffs, and one of the arguments to the
+        # UI scripting language is a target index indicating the type of buff to modify.
+        # So there's going to be a changing number somewhere that will allow me to figure
+        # out a new slot.
+        # TODO: Figure out if continuous effect 45 always has 2 as the direct hits count.
+        # See: brown_fighter_3 (Sonia)
+        # I don't see a count anywhere in the data structure to indicate number of direct
+        # hits, so it seems like that number might be hard-coded right now.
+        # TODO: Figure out how "Poisoned" gets passed to effect 510.
+        # See: onmyoji_boy_2 (Water Suizen), which has the condition of applying the buff
+        # when the foe is Poisoned. Nothing obvious in the ability shows up when I saw
+        # it the first time. Have to find someone else with it to see if I can find a
+        # difference in the ability data.
         self.name = data[0]
         self.is_main = data[1] == "true"
         self.ability_statue_group = data[2]
@@ -55,11 +69,12 @@ class AbilityJson:
         self.slot48 = data[48]
         self.slot49 = data[49]
         self.slot50 = data[50]
-        # TODO: Figure out why 15,000,000 and 30,000,000 are in slots 51 and 52 for a pierce effect.
-        # Same for why 30,000,000 is in both for the paired power flip damage buff on Marina.
-        self.slot51 = data[51]
-        self.slot52 = data[52]
-        self.slot53 = data[53]
+        # Duration stored in seconds * 6,000,000
+        self.main_effect_duration_min = data[51]
+        self.main_effect_duration_max = data[52]
+        # If a main effect is one that has a duration applied to it, it might be able
+        # to stack the effect. This provides the max stacks/multiplier for that effect.
+        self.main_effect_incremental_max_multiplier = data[53]
         self.slot54 = data[54]
         self.slot55 = data[55]
         self.slot56 = data[56]
@@ -104,7 +119,7 @@ class AbilityJson:
         elif element == "Black":
             return "Dark"
         else:
-            raise RuntimeError(f"Unknown element: {element}")
+            raise RuntimeError(f"[{self.name}] Unknown element: {element}")
 
     # 0: this unit
     # 1: all other allied units
@@ -129,9 +144,12 @@ class AbilityJson:
         elif target == "8":
             return "Multiballs"
         else:
-            raise RuntimeError(f"Unknown target index: {target}")
+            raise RuntimeError(f"[{self.name}] Unknown target index: {target}")
 
     def main_condition_ui(self):
+        if self.effect_type != "0":
+            return "(None)"
+
         if self.main_condition_index == "0":
             return "ability_description_instant_trigger_kind_first_flip"
         elif self.main_condition_index == "1":
@@ -144,17 +162,34 @@ class AbilityJson:
                 "ability_description_n_times",
                 "ability_description_instant_trigger_kind_ball_flip",
             ]
+        elif self.main_condition_index == "4":
+            return "ability_description_instant_trigger_kind_fever"
         elif self.main_condition_index == "6":
             return "ability_description_instant_trigger_kind_enemy_kill"
+        elif self.main_condition_index == "7":
+            return "ability_description_instant_trigger_kind_combo"
         elif self.main_condition_index == "18":
             return "ability_description_instant_trigger_kind_skill_invoke"
+        elif self.main_condition_index == "100":
+            return [
+                "ability_description_n_times",
+                "ability_description_instant_trigger_kind_skill_hit"
+            ]
         else:
             raise RuntimeError(
-                f"Unknown main condition index: {self.main_condition_index}"
+                f"[{self.name}] Unknown main condition index: {self.main_condition_index}"
             )
 
     def main_effect_ui(self):
-        if self.main_effect_index == "26":
+        if self.effect_type != "0":
+            return "(None)"
+
+        if self.main_effect_index == "0":
+            return [
+                "ability_description_for_second",
+                "ability_description_common_content_attack"
+            ]
+        elif self.main_effect_index == "26":
             return [
                 "ability_description_for_second",
                 "ability_description_condition_content_piercing",
@@ -168,29 +203,49 @@ class AbilityJson:
             return "ability_description_common_content_attack"
         elif self.main_effect_index == "33":
             return "ability_description_common_content_skill_damage"
+        elif self.main_effect_index == "49":
+            return "ability_description_common_content_fever_point"
         elif self.main_effect_index == "54":
             return "ability_description_common_content_power_flip_damage"
+        elif self.main_effect_index == "152":
+            return "ability_description_common_content_power_flip_damage_lv"
+        elif self.main_effect_index == "156":
+            return "ability_description_common_content_condition_extend"
         elif self.main_effect_index == "198":
             return "ability_description_common_content_power_flip_combo_count_down"
         elif self.main_effect_index == "203":
             return "ability_description_instant_content_hp"
         elif self.main_effect_index == "209":
             return "ability_description_instant_content_skill_gauge"
-        else:
-            raise RuntimeError(f"Unknown main effect index: {self.main_effect_index}")
-
-    def continuous_condition_ui(self):
-        if self.continuous_condition_index == "5":
-            return "ability_description_during_trigger_kind_multiball"
+        elif self.main_effect_index == "510":
+            return "ability_description_common_content_condition_slayer"
         else:
             raise RuntimeError(
-                f"Unknown continuous condition: {self.continuous_condition_index}"
+                f"[{self.name}] Unknown main effect index: {self.main_effect_index}"
+            )
+
+    def continuous_condition_ui(self):
+        if self.effect_type != "1":
+            return "(None)"
+
+        if self.continuous_condition_index == "5":
+            return "ability_description_during_trigger_kind_multiball"
+        elif self.continuous_condition_index == "8":
+            return "ability_description_during_trigger_kind_condition"
+        else:
+            raise RuntimeError(
+                f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
             )
 
     def continuous_effect_ui(self):
+        if self.effect_type != "1":
+            return "(None)"
+
         if self.continuous_effect_index == "0":
             return "ability_description_common_content_attack"
+        elif self.continuous_effect_index == "45":
+            return "ability_description_common_content_aditional_direct_attack_and_damage"
         else:
             raise RuntimeError(
-                f"Unknown continuous index: {self.continuous_effect_index}"
+                f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
             )

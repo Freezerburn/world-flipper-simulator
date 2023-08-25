@@ -1,5 +1,7 @@
 import json
 from wfdata.wfenum import PowerFlip, Element
+from wfdata.wfjson.wfabilities import AbilityJson
+# from wfabilities import AbilityJson
 
 
 class WfJsonCharacter:
@@ -11,6 +13,8 @@ class WfJsonCharacter:
         self.gender = data_arr[7]
         self.leader_skill_name = data_arr[10]
         self.stars = int(data_arr[2])
+        self.ability_ids = data_arr[11:16]
+        self.abilities: [[AbilityJson]] = []
 
         pf_id = data_arr[6]
         if pf_id == "0":
@@ -77,6 +81,8 @@ class WfJson:
         # their info.
         with open(f"{data_dir}/skill/action_skill.json", "r") as f:
             action_skill_json = json.load(f)
+        with open(f"{data_dir}/ability/ability.json", "r") as f:
+            abilities_json = json.load(f)
 
         for key in character_json:
             char = WfJsonCharacter(key, character_json[key])
@@ -95,6 +101,15 @@ class WfJson:
                 evolve_skill = action_skill["2"][0]
                 char.skill_name_evolve = evolve_skill[0]
                 char.skill_evolve_cost = int(evolve_skill[5])
+
+            for ability_id in char.ability_ids:
+                if ability_id == "(None)":
+                    continue
+                ability_json = abilities_json[ability_id]
+                effects = []
+                for ability_effect_json in ability_json:
+                    effects.append(AbilityJson(ability_effect_json))
+                char.abilities.append(effects)
 
             self.characters[char.id] = char
             self.characters_by_internal_name[char.internal_name] = char
