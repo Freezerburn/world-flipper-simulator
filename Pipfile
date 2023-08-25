@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 beautifulsoup4 = "*"
+deepdiff = "*"
 
 [dev-packages]
 
