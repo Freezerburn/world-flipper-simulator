@@ -1,7 +1,6 @@
 import json
 from wfdata.wfenum import PowerFlip, Element
 from wfdata.wfjson.wfabilities import AbilityJson
-# from wfabilities import AbilityJson
 
 
 class WfJsonCharacter:
@@ -14,7 +13,7 @@ class WfJsonCharacter:
         self.leader_skill_name = data_arr[10]
         self.stars = int(data_arr[2])
         self.ability_ids = data_arr[11:16]
-        self.abilities: [[AbilityJson]] = []
+        self.abilities: list[list[AbilityJson]] = []
 
         pf_id = data_arr[6]
         if pf_id == "0":
