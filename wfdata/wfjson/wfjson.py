@@ -114,11 +114,19 @@ class WfJson:
             self.characters_by_internal_name[char.internal_name] = char
             self.characters_by_name[char.name] = char
 
-    def find(self, key):
+    def find(self, key: str):
         if key in self.characters:
             return self.characters[key]
         elif key in self.characters_by_internal_name:
             return self.characters_by_internal_name[key]
         elif key in self.characters_by_name:
             return self.characters_by_name[key]
+
+        if key[-1].isdigit():
+            if key[-2] == "_":
+                key = key[:-2]
+            else:
+                key = key[:-1]
+            return self.find(key)
+
         raise IndexError(f"No character with key {key} in database.")
