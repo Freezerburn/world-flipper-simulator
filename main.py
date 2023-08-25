@@ -43,16 +43,21 @@ def diff_effect(effect_type: EffectEnum, effect_index: str):
     for other in effects[1:]:
         dd = deepdiff.diff.DeepDiff(base, other)["values_changed"]
         for ignore in [
-            "root.name",
             "root.ability_statue_group",
             "root.main_effect_min",
             "root.main_effect_max",
+            "root.continuous_effect_min",
+            "root.continuous_effect_max",
             "root.is_main",
         ]:
             if ignore in dd:
                 del dd[ignore]
         if len(dd) == 0:
             continue
+        char_old = wf_json.find(dd["root.name"]["old_value"])
+        char_new = wf_json.find(dd["root.name"]["new_value"])
+        dd["root.name"]["old_value"] = (dd["root.name"]["old_value"], char_old.name)
+        dd["root.name"]["new_value"] = (dd["root.name"]["new_value"], char_new.name)
         pprint.pprint(dd)
 
 
@@ -97,7 +102,7 @@ def debug_unknown_effect_indices():
 def main():
     # debug_unknown_effect_indices()
     # list_main_effect_indices()
-    diff_effect("main_effect", "156")
+    diff_effect("continuous_effect", "45")
 
 
 if __name__ == "__main__":

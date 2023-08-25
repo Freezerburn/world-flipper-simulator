@@ -201,6 +201,7 @@ class AbilityJson:
         self.continuous_condition_max = data[65]
         self.continuous_cooldown_time = data[66]  # TODO: Verify
         self.slot67 = data[67]
+        # This gets set to "1" for 1st Anniversary Celtie's ability 1, don't know what it does though.
         self.slot68 = data[68]
         self.slot69 = data[69]
         self.slot70 = data[70]
@@ -208,9 +209,9 @@ class AbilityJson:
         self.slot72 = data[72]
         self.continuous_effect_index = data[73]
         self.continuous_effect_target = data[74]
-        self.continuous_effect_min = data[75]
-        self.continuous_effect_max = data[76]
-        self.slot77 = data[77]
+        self.continuous_effect_element = data[75]
+        self.continuous_effect_min = data[76]
+        self.continuous_effect_max = data[77]
         self.slot78 = data[78]
         self.slot79 = data[79]
         self.slot80 = data[80]
