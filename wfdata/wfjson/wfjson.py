@@ -9,8 +9,10 @@ class WfJsonCharacter:
     def __init__(self, key, data):
         self.id = key
         self.position = None
-        # Only applicable for a Leader unit.
-        self.total_power_flips = 0
+
+        self.total_power_flips = 0  # Only applicable for a Leader unit.
+        self.total_skill_hits = 0
+
         data_arr = data[0]
         self.internal_name = data_arr[0]
         self.races = data_arr[4].split(",")
@@ -116,7 +118,9 @@ class WfJson:
                     # Use a weakref of the character to prevent a cycle. Should always be safe because
                     # once a character is no longer being referenced we should also no longer be able to
                     # access/use the ability.
-                    effects.append(AbilityJson(ability_effect_json, weakref.proxy(char)))
+                    effects.append(
+                        AbilityJson(ability_effect_json, weakref.proxy(char))
+                    )
                 char.abilities.append(effects)
 
             self.characters[char.id] = char

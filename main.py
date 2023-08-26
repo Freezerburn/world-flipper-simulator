@@ -107,17 +107,17 @@ def find_effect(effect_type: EffectEnum, idx: str):
             for ab in ab_effects:
                 if effect_type == "main_condition":
                     if ab.effect_type == "0" and ab.main_condition_index == idx:
-                        abilities.add(ab.name)
+                        abilities.add((ab.name, char.name))
                 elif effect_type == "main_effect":
                     if ab.effect_type == "0" and ab.main_effect_index == idx:
-                        abilities.add(ab.name)
+                        abilities.add((ab.name, char.name))
                 elif effect_type == "continuous_condition":
                     if ab.effect_type == "1" and ab.continuous_condition_index == idx:
-                        abilities.add(ab.name)
+                        abilities.add((ab.name, char.name))
                 elif effect_type == "continuous_effect":
                     if ab.effect_type == "1" and ab.continuous_effect_index == idx:
-                        abilities.add(ab.name)
-    pprint.pprint(sorted(list(abilities)))
+                        abilities.add((ab.name, char.name))
+    pprint.pprint(sorted(list(abilities), key=lambda t: t[0]))
 
 
 # noinspection PyBroadException
@@ -144,8 +144,8 @@ def main():
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
-    # find_effect("main_condition", "1")
-    diff_effect("main_condition", "0", base="fire_dragon_4")
+    find_effect("main_condition", "100")
+    # diff_effect("main_condition", "0", base="fire_dragon_4")
 
 
 if __name__ == "__main__":

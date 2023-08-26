@@ -165,6 +165,9 @@ main_effect_mapping: dict[str, list[str]] = {
     "98": [],
 }
 
+_COUNT_CONVERT = 100_000
+_SEC_CONVERT = 600_000
+
 
 def _leader(party: list):
     for c in party:
@@ -189,6 +192,34 @@ def main_effect_ui(idx: str, name=None) -> list[str]:
         else:
             raise RuntimeError(f"[{name}] Unknown main effect index: {idx}")
     return main_effect_mapping[idx]
+
+
+def _calc_req_units(
+    u_min: int, u_max: int, conv: int, cap: int, lv: int, count: int
+) -> int:
+    """
+    Abilities generally have a linear increment on each level they gain on the mana board between a minimum
+    and a maximum. This calculates the current value for an ability based on its current level.
+    :param u_min: The minimum value of an ability/condition.
+    :param u_max: The maximum value of an ability/condition.
+    :param conv: What the min/max value needs to be divided by in order to turn it into how it will be used
+    in calculations/displayed in the UI. As an example: When an ability mentions "every N power flips", the
+    JSON stores N * 100,000. So "every 5 power flips" would be stored as 500000.
+    :param cap: Every ability that can be triggered multiple times has a limit on how many times it can be
+    applied. The JSON stores the multiplier/total number of times it can be triggered in the JSON so we can
+    use that directly to make sure that we don't go over it.
+    :param lv: The current level of the ability.
+    :param count: The number of times the condition for an ability has been triggered.
+    :return:
+    """
+    v_min = u_min / conv
+    v_max = u_max / conv
+    step = abs(v_max - v_min) / 5
+    req = v_min + step * (lv - 1)
+    times = count / req
+    if times >= cap:
+        times = cap
+    return times
 
 
 def _apply_main_effect(ui_name: list[str], ctx: DamageFormulaContext, times=1):
@@ -226,14 +257,25 @@ def eval_main_effect(
 
         c_ab2 = condition_ui_name[1]
         if c_ab2 == "ability_description_instant_trigger_kind_power_flip":
-            min_pfs = ability.main_condition_min / 100000
-            max_pfs = ability.main_condition_max / 100000
-            pfs_step = abs(max_pfs - min_pfs) / 5
-            req_pfs = min_pfs + pfs_step * (lv - 1)
-            times = _leader(party).total_power_flips / req_pfs
-            times_cap = int(ability.main_effect_max_multiplier)
-            if times >= times_cap:
-                times = times_cap
+            times = _calc_req_units(
+                int(ability.main_condition_min),
+                int(ability.main_condition_max),
+                _COUNT_CONVERT,
+                int(ability.main_effect_max_multiplier),
+                lv,
+                _leader(party).total_power_flips,
+            )
+            _apply_main_effect(effect_ui_name, ret, times=times)
+            return ret
+        elif c_ab2 == "ability_description_instant_trigger_kind_skill_hit":
+            times = _calc_req_units(
+                int(ability.main_condition_min),
+                int(ability.main_condition_max),
+                _COUNT_CONVERT,
+                int(ability.main_effect_max_multiplier),
+                lv,
+                char.total_skill_hits,
+            )
             _apply_main_effect(effect_ui_name, ret, times=times)
             return ret
 
