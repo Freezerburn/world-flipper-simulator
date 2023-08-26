@@ -239,44 +239,44 @@ def eval_main_effect(
 
     condition_ui_name = main_condition_ui(ability.main_condition_index, name=char.name)
     effect_ui_name = main_effect_ui(ability.main_effect_index, name=char.name)
-    c_ab1 = condition_ui_name[0]
 
-    # Apply effect at battle start, so it's always active.
-    if c_ab1 == "ability_description_instant_trigger_kind_first_flip":
-        _apply_main_effect(effect_ui_name, ret)
-        return ret
-
-    # Condition requires something to happen a number of times, so we need to check the second
-    # element in the list to figure out what to count, and then check how many times that thing
-    # has happened to see if it currently applies.
-    if c_ab1 == "ability_description_n_times":
-        if len(condition_ui_name) == 1:
-            raise RuntimeError(
-                f"[{char.name}] Ability index {ability.main_condition_index} had count condition, but nothing to count."
-            )
-
-        c_ab2 = condition_ui_name[1]
-        if c_ab2 == "ability_description_instant_trigger_kind_power_flip":
-            times = _calc_req_units(
-                int(ability.main_condition_min),
-                int(ability.main_condition_max),
-                _COUNT_CONVERT,
-                int(ability.main_effect_max_multiplier),
-                lv,
-                _leader(party).total_power_flips,
-            )
-            _apply_main_effect(effect_ui_name, ret, times=times)
+    match condition_ui_name[0]:
+        case "ability_description_instant_trigger_kind_first_flip":
+            # Apply effect at battle start, so it's always active.
+            _apply_main_effect(effect_ui_name, ret)
             return ret
-        elif c_ab2 == "ability_description_instant_trigger_kind_skill_hit":
-            times = _calc_req_units(
-                int(ability.main_condition_min),
-                int(ability.main_condition_max),
-                _COUNT_CONVERT,
-                int(ability.main_effect_max_multiplier),
-                lv,
-                char.total_skill_hits,
-            )
-            _apply_main_effect(effect_ui_name, ret, times=times)
-            return ret
+
+        case "ability_description_n_times":
+            # Condition requires something to happen a number of times, so we need to check the second
+            # element in the list to figure out what to count, and then check how many times that thing
+            # has happened to see if it currently applies.
+            if len(condition_ui_name) == 1:
+                raise RuntimeError(
+                    f"[{char.name}] Ability index {ability.main_condition_index} had count condition, but nothing to count."
+                )
+
+            match condition_ui_name[1]:
+                case "ability_description_instant_trigger_kind_power_flip":
+                    times = _calc_req_units(
+                        int(ability.main_condition_min),
+                        int(ability.main_condition_max),
+                        _COUNT_CONVERT,
+                        int(ability.main_effect_max_multiplier),
+                        lv,
+                        _leader(party).total_power_flips,
+                    )
+                    _apply_main_effect(effect_ui_name, ret, times=times)
+                    return ret
+                case "ability_description_instant_trigger_kind_skill_hit":
+                    times = _calc_req_units(
+                        int(ability.main_condition_min),
+                        int(ability.main_condition_max),
+                        _COUNT_CONVERT,
+                        int(ability.main_effect_max_multiplier),
+                        lv,
+                        char.total_skill_hits,
+                    )
+                    _apply_main_effect(effect_ui_name, ret, times=times)
+                    return ret
 
     return ret
