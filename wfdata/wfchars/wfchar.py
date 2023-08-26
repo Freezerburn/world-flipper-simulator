@@ -3,6 +3,7 @@ from wfdata.wfeffect import Effect
 from wfdata.wfdmgformula import DamageFormulaContext
 
 
+# TODO: Planning on deprecating this in favor of "WfJsonCharacter", which will likely get renamed.
 class Character(ABC):
     def __init__(self, char_json):
         self.position = None
