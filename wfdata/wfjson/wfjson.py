@@ -1,4 +1,6 @@
 import json
+import weakref
+
 from wfdata.wfenum import PowerFlip, Element
 from wfdata.wfjson.wfability.wfability import AbilityJson
 
@@ -6,6 +8,9 @@ from wfdata.wfjson.wfability.wfability import AbilityJson
 class WfJsonCharacter:
     def __init__(self, key, data):
         self.id = key
+        self.position = None
+        # Only applicable for a Leader unit.
+        self.power_flips = 0
         data_arr = data[0]
         self.internal_name = data_arr[0]
         self.races = data_arr[4].split(",")
@@ -13,6 +18,7 @@ class WfJsonCharacter:
         self.leader_skill_name = data_arr[10]
         self.stars = int(data_arr[2])
         self.ability_ids = data_arr[11:16]
+        self.ability_lvs = [0] * 6
         self.abilities: list[list[AbilityJson]] = []
 
         pf_id = data_arr[6]
@@ -107,7 +113,10 @@ class WfJson:
                 ability_json = abilities_json[ability_id]
                 effects = []
                 for ability_effect_json in ability_json:
-                    effects.append(AbilityJson(ability_effect_json))
+                    # Use a weakref of the character to prevent a cycle. Should always be safe because
+                    # once a character is no longer being referenced we should also no longer be able to
+                    # access/use the ability.
+                    effects.append(AbilityJson(ability_effect_json, weakref.proxy(char)))
                 char.abilities.append(effects)
 
             self.characters[char.id] = char

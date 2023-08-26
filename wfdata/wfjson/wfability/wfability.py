@@ -1,13 +1,14 @@
-from typing import LiteralString
-from .wfmaineffect import main_effect_ui
+from typing import Literal
+from .wfmaineffect import main_condition_ui, main_effect_ui
 
 
 class AbilityJson:
-    def __init__(self, data):
+    def __init__(self, data, from_char):
+        self.from_char = from_char
         self.name = data[0]
         self.is_main = data[1] == "true"
         self.ability_statue_group = data[2]
-        self.effect_type: LiteralString["0", "1"] = data[
+        self.effect_type: Literal["0", "1"] = data[
             3
         ]  # 0 for "main effect", 1 for continuous
         self.party_condition_index = data[4]  # TODO: Verify
@@ -145,41 +146,12 @@ class AbilityJson:
     def main_condition_ui(self):
         if self.effect_type != "0":
             return "(None)"
-
-        if self.main_condition_index == "0":
-            return "ability_description_instant_trigger_kind_first_flip"
-        elif self.main_condition_index == "1":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_power_flip",
-            ]
-        elif self.main_condition_index == "3":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_ball_flip",
-            ]
-        elif self.main_condition_index == "4":
-            return "ability_description_instant_trigger_kind_fever"
-        elif self.main_condition_index == "6":
-            return "ability_description_instant_trigger_kind_enemy_kill"
-        elif self.main_condition_index == "7":
-            return "ability_description_instant_trigger_kind_combo"
-        elif self.main_condition_index == "18":
-            return "ability_description_instant_trigger_kind_skill_invoke"
-        elif self.main_condition_index == "100":
-            return [
-                "ability_description_n_times",
-                "ability_description_instant_trigger_kind_skill_hit",
-            ]
-        else:
-            raise RuntimeError(
-                f"[{self.name}] Unknown main condition index: {self.main_condition_index}"
-            )
+        return main_condition_ui(self.main_condition_index, name=self.name)
 
     def main_effect_ui(self) -> list[str]:
         if self.effect_type != "0":
             return []
-        return main_effect_ui(self.name, self.main_effect_index)
+        return main_effect_ui(self.main_effect_index, name=self.name)
 
     def continuous_condition_ui(self):
         if self.effect_type != "1":

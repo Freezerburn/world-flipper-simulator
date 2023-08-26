@@ -1,4 +1,4 @@
-from wfdata.wfjson.wfjson import WfJson
+from wfdata.wfjson.wfjson import WfJson, WfJsonCharacter
 from typing import Literal
 import pprint
 import deepdiff
@@ -18,7 +18,7 @@ EffectEnum = Literal[
 # when the foe is Poisoned. Nothing obvious in the ability shows up when I saw
 # it the first time. Have to find someone else with it to see if I can find a
 # difference in the ability data.
-def diff_effect(effect_type: EffectEnum, effect_index: str):
+def diff_effect(effect_type: EffectEnum, effect_index: str, base=None):
     wf_json = WfJson("wf_data_json")
     effects = []
     for char in wf_json.characters.values():
@@ -39,9 +39,18 @@ def diff_effect(effect_type: EffectEnum, effect_index: str):
 
     if len(effects) < 2:
         return
-    base = effects[0]
+    if base is not None:
+        for idx, ef in enumerate(effects):
+            if ef.name == base:
+                base = ef
+                effects[0], effects[idx] = effects[idx], effects[0]
+                break
+    else:
+        base = effects[0]
     for other in effects[1:]:
-        dd = deepdiff.diff.DeepDiff(base, other)["values_changed"]
+        dd = deepdiff.diff.DeepDiff(base, other, exclude_types=[WfJsonCharacter])[
+            "values_changed"
+        ]
         for ignore in [
             "root.ability_statue_group",
             "root.main_effect_min",
@@ -61,15 +70,26 @@ def diff_effect(effect_type: EffectEnum, effect_index: str):
         pprint.pprint(dd)
 
 
-def list_main_effect_indices():
+def list_effect_indices(effect_type: EffectEnum):
     wf_json = WfJson("wf_data_json")
     indices = set()
     for char in wf_json.characters.values():
         for ab_effects in char.abilities:
             for ab in ab_effects:
-                if ab.effect_type != "0":
-                    continue
-                indices.add(ab.main_effect_index)
+                if effect_type in ("main_effect", "main_condition"):
+                    if ab.effect_type != "0":
+                        continue
+                    if effect_type == "main_effect":
+                        indices.add(ab.main_effect_index)
+                    else:
+                        indices.add(ab.main_condition_index)
+                elif effect_type in ("continuous_effect", "continuous_condition"):
+                    if ab.effect_type != "1":
+                        continue
+                    if effect_type == "continuous_effect":
+                        indices.add(ab.continuous_effect_index)
+                    else:
+                        indices.add(ab.continuous_condition_index)
     print(f"Total Main Effect indices: {len(indices)}")
     idx_l = list(indices)
     idx_l.sort()
@@ -77,6 +97,27 @@ def list_main_effect_indices():
     for idx in idx_l:
         output[idx] = []
     pprint.pprint(output)
+
+
+def find_effect(effect_type: EffectEnum, idx: str):
+    wf_json = WfJson("wf_data_json")
+    abilities = set()
+    for char in wf_json.characters.values():
+        for ab_effects in char.abilities:
+            for ab in ab_effects:
+                if effect_type == "main_condition":
+                    if ab.effect_type == "0" and ab.main_condition_index == idx:
+                        abilities.add(ab.name)
+                elif effect_type == "main_effect":
+                    if ab.effect_type == "0" and ab.main_effect_index == idx:
+                        abilities.add(ab.name)
+                elif effect_type == "continuous_condition":
+                    if ab.effect_type == "1" and ab.continuous_condition_index == idx:
+                        abilities.add(ab.name)
+                elif effect_type == "continuous_effect":
+                    if ab.effect_type == "1" and ab.continuous_effect_index == idx:
+                        abilities.add(ab.name)
+    pprint.pprint(sorted(list(abilities)))
 
 
 # noinspection PyBroadException
@@ -101,8 +142,10 @@ def debug_unknown_effect_indices():
 
 def main():
     # debug_unknown_effect_indices()
-    # list_main_effect_indices()
-    diff_effect("continuous_effect", "45")
+    # list_effect_indices("main_condition")
+    # diff_effect("continuous_effect", "45")
+    # find_effect("main_condition", "1")
+    diff_effect("main_condition", "0", base="fire_dragon_4")
 
 
 if __name__ == "__main__":
