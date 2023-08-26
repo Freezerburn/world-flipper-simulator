@@ -10,7 +10,7 @@ class WfJsonCharacter:
         self.id = key
         self.position = None
         # Only applicable for a Leader unit.
-        self.power_flips = 0
+        self.total_power_flips = 0
         data_arr = data[0]
         self.internal_name = data_arr[0]
         self.races = data_arr[4].split(",")

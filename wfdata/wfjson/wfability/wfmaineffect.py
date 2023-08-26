@@ -230,7 +230,7 @@ def eval_main_effect(
             max_pfs = ability.main_condition_max / 100000
             pfs_step = abs(max_pfs - min_pfs) / 5
             req_pfs = min_pfs + pfs_step * (lv - 1)
-            times = _leader(party).power_flips / req_pfs
+            times = _leader(party).total_power_flips / req_pfs
             times_cap = int(ability.main_effect_max_multiplier)
             if times >= times_cap:
                 times = times_cap
