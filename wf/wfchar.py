@@ -13,7 +13,7 @@ class WorldFlipperCharacter:
         self.gender = data_arr[7]
         self.leader_skill_name = data_arr[10]
         self.stars = int(data_arr[2])
-        self.ability_ids = data_arr[11:16]
+        self.ability_ids = data_arr[11:17]
         self.abilities: list[list[WorldFlipperAbility]] = []
 
         pf_id = data_arr[6]
