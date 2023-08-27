@@ -65,8 +65,8 @@ class GameState:
         position: CharPosition,
     ):
         if position == CharPosition.LEADER:
-            self.party[0] = char
-            return
+            column = 0
+            position = CharPosition.MAIN
 
         offset = 0
         if position == CharPosition.UNISON:
