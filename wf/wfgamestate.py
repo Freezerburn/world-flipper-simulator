@@ -17,6 +17,8 @@ class GameState:
         # 4: MAIN          (col 2)
         # 5: UNISON        (col 2)
         self.party: list[Optional[WorldFlipperCharacter]] = [None] * 6
+        self.levels = [1] * 6
+        self.uncaps = [0] * 6
         # Each entry corresponds to the member at the same entry in party. Each
         # inner list int corresponds to the same number (+1) ability for that
         # character.
@@ -46,6 +48,12 @@ class GameState:
     def leader(self) -> Optional[CharPosition]:
         return self.party[0]
 
+    def evolved(self, char: WorldFlipperCharacter) -> bool:
+        # TODO: Implement
+        # Basically checking if all MB1 abilities are unlocked and the unit has reached a specific level?
+        # That might be the MB2 unlock requirement, evolve might be a bit different.
+        return False
+
     def set_member(
         self,
         char: Optional[WorldFlipperCharacter],
@@ -68,7 +76,13 @@ class GameState:
         self.powerflips_by_lv[lv] = count
         self.total_powerflips = sum(self.powerflips_by_lv)
 
-    def find_ability_index(self, ability: WorldFlipperAbility) -> (int, int):
+    def char_index(self, char: WorldFlipperCharacter) -> int:
+        for idx, p in enumerate(self.party):
+            if p.internal_name == char.internal_name:
+                return idx
+        return -1
+
+    def ability_index(self, ability: WorldFlipperAbility) -> (int, int):
         for char_idx, char in enumerate(self.party):
             for char_abs_idx, char_abs in enumerate(char.abilities):
                 for char_ab in char_abs:

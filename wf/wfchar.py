@@ -51,6 +51,59 @@ class WorldFlipperCharacter:
         self.skill_base_cost = 0
         self.skill_evolve_cost = 0
 
+    def attack(self, evolved: bool, level: int, uncaps: int) -> float:
+        evol_atk = 0
+        if evolved:
+            if self.stars == 1:
+                evol_atk = 30
+            elif self.stars == 2:
+                evol_atk = 40
+            elif self.stars == 3:
+                evol_atk = 50
+            elif self.stars == 4:
+                evol_atk = 54
+            else:
+                evol_atk = 60
+
+        return self._calc_stat(self.base_atk, evol_atk, level, uncaps)
+
+    def hp(self, evolved: bool, level: int, uncaps: int) -> float:
+        evol_hp = 0
+        if evolved:
+            if self.stars == 1:
+                evol_hp = 150
+            elif self.stars == 2:
+                evol_hp = 200
+            elif self.stars == 3:
+                evol_hp = 250
+            elif self.stars == 4:
+                evol_hp = 270
+            else:
+                evol_hp = 300
+
+        return self._calc_stat(self.base_hp, evol_hp, level, uncaps)
+
+    def _calc_stat(self, base_stat, evol_stat, level: int, uncaps: int):
+        if 1 <= level <= 10:
+            stat_mult = level / 10
+        elif 11 <= level <= 80:
+            stat_mult = 1 + (level - 10) / 14
+        else:
+            stat_mult = 6 + 3 * (level - 80) / 100
+
+        if self.stars == 1:
+            uncap_mult = 0.4
+        elif self.stars == 2:
+            uncap_mult = 0.5
+        elif self.stars == 3:
+            uncap_mult = 0.8
+        elif self.stars == 4:
+            uncap_mult = 1.5
+        else:
+            uncap_mult = 3.0
+
+        return base_stat * stat_mult * (1 + uncaps * uncap_mult) + evol_stat
+
     def __str__(self):
         return (
             f"{self.name} ({self.id} | {self.internal_name})\n"

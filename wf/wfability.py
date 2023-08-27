@@ -326,7 +326,7 @@ class WorldFlipperAbility:
         state: GameState,
         times=1,
     ):
-        char_idx, ab_idx = state.find_ability_index(self)
+        char_idx, ab_idx = state.ability_index(self)
         lv = state.ability_lvs[char_idx][ab_idx]
         match ui_name[0]:
             case "ability_description_for_second":
@@ -352,7 +352,7 @@ class WorldFlipperAbility:
             return None
         if state.position(char) is None:
             return None
-        char_idx, ab_idx = state.find_ability_index(self)
+        char_idx, ab_idx = state.ability_index(self)
         if char_idx == -1:
             return None
         lv = state.ability_lvs[char_idx][ab_idx]

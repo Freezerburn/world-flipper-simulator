@@ -1,15 +1,14 @@
+from __future__ import annotations
 from typing import Self, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
+    from .wfgamestate import GameState
 
 
 class DamageFormulaContext:
-    def __init__(
-        self, char: Optional["WorldFlipperCharacter"] = None, enemy=None, unison=None
-    ):
-        self.char: Optional["WorldFlipperCharacter"] = char
-        self.enemy = enemy
+    def __init__(self, char: Optional[WorldFlipperCharacter] = None, unison=None):
+        self.char: Optional[WorldFlipperCharacter] = char
         self.unison = unison
 
         self.element = None
@@ -73,14 +72,14 @@ class DamageFormulaContext:
         if ctx.element is not None and ctx.element != char.element:
             return
 
-    def calculate(self) -> (float, float):
+    def calculate(self, state: GameState) -> (float, float):
         # Find the lowest possible random damage and the highest possible. Allows for displaying the full range
         # in a UI.
-        low_range = self._calculate_internal(0, -0.05)
-        high_range = self._calculate_internal(2, 0.05)
+        low_range = self._calculate_internal(state, 0, -0.05)
+        high_range = self._calculate_internal(state, 2, 0.05)
         return low_range, high_range
 
-    def _calculate_internal(self, skill_rand, dmg_rand) -> float:
+    def _calculate_internal(self, state: GameState, skill_rand, dmg_rand) -> float:
         """
         1 unitAttack * (1 + max ( -0.5 , attackModifier ) )
         2 + createdBySkillAction ? ( randomInt (0 , 2) + skillBaseDamage )
@@ -113,12 +112,23 @@ class DamageFormulaContext:
             raise RuntimeError(
                 "Can only calculate damage if formula was given a character."
             )
+        char_idx = state.char_index(self.char)
 
         # 1
-        atk = self.char.attack()
+        atk = self.char.attack(
+            state.evolved(self.char), state.levels[char_idx], state.uncaps[char_idx]
+        )
         # Main units inherit a quarter of a unison's attack, make sure to include that in the calculation.
         if self.unison is not None:
-            atk += self.unison.attack() * 0.25
+            unison_idx = state.char_index(self.unison)
+            atk += (
+                self.unison.attack(
+                    state.evolved(self.unison),
+                    state.levels[unison_idx],
+                    state.uncaps[unison_idx],
+                )
+                * 0.25
+            )
         dmg = atk * (1 + max(-0.5, self.attack_modifier))
         # 2
         if self.created_by_skill_action:
