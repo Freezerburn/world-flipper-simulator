@@ -41,7 +41,7 @@ class DamageFormulaContext:
         self.stat_mod_additional_da_times = 0
         self.stat_mod_pf_damage = 0
         self.stat_mod_pf_resist_multi = 0
-        self.stat_mod_pf_resist_mult = 0
+        self.stat_mod_pf_resist_mult = 1
         self.charge_level = 0
         self.stat_mod_pf_lv_damage = 0
         self.stat_mod_pf_lv_damage_slayer_lv = 0

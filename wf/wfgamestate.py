@@ -63,6 +63,8 @@ class GameState:
         char: Optional[WorldFlipperCharacter],
         column: int,
         position: CharPosition,
+        level=1,
+        uncaps=0,
     ):
         if position == CharPosition.LEADER:
             column = 0
@@ -73,6 +75,8 @@ class GameState:
             offset = 1
         idx = column * 2 + offset
         self.party[idx] = char
+        self.levels[idx] = level
+        self.uncaps[idx] = uncaps
         self.ability_lvs[idx] = [0] * 6
         self.ability_condition_active[idx] = [False] * 6
 

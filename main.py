@@ -1,9 +1,11 @@
-from wf.wf import WorldFlipperData
-from wf.wfchar import WorldFlipperCharacter
 from typing import Literal
 import pprint
 import deepdiff
 
+from wf import CharPosition
+from wf.wf import WorldFlipperData
+from wf.wfchar import WorldFlipperCharacter
+from wf.wfgamestate import GameState
 
 EffectEnum = Literal[
     "main_effect", "main_condition", "continuous_effect", "continuous_condition"
@@ -141,12 +143,25 @@ def debug_unknown_effect_indices():
         print(f"MAIN EFFECT: {char_name:>24} | {ab_name:30} | {idx:4}")
 
 
+def test_abilities():
+    wf = WorldFlipperData("wf_data_json")
+    state = GameState()
+    vagner = wf.find("Vagner")
+    state.set_member(vagner, 0, CharPosition.LEADER, level=80)
+    state.ability_lvs[0][0] = 6
+    df = vagner.abilities[0][0].eval_effect(vagner, state)
+    if df is not None:
+        df.created_by_pf_action = True
+        print(df.calculate(state))
+
+
 def main():
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
-    find_effect("main_condition", "100")
+    # find_effect("main_condition", "100")
     # diff_effect("main_condition", "0", base="fire_dragon_4")
+    test_abilities()
 
 
 if __name__ == "__main__":

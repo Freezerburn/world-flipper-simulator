@@ -9,7 +9,7 @@ from .wfgamestate import GameState
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
 
-_PERCENT_CONVERT = 1_000
+_PERCENT_CONVERT = 100_000
 _COUNT_CONVERT = 100_000
 _SEC_CONVERT = 600_000
 
@@ -306,6 +306,8 @@ class WorldFlipperAbility:
 
     def _target_applies_to(self, target: str, element: str, char) -> bool:
         match target:
+            case "":
+                return True
             case "0":
                 return self.from_char.internal_name == char.internal_name
             case "1":
@@ -349,6 +351,15 @@ class WorldFlipperAbility:
                     lv,
                 )
                 ctx.attack_modifier += amt
+
+            case "ability_description_common_content_power_flip_damage":
+                amt = _calc_abil_lv(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv,
+                )
+                ctx.stat_mod_pf_damage += amt
 
             case "ability_description_common_content_power_flip_damage_lv":
                 amt = _calc_abil_lv(
