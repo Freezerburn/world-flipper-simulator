@@ -1,5 +1,5 @@
 from typing import Literal
-from wf.wfmaineffect import main_condition_ui, main_effect_ui
+from .wfmaineffect import main_condition_ui, main_effect_ui
 
 
 class WorldFlipperAbility:

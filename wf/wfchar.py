@@ -1,5 +1,5 @@
-from wf.wfenum import PowerFlip, Element
-from wf.wfability import WorldFlipperAbility
+from .wfability import WorldFlipperAbility
+from .wfenum import PowerFlip, Element
 
 
 class WorldFlipperCharacter:
@@ -62,5 +62,3 @@ class WorldFlipperCharacter:
             f"Skill: {self.skill_name} (Evolve: {self.skill_name_evolve})\n"
             f"Skill DMG:{self.skill_base_dmg} | COST:{self.skill_base_cost} (Evolve COST:{self.skill_evolve_cost})"
         )
-
-

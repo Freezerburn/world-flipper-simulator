@@ -1,8 +1,8 @@
 import json
 import weakref
 
-from wf.wfchar import WorldFlipperCharacter
-from wf.wfability import WorldFlipperAbility
+from .wfchar import WorldFlipperCharacter
+from .wfability import WorldFlipperAbility
 
 
 class WorldFlipperData:

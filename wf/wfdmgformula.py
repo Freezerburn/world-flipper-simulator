@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import Self
 
 
 class DamageFormulaContext:
@@ -58,7 +58,7 @@ class DamageFormulaContext:
         self.stat_mod_ad_resist_mult = 0
         self.element_damage_cut = 0
 
-    def apply(self, ctx: DamageFormulaContext, char):
+    def apply(self, ctx: Self, char):
         # Because certain abilities are marked as "own <thing>", we need a way to prevent those buffs from applying
         # to any character that is not the target of "own". So those characters can mark a target when creating the
         # context, and if it doesn't match the given character, that context is ignored.
@@ -105,7 +105,9 @@ class DamageFormulaContext:
         # All lines of Python are preceded by a comment with a number. That number corresponds to the same line in
         # the above formula.
         if self.char is None:
-            raise RuntimeError("Can only calculate damage if formula was given a character.")
+            raise RuntimeError(
+                "Can only calculate damage if formula was given a character."
+            )
 
         # 1
         atk = self.char.attack()
@@ -148,7 +150,9 @@ class DamageFormulaContext:
             dmg *= (1 + self.stat_mod_pf_damage) * self.stat_mod_pf_resist_mult
         # 13
         if self.created_by_pf_action and self.charge_level > 0:
-            dmg *= 1 + self.stat_mod_pf_lv_damage * (1 + self.stat_mod_pf_lv_damage_slayer)
+            dmg *= 1 + self.stat_mod_pf_lv_damage * (
+                1 + self.stat_mod_pf_lv_damage_slayer
+            )
         # 14 - 19
         if self.created_by_skill_action:
             # 14, 15

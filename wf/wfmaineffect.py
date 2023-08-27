@@ -1,5 +1,5 @@
-from wf.wfdmgformula import DamageFormulaContext
-from wf.wfenum import CharPosition
+from .wfdmgformula import DamageFormulaContext
+from .wfenum import CharPosition
 
 main_condition_mapping: dict[str, list[str]] = {
     "0": ["ability_description_instant_trigger_kind_first_flip"],
