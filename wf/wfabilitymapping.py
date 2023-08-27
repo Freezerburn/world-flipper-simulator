@@ -56,6 +56,7 @@ _main_effect_mapping: dict[str, list[str]] = {
     "118": [],
     "123": [],
     "144": [],
+    # NOTE: This ALWAYS uses Power Flip Lv3.
     "152": ["ability_description_common_content_power_flip_damage_lv"],
     "155": [],
     # NOTE: This ALWAYS sets "Attack Buff" as the condition.

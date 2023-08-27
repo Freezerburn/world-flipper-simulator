@@ -336,9 +336,22 @@ class WorldFlipperAbility:
 
             case "ability_description_common_content_attack":
                 amt = _calc_abil_lv(
-                    self.main_effect_min, self.main_effect_max, _PERCENT_CONVERT, lv
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv,
                 )
                 ctx.attack_modifier += amt
+
+            case "ability_description_common_content_power_flip_damage_lv":
+                amt = _calc_abil_lv(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv,
+                )
+                ctx.stat_mod_pf_lv_damage_slayer += amt
+                ctx.stat_mod_pf_lv_damage_slayer_lv = 3
 
             case _:
                 raise RuntimeError(
