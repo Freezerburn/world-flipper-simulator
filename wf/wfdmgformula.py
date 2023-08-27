@@ -1,20 +1,26 @@
 from __future__ import annotations
 from typing import Self, Optional, TYPE_CHECKING
 
+from .wfenum import PowerFlip
+
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
     from .wfgamestate import GameState
+
+
+BOW_FAR_LEFT = 0
+BOW_NEAR_LEFT = 1
+BOW_MIDDLE = 2
+BOW_NEAR_RIGHT = 3
+BOW_FAR_RIGHT = 4
 
 
 class DamageFormulaContext:
     def __init__(self, char: Optional[WorldFlipperCharacter] = None, unison=None):
         self.char: Optional[WorldFlipperCharacter] = char
         self.unison = unison
-
-        self.element = None
-        self.target_character = None
-        self.requires_main = False
-        self.pf_action_type = None
+        # Layout: Far Left, Near Left, Middle, Near Right, Far Right
+        self.bow_pf_hits = [False, False, True, False, False]
 
         # The different types of methods of applying damage have their own bools to enable each of them.
         # Only a single of these should ever be applied at one time, because the game will only ever have
@@ -24,30 +30,36 @@ class DamageFormulaContext:
         self.created_by_skill_action = False
         self.created_by_ad = False
 
-        self.attack_modifier = 0
-        self.created_by_skill_action = 0
-        self.skill_base_damage = 0
         self.weak = False
-        self.total_resist = 0
         self.target_has_pinch = False
+
+        self.stat_mod_pf_resist_mult = 1
+        self.stat_mod_da_resist_mult = 1
+        self.stat_mod_sd_resist_mult = 1
+        self.stat_mod_ad_resist_mult = 1
+
+        # Is used as denominator in a division operation, so has to be non-zero.
+        # NOTE: As far as I'm aware, there is nothing that increases the amount of direct attacks
+        # in a single hit to ever exceed 2, so that cap will be hard-coded until such time as
+        # something breaks that rule.
+        self.stat_mod_additional_da_times = 1
+
+        self.attack_modifier = 0
+        self.total_resist = 0
         self.stat_mod_pinch_slayer = 0
         self.condition_slayer = 0
         self.character_slayer = 0
         self.stat_mod_adversity = 0
         self.attacker_fraction_health_lost = 0
         self.stat_mod_da_damage = 0
-        self.stat_mod_da_resist_mult = 0
         self.stat_mod_additional_da_damage = 0
-        self.stat_mod_additional_da_times = 0
         self.stat_mod_pf_damage = 0
         self.stat_mod_pf_resist_multi = 0
-        self.stat_mod_pf_resist_mult = 1
         self.charge_level = 0
         self.stat_mod_pf_lv_damage = 0
         self.stat_mod_pf_lv_damage_slayer_lv = 0
         self.stat_mod_pf_lv_damage_slayer = 0
         self.stat_mod_sd_damage = 0
-        self.stat_mod_sd_resist_mult = 0
         self.skill_multiplier = 0
         self.skill_slayer = 0
         self.enables_combo_bonus = False
@@ -59,18 +71,43 @@ class DamageFormulaContext:
         self.enables_range_bonus = False
         self.distance = 0
         self.stat_mod_ad_damage = 0
-        self.stat_mod_ad_resist_mult = 0
         self.element_damage_cut = 0
 
-    def apply(self, ctx: Self, char):
-        # Because certain abilities are marked as "own <thing>", we need a way to prevent those buffs from applying
-        # to any character that is not the target of "own". So those characters can mark a target when creating the
-        # context, and if it doesn't match the given character, that context is ignored.
-        if ctx.target_character is not None and ctx.target_character != char.name():
-            return
-        # If the given context has an element restriction, only apply it if it matches the character's element.
-        if ctx.element is not None and ctx.element != char.element:
-            return
+    def combine(self, ctx: Self):
+        # Always has a base of 1, so we need to combine only the potential difference from the base.
+        self.stat_mod_pf_resist_mult += ctx.stat_mod_pf_resist_mult - 1
+        self.stat_mod_ad_resist_mult += ctx.stat_mod_ad_resist_mult - 1
+        self.stat_mod_sd_resist_mult += ctx.stat_mod_sd_resist_mult - 1
+        self.stat_mod_ad_resist_mult += ctx.stat_mod_ad_resist_mult - 1
+
+        self.attack_modifier += ctx.attack_modifier
+        self.total_resist += ctx.total_resist
+        self.stat_mod_pinch_slayer += ctx.stat_mod_pinch_slayer
+        self.condition_slayer += ctx.condition_slayer
+        self.character_slayer += ctx.character_slayer
+        self.stat_mod_adversity += ctx.stat_mod_adversity
+        self.attacker_fraction_health_lost += ctx.attacker_fraction_health_lost
+        self.stat_mod_da_damage += ctx.stat_mod_da_damage
+        self.stat_mod_additional_da_damage += ctx.stat_mod_additional_da_damage
+        if self.stat_mod_additional_da_times == 1:
+            self.stat_mod_additional_da_times = ctx.stat_mod_additional_da_times
+        self.stat_mod_pf_damage += ctx.stat_mod_pf_lv_damage
+        if self.stat_mod_pf_lv_damage_slayer_lv == 0:
+            self.stat_mod_pf_lv_damage_slayer_lv = ctx.stat_mod_pf_lv_damage_slayer_lv
+        self.stat_mod_pf_lv_damage_slayer += ctx.stat_mod_pf_lv_damage_slayer
+        self.stat_mod_sd_damage += ctx.stat_mod_sd_damage
+        self.skill_multiplier += ctx.skill_multiplier
+        self.skill_slayer += ctx.skill_slayer
+        self.current_combos += ctx.current_combos
+        self.total_coffin_counts += ctx.total_coffin_counts
+        self.total_buff_counts += ctx.total_buff_counts
+        if self.distance == 0:
+            self.distance = ctx.distance
+        self.stat_mod_ad_damage += ctx.stat_mod_ad_damage
+        self.element_damage_cut += ctx.element_damage_cut
+
+        if self.stat_mod_additional_da_times > 2:
+            self.stat_mod_additional_da_times = 2
 
     def calculate(self, state: GameState) -> (float, float):
         # Find the lowest possible random damage and the highest possible. Allows for displaying the full range
@@ -133,7 +170,7 @@ class DamageFormulaContext:
         # 2
         if self.created_by_skill_action:
             # Random range: [0, 2]
-            dmg += skill_rand + self.skill_base_damage
+            dmg += skill_rand + self.char.skill_base_dmg
         # 3
         if self.weak:
             dmg *= 1.5
@@ -165,9 +202,10 @@ class DamageFormulaContext:
             dmg *= (1 + self.stat_mod_pf_damage) * self.stat_mod_pf_resist_mult
         # 13
         if self.created_by_pf_action and self.charge_level > 0:
-            dmg *= 1 + self.stat_mod_pf_lv_damage * (
-                1 + self.stat_mod_pf_lv_damage_slayer
-            )
+            pf_mod_dmg = self._calc_pf_mod_dmg()
+            if self.charge_level == 3:
+                pf_mod_dmg *= 1 + self.stat_mod_pf_lv_damage_slayer
+            dmg *= 1 + pf_mod_dmg
         # 14 - 19
         if self.created_by_skill_action:
             # 14, 15
@@ -200,3 +238,74 @@ class DamageFormulaContext:
         dmg -= self.element_damage_cut
         # 23: Ignore this line: We don't care about invincibility state.
         return dmg
+
+    def _calc_pf_mod_dmg(self):
+        match self.char.pf_type:
+            case PowerFlip.SWORD:
+                match self.charge_level:
+                    case 0:
+                        return 0
+                    case 1:
+                        return 2.75 * 3
+                    case 2:
+                        return 3.5 * 4
+                    case 3:
+                        return 5.5 * 5
+
+            case PowerFlip.BOW:
+                match self.charge_level:
+                    case 0:
+                        return 0
+                    case 1:
+                        if self.bow_pf_hits[BOW_MIDDLE]:
+                            return 1.83 * 3
+                        return 0
+                    case 2:
+                        total = 0
+                        if self.bow_pf_hits[BOW_NEAR_LEFT]:
+                            total += 0.5 * 2
+                        if self.bow_pf_hits[BOW_MIDDLE]:
+                            total += 2 * 4
+                        if self.bow_pf_hits[BOW_NEAR_RIGHT]:
+                            total += 0.5 * 2
+                        return total
+                    case 3:
+                        total = 0
+                        if self.bow_pf_hits[BOW_FAR_LEFT]:
+                            total += 0.5 * 2
+                        if self.bow_pf_hits[BOW_NEAR_LEFT]:
+                            total += 1 * 3
+                        if self.bow_pf_hits[BOW_MIDDLE]:
+                            total += 2.5 * 4
+                        if self.bow_pf_hits[BOW_NEAR_RIGHT]:
+                            total += 1 * 3
+                        if self.bow_pf_hits[BOW_FAR_RIGHT]:
+                            total += 0.5 * 2
+                        return total
+
+            case PowerFlip.FIST:
+                match self.charge_level:
+                    case 0:
+                        return 0
+                    case 1:
+                        return 2.8 + 0.9 * 3
+                    case 2:
+                        return 5.8 + 1.2 * 4
+                    case 3:
+                        return 12.5 + 1.5 * 5
+
+            case PowerFlip.SPECIAL:
+                match self.charge_level:
+                    case 0:
+                        return 0
+                    case 1:
+                        return 5
+                    case 2:
+                        return 7
+                    case 3:
+                        return 13
+
+            case PowerFlip.SUPPORT:
+                if self.charge_level == 3:
+                    return 4
+                return 0

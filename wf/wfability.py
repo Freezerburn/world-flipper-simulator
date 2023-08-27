@@ -304,7 +304,7 @@ class WorldFlipperAbility:
                 f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
             )
 
-    def _target_applies_to(self, target: str, element: str, char) -> bool:
+    def _target_applies_to(self, target: str, element: str, char: WorldFlipperCharacter) -> bool:
         match target:
             case "":
                 return True

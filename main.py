@@ -6,6 +6,7 @@ from wf import CharPosition
 from wf.wf import WorldFlipperData
 from wf.wfchar import WorldFlipperCharacter
 from wf.wfgamestate import GameState
+from wf.wfdmgformula import DamageFormulaContext
 
 EffectEnum = Literal[
     "main_effect", "main_condition", "continuous_effect", "continuous_condition"
@@ -149,11 +150,22 @@ def test_abilities():
     vagner = wf.find("Vagner")
     state.set_member(vagner, 0, CharPosition.LEADER, level=80)
     state.ability_lvs[0][:] = [6] * 6
-    state.set_powerflips(2, 10)
-    df = vagner.abilities[5][0].eval_effect(vagner, state)
-    if df is not None:
-        df.created_by_pf_action = True
-        print(df.calculate(state))
+    state.ability_lvs[0][4] = 0
+    state.ability_lvs[0][5] = 6
+    state.set_powerflips(2, 50)
+
+    dfs = []
+    for abs in vagner.abilities:
+        for ab in abs:
+            df = ab.eval_effect(vagner, state)
+            if df is not None:
+                dfs.append(df)
+    df = DamageFormulaContext(vagner)
+    for df2 in dfs:
+        df.combine(df2)
+    df.created_by_pf_action = True
+    df.charge_level = 2
+    print(df.calculate(state))
 
 
 def main():
