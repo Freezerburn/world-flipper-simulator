@@ -493,14 +493,15 @@ class WorldFlipperAbility:
                 self._apply_main_effect(
                     ui_name[1:], ctx, lv, times=times, condition_active=condition_active
                 )
-                return
 
             case "ability_description_common_content_attack":
                 amt = _calc_abil_lv(
                     self.main_effect_min, self.main_effect_max, _PERCENT_CONVERT, lv
                 )
                 ctx.attack_modifier += amt
-                return
+
+            case _:
+                raise RuntimeError(f"[{self.name}] Failed to apply main effect: {ui_name}")
 
     def _eval_main_effect(
         self, lv: int, char, enemy, party: list, condition_active=True
@@ -531,7 +532,6 @@ class WorldFlipperAbility:
                 self._apply_main_effect(
                     effect_ui_name, ret, lv, condition_active=condition_active
                 )
-                return ret
 
             case "ability_description_n_times":
                 # Condition requires something to happen a number of times, so we need to check the second
@@ -554,7 +554,7 @@ class WorldFlipperAbility:
                             _leader(party).total_power_flips,
                         )
                         self._apply_main_effect(effect_ui_name, ret, lv, times=times)
-                        return ret
+
                     case "ability_description_instant_trigger_kind_skill_hit":
                         times = _calc_req_units(
                             int(self.main_condition_min),
@@ -565,7 +565,12 @@ class WorldFlipperAbility:
                             char.total_skill_hits,
                         )
                         self._apply_main_effect(effect_ui_name, ret, lv, times=times)
-                        return ret
+
+                    case _:
+                        raise RuntimeError(f"[{self.name}] Failed to eval secondary condition: {condition_ui_name[1]}")
+
+            case _:
+                raise RuntimeError(f"[{self.name}] Failed to eval primary condition: {condition_ui_name[0]}")
 
         return ret
 
