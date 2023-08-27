@@ -1,9 +1,11 @@
+from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from .wfenum import CharPosition
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
+    from .wfability import WorldFlipperAbility
 
 
 class GameState:
@@ -14,7 +16,7 @@ class GameState:
         # 3: UNISON        (col 1)
         # 4: MAIN          (col 2)
         # 5: UNISON        (col 2)
-        self.party: list[Optional["WorldFlipperCharacter"]] = [None] * 6
+        self.party: list[Optional[WorldFlipperCharacter]] = [None] * 6
         # Each entry corresponds to the member at the same entry in party. Each
         # inner list int corresponds to the same number (+1) ability for that
         # character.
@@ -27,10 +29,26 @@ class GameState:
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
+        self.enemy = None
+
+    def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:
+        for idx, p in enumerate(self.party):
+            if p is None:
+                continue
+            if p.internal_name == char.internal_name:
+                if idx == 0:
+                    return CharPosition.LEADER
+                if idx % 2 == 0:
+                    return CharPosition.MAIN
+                return CharPosition.UNISON
+        return None
+
+    def leader(self) -> Optional[CharPosition]:
+        return self.party[0]
 
     def set_member(
         self,
-        char: Optional["WorldFlipperCharacter"],
+        char: Optional[WorldFlipperCharacter],
         column: int,
         position: CharPosition,
     ):
@@ -41,8 +59,19 @@ class GameState:
         offset = 0
         if position == CharPosition.UNISON:
             offset = 1
-        self.party[column * 2 + offset] = char
+        idx = column * 2 + offset
+        self.party[idx] = char
+        self.ability_lvs[idx] = [0] * 6
+        self.ability_condition_active[idx] = [False] * 6
 
     def set_powerflips(self, lv: int, count: int):
         self.powerflips_by_lv[lv] = count
         self.total_powerflips = sum(self.powerflips_by_lv)
+
+    def find_ability_index(self, ability: WorldFlipperAbility) -> (int, int):
+        for char_idx, char in enumerate(self.party):
+            for char_abs_idx, char_abs in enumerate(char.abilities):
+                for char_ab in char_abs:
+                    if char_ab.name == ability.name:
+                        return char_idx, char_abs_idx
+        return -1, -1

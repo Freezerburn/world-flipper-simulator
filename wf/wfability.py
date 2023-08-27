@@ -1,8 +1,13 @@
-from typing import Literal, Self
+from __future__ import annotations
+from typing import Literal, Optional, TYPE_CHECKING
 
 from .wfabilitymapping import _main_condition_mapping, _main_effect_mapping
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import CharPosition, Element
+from .wfgamestate import GameState
+
+if TYPE_CHECKING:
+    from .wfchar import WorldFlipperCharacter
 
 _PERCENT_CONVERT = 1_000
 _COUNT_CONVERT = 100_000
@@ -318,17 +323,16 @@ class WorldFlipperAbility:
         self,
         ui_name: list[str],
         ctx: DamageFormulaContext,
-        lv: int,
+        state: GameState,
         times=1,
-        condition_active=True,
     ):
+        char_idx, ab_idx = state.find_ability_index(self)
+        lv = state.ability_lvs[char_idx][ab_idx]
         match ui_name[0]:
             case "ability_description_for_second":
-                if not condition_active:
+                if not state.ability_condition_active[char_idx][ab_idx]:
                     return
-                self._apply_main_effect(
-                    ui_name[1:], ctx, lv, times=times, condition_active=condition_active
-                )
+                self._apply_main_effect(ui_name[1:], ctx, state, times=times)
 
             case "ability_description_common_content_attack":
                 amt = _calc_abil_lv(
@@ -337,15 +341,21 @@ class WorldFlipperAbility:
                 ctx.attack_modifier += amt
 
             case _:
-                raise RuntimeError(f"[{self.name}] Failed to apply main effect: {ui_name}")
+                raise RuntimeError(
+                    f"[{self.name}] Failed to apply main effect: {ui_name}"
+                )
 
     def _eval_main_effect(
-        self, lv: int, char, enemy, party: list, condition_active=True
-    ) -> DamageFormulaContext | None:
+        self, char: WorldFlipperCharacter, state: GameState
+    ) -> Optional[DamageFormulaContext]:
         if not self.is_main_effect():
             return None
-        if char.position is None:
+        if state.position(char) is None:
             return None
+        char_idx, ab_idx = state.find_ability_index(self)
+        if char_idx == -1:
+            return None
+        lv = state.ability_lvs[char_idx][ab_idx]
         if lv == 0:
             return None
         if not self._target_applies_to(
@@ -353,7 +363,7 @@ class WorldFlipperAbility:
         ):
             return None
 
-        ret = DamageFormulaContext(char, enemy)
+        ret = DamageFormulaContext(char, state.enemy)
         condition_ui_name = self.main_condition_ui()
         effect_ui_name = self.main_effect_ui()
 
@@ -365,9 +375,7 @@ class WorldFlipperAbility:
                 # one, aka effect index "0". But only some of the descriptions in-game actually say that something
                 # is applied at the start, likely for one-off effects such as adding skill charge versus
                 # something that is modifying the base stats of a unit. Such as increasing their attack.
-                self._apply_main_effect(
-                    effect_ui_name, ret, lv, condition_active=condition_active
-                )
+                self._apply_main_effect(effect_ui_name, ret, state)
 
             case "ability_description_n_times":
                 # Condition requires something to happen a number of times, so we need to check the second
@@ -387,7 +395,7 @@ class WorldFlipperAbility:
                             _COUNT_CONVERT,
                             int(self.main_effect_max_multiplier),
                             lv,
-                            _leader(party).total_power_flips,
+                            state.total_power_flips,
                         )
                         self._apply_main_effect(effect_ui_name, ret, lv, times=times)
 
@@ -398,22 +406,29 @@ class WorldFlipperAbility:
                             _COUNT_CONVERT,
                             int(self.main_effect_max_multiplier),
                             lv,
-                            char.total_skill_hits,
+                            state.skill_hits[char_idx],
                         )
                         self._apply_main_effect(effect_ui_name, ret, lv, times=times)
 
+                    case "ability_description_instant_trigger_kind_ball_flip":
+                        pass
+
                     case _:
-                        raise RuntimeError(f"[{self.name}] Failed to eval secondary condition: {condition_ui_name[1]}")
+                        raise RuntimeError(
+                            f"[{self.name}] Failed to eval secondary condition: {condition_ui_name[1]}"
+                        )
 
             case _:
-                raise RuntimeError(f"[{self.name}] Failed to eval primary condition: {condition_ui_name[0]}")
+                raise RuntimeError(
+                    f"[{self.name}] Failed to eval primary condition: {condition_ui_name[0]}"
+                )
 
         return ret
 
     # TODO: Implement
     def _eval_continuous_effect(
-        self, lv: int, char: Self, enemy, party: list[Self]
-    ) -> DamageFormulaContext | None:
+        self, char: WorldFlipperCharacter, state: GameState
+    ) -> Optional[DamageFormulaContext]:
         return None
 
     # TODO: Should probably create an "eval context" kind of thing for holding artifical state from user.
@@ -426,11 +441,11 @@ class WorldFlipperAbility:
     # Should also hopefully help prevent an explosion of parameters from being sent to the eval functions
     # as well.
     def eval_effect(
-        self, lv: int, char: Self, enemy, party: list[Self], condition_active=True
-    ) -> DamageFormulaContext | None:
+        self,
+        char: WorldFlipperCharacter,
+        state: GameState,
+    ) -> Optional[DamageFormulaContext]:
         if self.is_main_effect():
-            return self._eval_main_effect(
-                lv, char, enemy, party, condition_active=condition_active
-            )
+            return self._eval_main_effect(char, state)
         else:
-            return self._eval_continuous_effect(lv, char, enemy, party)
+            return self._eval_continuous_effect(char, state)

@@ -7,9 +7,6 @@ class WorldFlipperCharacter:
         self.id = key
         self.position = None
 
-        self.total_power_flips = 0  # Only applicable for a Leader unit.
-        self.total_skill_hits = 0
-
         data_arr = data[0]
         self.internal_name = data_arr[0]
         self.races = data_arr[4].split(",")
@@ -17,7 +14,6 @@ class WorldFlipperCharacter:
         self.leader_skill_name = data_arr[10]
         self.stars = int(data_arr[2])
         self.ability_ids = data_arr[11:16]
-        self.ability_lvs = [0] * 6
         self.abilities: list[list[WorldFlipperAbility]] = []
 
         pf_id = data_arr[6]
