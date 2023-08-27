@@ -1,9 +1,12 @@
-from typing import Self
+from typing import Self, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .wfchar import WorldFlipperCharacter
 
 
 class DamageFormulaContext:
     def __init__(self, char=None, enemy=None, unison=None):
-        self.char = char
+        self.char: "WorldFlipperCharacter" | None = char
         self.enemy = enemy
         self.unison = unison
 
