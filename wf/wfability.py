@@ -350,7 +350,7 @@ class WorldFlipperAbility:
                     _PERCENT_CONVERT,
                     lv,
                 )
-                ctx.attack_modifier += amt
+                ctx.attack_modifier += amt * times
 
             case "ability_description_common_content_power_flip_damage":
                 amt = _calc_abil_lv(
@@ -359,7 +359,7 @@ class WorldFlipperAbility:
                     _PERCENT_CONVERT,
                     lv,
                 )
-                ctx.stat_mod_pf_damage += amt
+                ctx.stat_mod_pf_damage += amt * times
 
             case "ability_description_common_content_power_flip_damage_lv":
                 amt = _calc_abil_lv(
@@ -368,7 +368,7 @@ class WorldFlipperAbility:
                     _PERCENT_CONVERT,
                     lv,
                 )
-                ctx.stat_mod_pf_lv_damage_slayer += amt
+                ctx.stat_mod_pf_lv_damage_slayer += amt * times
                 ctx.stat_mod_pf_lv_damage_slayer_lv = 3
 
             case _:
@@ -426,9 +426,9 @@ class WorldFlipperAbility:
                             _COUNT_CONVERT,
                             int(self.main_effect_max_multiplier),
                             lv,
-                            state.total_power_flips,
+                            state.total_powerflips,
                         )
-                        self._apply_main_effect(effect_ui_name, ret, lv, times=times)
+                        self._apply_main_effect(effect_ui_name, ret, state, times=times)
 
                     case "ability_description_instant_trigger_kind_skill_hit":
                         times = _calc_req_units(
