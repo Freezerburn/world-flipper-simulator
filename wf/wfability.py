@@ -449,3 +449,8 @@ class WorldFlipperAbility:
             return self._eval_main_effect(char, state)
         else:
             return self._eval_continuous_effect(char, state)
+
+    def __eq__(self, other):
+        if isinstance(other, WorldFlipperAbility):
+            return self.name == other.name
+        return False

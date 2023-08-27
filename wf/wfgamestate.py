@@ -84,6 +84,6 @@ class GameState:
         for char_idx, char in enumerate(self.party):
             for char_abs_idx, char_abs in enumerate(char.abilities):
                 for char_ab in char_abs:
-                    if char_ab.name == ability.name:
+                    if char_ab == ability:
                         return char_idx, char_abs_idx
         return -1, -1
