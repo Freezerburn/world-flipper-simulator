@@ -56,7 +56,6 @@ class DamageFormulaContext:
         self.stat_mod_pf_damage = 0
         self.stat_mod_pf_resist_multi = 0
         self.charge_level = 0
-        self.stat_mod_pf_lv_damage = 0
         self.stat_mod_pf_lv_damage_slayer_lv = 0
         self.stat_mod_pf_lv_damage_slayer = 0
         self.stat_mod_sd_damage = 0
@@ -309,3 +308,50 @@ class DamageFormulaContext:
                 if self.charge_level == 3:
                     return 4
                 return 0
+
+    def __str__(self):
+        out = ["== WF DMG FORMULA START =="]
+        if self.attack_modifier > 0:
+            out.append(f"  +{self.attack_modifier * 100}% ATK")
+        if self.total_resist > 0:
+            out.append(f"  +{self.total_resist * 100}% TOTAL RESIST")
+        if self.stat_mod_pinch_slayer:
+            out.append(f"  +{self.stat_mod_pinch_slayer * 100}% DOWN DMG")
+        if self.condition_slayer > 0:
+            out.append(f"  +{self.condition_slayer * 100}% DMG TO DEBUFFED ENEMIES")
+        if self.character_slayer:
+            out.append(
+                f"  +{self.character_slayer * 100}% DMG TO SPECIFIC ELEMENT/RACE"
+            )
+        if self.stat_mod_adversity > 0:
+            # TODO
+            pass
+        if self.attacker_fraction_health_lost > 0:
+            # TODO
+            pass
+        if self.stat_mod_da_damage > 0:
+            out.append(f"  +{self.stat_mod_da_damage * 100}% DA DMG")
+        if (
+            self.stat_mod_additional_da_damage > 0
+            and self.stat_mod_additional_da_times > 1
+        ):
+            # TODO: Multihit
+            pass
+        if self.stat_mod_pf_damage > 0:
+            out.append(f"  +{self.stat_mod_pf_damage * 100}% PF DAMAGE")
+        if self.stat_mod_pf_resist_mult != 1:
+            # TODO
+            pass
+        if self.stat_mod_pf_resist_multi > 0:
+            # TODO
+            pass
+        if self.charge_level > 0:
+            out.append(f"  Lv{self.charge_level} PF")
+            out.append(f"  +{self._calc_pf_mod_dmg() * 100}% TOTAL DMG FOR PF LV")
+        if self.stat_mod_pf_lv_damage_slayer > 0:
+            out.append(f"  +{self.stat_mod_pf_lv_damage_slayer * 100}% DMG TO Lv3 PF")
+        if self.stat_mod_sd_damage > 0:
+            out.append(f"  +{self.stat_mod_sd_damage}% SD DMG")
+        # TODO: Remaining attributes.
+        out.append("== WF DAMAGE FORMULA END ==")
+        return "\n".join(out)

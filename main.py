@@ -166,6 +166,8 @@ def test_abilities():
     df.created_by_pf_action = True
     df.charge_level = 3
     print(df.calculate(state))
+    print()
+    print(df)
 
 
 def main():
