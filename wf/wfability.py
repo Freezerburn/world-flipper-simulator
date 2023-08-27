@@ -1,4 +1,5 @@
-from typing import Literal
+from typing import Literal, Self
+
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import CharPosition
 
@@ -190,7 +191,7 @@ def _calc_req_units(
     in calculations/displayed in the UI. As an example: When an ability mentions "every N power flips", the
     JSON stores N * 100,000. So "every 5 power flips" would be stored as 500000.
     :param cap: Every ability that can be triggered multiple times has a limit on how many times it can be
-    applied. The JSON stores the multiplier/total number of times it can be triggered in the JSON so we can
+    applied. The JSON stores the multiplier/total number of times it can be triggered in the JSON, so we can
     use that directly to make sure that we don't go over it.
     :param lv: The current level of the ability.
     :param count: The number of times the condition for an ability has been triggered.
@@ -204,6 +205,15 @@ def _calc_req_units(
     if times >= cap:
         times = cap
     return times
+
+
+class EffectParameters:
+    def __init__(self, idx: str, target: str, element: str, min_v: str, max_v: str):
+        self.idx = idx
+        self.target = target
+        self.element = element
+        self.min_v = min_v
+        self.max_v = max_v
 
 
 class WorldFlipperAbility:
@@ -306,6 +316,30 @@ class WorldFlipperAbility:
         self.slot81 = data[81]
         self.slot82 = data[82]
 
+    def is_main_effect(self) -> bool:
+        return self.effect_type == "0"
+
+    def is_continuous_effect(self) -> bool:
+        return self.effect_type == "1"
+
+    def main_condition(self) -> EffectParameters:
+        return EffectParameters(
+            self.main_condition_index,
+            self.main_condition_target,
+            self.main_condition_element,
+            self.main_condition_min,
+            self.main_condition_max,
+        )
+
+    def main_effect(self) -> EffectParameters:
+        return EffectParameters(
+            self.main_effect_index,
+            self.main_effect_target,
+            self.main_effect_element,
+            self.main_effect_min,
+            self.main_effect_max
+        )
+
     def element_friendly(self, element):
         if element == "Red":
             return "Fire"
@@ -407,11 +441,11 @@ class WorldFlipperAbility:
     ):
         pass
 
-    def eval_main_effect(
+    def _eval_main_effect(
         self, lv: int, char, enemy, party: list
     ) -> DamageFormulaContext | None:
         ret = DamageFormulaContext(char, enemy)
-        if self.effect_type != "0":
+        if not self.is_main_effect():
             return None
         if char.position is None:
             return None
@@ -424,6 +458,11 @@ class WorldFlipperAbility:
         match condition_ui_name[0]:
             case "ability_description_instant_trigger_kind_first_flip":
                 # Apply effect at battle start, so it's always active.
+                #
+                # NOTE: Probably the majority of effects in the game set the condition to this "at battle start"
+                # one, aka effect index "0". But only some of the descriptions in-game actually say that something
+                # is applied at the start, likely for one-off effects such as adding skill charge versus
+                # something that is modifying the base stats of a unit. Such as increasing their attack.
                 self._apply_main_effect(effect_ui_name, ret)
                 return ret
 
@@ -433,7 +472,8 @@ class WorldFlipperAbility:
                 # has happened to see if it currently applies.
                 if len(condition_ui_name) == 1:
                     raise RuntimeError(
-                        f"[{char.name}] Ability index {self.main_condition_index} had count condition, but nothing to count."
+                        f"[{char.name}] Ability index {self.main_condition_index} "
+                        f"had count condition, but nothing to count."
                     )
 
                 match condition_ui_name[1]:
@@ -461,3 +501,17 @@ class WorldFlipperAbility:
                         return ret
 
         return ret
+
+    # TODO: Implement
+    def _eval_continuous_effect(
+        self, lv: int, char: Self, enemy, party: list[Self]
+    ) -> DamageFormulaContext | None:
+        return None
+
+    def eval_effect(
+        self, lv: int, char: Self, enemy, party: list[Self]
+    ) -> DamageFormulaContext | None:
+        if self.is_main_effect():
+            return self._eval_main_effect(lv, char, enemy, party)
+        else:
+            return self._eval_continuous_effect(lv, char, enemy, party)
