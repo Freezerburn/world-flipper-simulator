@@ -35,16 +35,15 @@ class GameState:
         self.enemy = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:
-        for idx, p in enumerate(self.party):
-            if p is None:
-                continue
-            if p.internal_name == char.internal_name:
-                if idx == 0:
-                    return CharPosition.LEADER
-                if idx % 2 == 0:
-                    return CharPosition.MAIN
-                return CharPosition.UNISON
-        return None
+        try:
+            idx = self.party.index(char)
+            if idx == 0:
+                return CharPosition.LEADER
+            if idx % 2 == 0:
+                return CharPosition.MAIN
+            return CharPosition.UNISON
+        except ValueError:
+            return None
 
     def leader(self) -> Optional[CharPosition]:
         return self.party[0]
