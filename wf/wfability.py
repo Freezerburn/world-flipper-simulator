@@ -13,6 +13,13 @@ _PERCENT_CONVERT = 1_000
 _COUNT_CONVERT = 100_000
 _SEC_CONVERT = 600_000
 
+# TODO: Going to need something that can evaluate an ability to figure out what UI elements to show.
+# Not all abilities are going to need a toggle to say whether or not they're going to be active, as
+# an example. Things that might need this would be stuff like a continuous effect that has a
+# condition for when the effect is going to be applied. Or showing a slider or something for when
+# something requires a certain number of powerflips so that the user can decide what level of buff
+# is currently active for the purposes of calculations.
+
 
 def _leader(party: list):
     for c in party:
