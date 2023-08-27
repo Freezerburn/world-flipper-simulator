@@ -150,8 +150,8 @@ def test_abilities():
     vagner = wf.find("Vagner")
     state.set_member(vagner, 0, CharPosition.LEADER, level=80)
     state.ability_lvs[0][:] = [6] * 6
-    state.ability_lvs[0][4] = 0
-    state.ability_lvs[0][5] = 6
+    state.ability_lvs[0][4] = 6
+    state.ability_lvs[0][5] = 1
     state.set_powerflips(2, 50)
 
     dfs = []
@@ -164,7 +164,7 @@ def test_abilities():
     for df2 in dfs:
         df.combine(df2)
     df.created_by_pf_action = True
-    df.charge_level = 2
+    df.charge_level = 3
     print(df.calculate(state))
 
 

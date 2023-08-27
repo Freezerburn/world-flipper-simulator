@@ -91,7 +91,7 @@ class DamageFormulaContext:
         self.stat_mod_additional_da_damage += ctx.stat_mod_additional_da_damage
         if self.stat_mod_additional_da_times == 1:
             self.stat_mod_additional_da_times = ctx.stat_mod_additional_da_times
-        self.stat_mod_pf_damage += ctx.stat_mod_pf_lv_damage
+        self.stat_mod_pf_damage += ctx.stat_mod_pf_damage
         if self.stat_mod_pf_lv_damage_slayer_lv == 0:
             self.stat_mod_pf_lv_damage_slayer_lv = ctx.stat_mod_pf_lv_damage_slayer_lv
         self.stat_mod_pf_lv_damage_slayer += ctx.stat_mod_pf_lv_damage_slayer
