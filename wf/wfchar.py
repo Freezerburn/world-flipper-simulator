@@ -104,6 +104,11 @@ class WorldFlipperCharacter:
 
         return base_stat * stat_mult * (1 + uncaps * uncap_mult) + evol_stat
 
+    def __eq__(self, other):
+        if isinstance(other, WorldFlipperCharacter):
+            return self.internal_name == other.internal_name
+        return False
+
     def __str__(self):
         return (
             f"{self.name} ({self.id} | {self.internal_name})\n"

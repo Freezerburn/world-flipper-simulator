@@ -112,7 +112,7 @@ class DamageFormulaContext:
             raise RuntimeError(
                 "Can only calculate damage if formula was given a character."
             )
-        char_idx = state.char_index(self.char)
+        char_idx = state.party.index(self.char)
 
         # 1
         atk = self.char.attack(
@@ -120,7 +120,7 @@ class DamageFormulaContext:
         )
         # Main units inherit a quarter of a unison's attack, make sure to include that in the calculation.
         if self.unison is not None:
-            unison_idx = state.char_index(self.unison)
+            unison_idx = state.party.index(self.unison)
             atk += (
                 self.unison.attack(
                     state.evolved(self.unison),

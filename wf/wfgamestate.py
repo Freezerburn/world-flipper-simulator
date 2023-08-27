@@ -76,12 +76,6 @@ class GameState:
         self.powerflips_by_lv[lv] = count
         self.total_powerflips = sum(self.powerflips_by_lv)
 
-    def char_index(self, char: WorldFlipperCharacter) -> int:
-        for idx, p in enumerate(self.party):
-            if p.internal_name == char.internal_name:
-                return idx
-        return -1
-
     def ability_index(self, ability: WorldFlipperAbility) -> (int, int):
         for char_idx, char in enumerate(self.party):
             for char_abs_idx, char_abs in enumerate(char.abilities):
