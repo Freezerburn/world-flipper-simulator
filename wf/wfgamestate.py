@@ -23,6 +23,7 @@ class GameState:
         # inner list int corresponds to the same number (+1) ability for that
         # character.
         self.ability_lvs = [[0] * 6] * 6
+        self.skill_lvs = [0] * 6
         # Same layout as ability_lvs.
         self.ability_condition_active = [[False] * 6] * 6
         # Each entry corresponds to the member at the same index in party.
@@ -49,10 +50,14 @@ class GameState:
         return self.party[0]
 
     def evolved(self, char: WorldFlipperCharacter) -> bool:
-        # TODO: Implement
-        # Basically checking if all MB1 abilities are unlocked and the unit has reached a specific level?
-        # That might be the MB2 unlock requirement, evolve might be a bit different.
-        return False
+        try:
+            idx = self.party.index(char)
+            # A unit evoles when the entire MB1 has been unlocked. Effectively this means that the first
+            # three abilities are level 6 (they are unlocked at LV1 and enhance 2-6) and the skill is
+            # level 5 (skill is always unlocked, so it just needs to be enhanced 5 times).
+            return self.ability_lvs[idx][:3] == [6] * 3 and self.skill_lvs[idx] == 5
+        except ValueError:
+            return False
 
     def set_member(
         self,
