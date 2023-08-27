@@ -150,7 +150,7 @@ def test_abilities():
     state.set_member(vagner, 0, CharPosition.LEADER, level=80)
     state.ability_lvs[0][:] = [6] * 6
     state.set_powerflips(2, 10)
-    df = vagner.abilities[1][0].eval_effect(vagner, state)
+    df = vagner.abilities[5][0].eval_effect(vagner, state)
     if df is not None:
         df.created_by_pf_action = True
         print(df.calculate(state))

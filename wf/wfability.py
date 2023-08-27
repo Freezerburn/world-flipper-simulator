@@ -371,6 +371,14 @@ class WorldFlipperAbility:
                 ctx.stat_mod_pf_lv_damage_slayer += amt * times
                 ctx.stat_mod_pf_lv_damage_slayer_lv = 3
 
+            case "ability_description_instant_content_skill_gauge":
+                # TODO: Implement storing start of round skill gauge for UI purposes.
+                pass
+
+            case "ability_description_common_content_power_flip_combo_count_down":
+                # TODO: Implement storing PF combo requirements for UI purposes.
+                pass
+
             case _:
                 raise RuntimeError(
                     f"[{self.name}] Failed to apply main effect: {ui_name}"
@@ -407,6 +415,17 @@ class WorldFlipperAbility:
                 # is applied at the start, likely for one-off effects such as adding skill charge versus
                 # something that is modifying the base stats of a unit. Such as increasing their attack.
                 self._apply_main_effect(effect_ui_name, ret, state)
+
+            case "ability_description_instant_trigger_kind_power_flip_lv":
+                times = _calc_req_units(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _COUNT_CONVERT,
+                    int(self.main_effect_max_multiplier),
+                    lv,
+                    state.powerflips_by_lv[2],
+                )
+                self._apply_main_effect(effect_ui_name, ret, state, times=times)
 
             case "ability_description_n_times":
                 # Condition requires something to happen a number of times, so we need to check the second

@@ -35,7 +35,7 @@ _main_condition_mapping: dict[str, list[str]] = {
     "51": [],
     "56": [],
     "57": [],
-    "58": [],
+    "58": ["ability_description_instant_trigger_kind_power_flip_lv"],
     "59": [],
     "6": ["ability_description_instant_trigger_kind_enemy_kill"],
     "63": [],
