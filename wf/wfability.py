@@ -1,8 +1,8 @@
 from typing import Literal
-from .wfmaineffect import main_condition_ui, main_effect_ui
+from wf.wfmaineffect import main_condition_ui, main_effect_ui
 
 
-class AbilityJson:
+class WorldFlipperAbility:
     def __init__(self, data, from_char):
         self.from_char = from_char
         self.name = data[0]

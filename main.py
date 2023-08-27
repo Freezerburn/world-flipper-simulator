@@ -1,4 +1,5 @@
-from wf.wfjson.wfjson import WfJson, WfJsonCharacter
+from wf.wf import WorldFlipperData
+from wf.wfchar import WorldFlipperCharacter
 from typing import Literal
 import pprint
 import deepdiff
@@ -19,7 +20,7 @@ EffectEnum = Literal[
 # it the first time. Have to find someone else with it to see if I can find a
 # difference in the ability data.
 def diff_effect(effect_type: EffectEnum, effect_index: str, base=None):
-    wf_json = WfJson("wf_data_json")
+    wf_json = WorldFlipperData("wf_data_json")
     effects = []
     for char in wf_json.characters.values():
         for ab_effects in char.abilities:
@@ -48,7 +49,7 @@ def diff_effect(effect_type: EffectEnum, effect_index: str, base=None):
     else:
         base = effects[0]
     for other in effects[1:]:
-        dd = deepdiff.diff.DeepDiff(base, other, exclude_types=[WfJsonCharacter])[
+        dd = deepdiff.diff.DeepDiff(base, other, exclude_types=[WorldFlipperCharacter])[
             "values_changed"
         ]
         for ignore in [
@@ -71,7 +72,7 @@ def diff_effect(effect_type: EffectEnum, effect_index: str, base=None):
 
 
 def list_effect_indices(effect_type: EffectEnum):
-    wf_json = WfJson("wf_data_json")
+    wf_json = WorldFlipperData("wf_data_json")
     indices = set()
     for char in wf_json.characters.values():
         for ab_effects in char.abilities:
@@ -100,7 +101,7 @@ def list_effect_indices(effect_type: EffectEnum):
 
 
 def find_effect(effect_type: EffectEnum, idx: str):
-    wf_json = WfJson("wf_data_json")
+    wf_json = WorldFlipperData("wf_data_json")
     abilities = set()
     for char in wf_json.characters.values():
         for ab_effects in char.abilities:
@@ -122,7 +123,7 @@ def find_effect(effect_type: EffectEnum, idx: str):
 
 # noinspection PyBroadException
 def debug_unknown_effect_indices():
-    wf_json = WfJson("wf_data_json")
+    wf_json = WorldFlipperData("wf_data_json")
     unknown_idxs = set()
     unknowns = set()
     for char in wf_json.characters.values():
