@@ -1,7 +1,7 @@
 from typing import Literal, Self
 
 from .wfdmgformula import DamageFormulaContext
-from .wfenum import CharPosition
+from .wfenum import CharPosition, Element
 
 
 _main_condition_mapping: dict[str, list[str]] = {
@@ -168,6 +168,7 @@ _main_effect_mapping: dict[str, list[str]] = {
     "98": [],
 }
 
+_PERCENT_CONVERT = 1_000
 _COUNT_CONVERT = 100_000
 _SEC_CONVERT = 600_000
 
@@ -177,6 +178,13 @@ def _leader(party: list):
         if c.position == CharPosition.LEADER:
             return c
     raise RuntimeError(f"Invalid party state: No Leader!")
+
+
+def _calc_abil_lv(u_min: int, u_max: int, conv: int, lv: int) -> float:
+    v_min = u_min / conv
+    v_max = u_max / conv
+    step = abs(v_max - v_min) / 5
+    return v_min + step * (lv - 1)
 
 
 def _calc_req_units(
@@ -197,10 +205,7 @@ def _calc_req_units(
     :param count: The number of times the condition for an ability has been triggered.
     :return:
     """
-    v_min = u_min / conv
-    v_max = u_max / conv
-    step = abs(v_max - v_min) / 5
-    req = v_min + step * (lv - 1)
+    req = _calc_abil_lv(u_min, u_max, conv, lv)
     times = count / req
     if times >= cap:
         times = cap
@@ -337,7 +342,7 @@ class WorldFlipperAbility:
             self.main_effect_target,
             self.main_effect_element,
             self.main_effect_min,
-            self.main_effect_max
+            self.main_effect_max,
         )
 
     def element_friendly(self, element):
@@ -355,6 +360,21 @@ class WorldFlipperAbility:
             return "Dark"
         else:
             raise RuntimeError(f"[{self.name}] Unknown element: {element}")
+
+    def element_enum(self, element):
+        match element:
+            case "Red":
+                return Element.FIRE
+            case "Yellow":
+                return Element.THUNDER
+            case "Green":
+                return Element.WIND
+            case "Blue":
+                return Element.WATER
+            case "White":
+                return Element.LIGHT
+            case "Black":
+                return Element.DARK
 
     def target_index_friendly(self, target, element=None):
         """
@@ -436,22 +456,67 @@ class WorldFlipperAbility:
                 f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
             )
 
+    def _target_applies_to(self, target: str, element: str, char) -> bool:
+        match target:
+            case "0":
+                return self.from_char.internal_name == char.internal_name
+            case "1":
+                return self.from_char.internal_name != char.internal_name
+            case "2":
+                return char.position == CharPosition.LEADER
+            case "5":
+                if not element:
+                    return True
+                else:
+                    return char.element == self.element_enum(element)
+            case "7":
+                # TODO: Implement
+                return False
+            case "8":
+                # TODO: Implement
+                return False
+
+        return False
+
     def _apply_main_effect(
-        self, ui_name: list[str], ctx: DamageFormulaContext, times=1
+        self,
+        ui_name: list[str],
+        ctx: DamageFormulaContext,
+        lv: int,
+        times=1,
+        condition_active=True,
     ):
-        pass
+        match ui_name[0]:
+            case "ability_description_for_second":
+                if not condition_active:
+                    return
+                self._apply_main_effect(
+                    ui_name[1:], ctx, lv, times=times, condition_active=condition_active
+                )
+                return
+
+            case "ability_description_common_content_attack":
+                amt = _calc_abil_lv(
+                    self.main_effect_min, self.main_effect_max, _PERCENT_CONVERT, lv
+                )
+                ctx.attack_modifier += amt
+                return
 
     def _eval_main_effect(
-        self, lv: int, char, enemy, party: list
+        self, lv: int, char, enemy, party: list, condition_active=True
     ) -> DamageFormulaContext | None:
-        ret = DamageFormulaContext(char, enemy)
         if not self.is_main_effect():
             return None
         if char.position is None:
             return None
         if lv == 0:
             return None
+        if not self._target_applies_to(
+            self.main_effect_target, self.main_effect_element, char
+        ):
+            return None
 
+        ret = DamageFormulaContext(char, enemy)
         condition_ui_name = self.main_condition_ui()
         effect_ui_name = self.main_effect_ui()
 
@@ -463,7 +528,9 @@ class WorldFlipperAbility:
                 # one, aka effect index "0". But only some of the descriptions in-game actually say that something
                 # is applied at the start, likely for one-off effects such as adding skill charge versus
                 # something that is modifying the base stats of a unit. Such as increasing their attack.
-                self._apply_main_effect(effect_ui_name, ret)
+                self._apply_main_effect(
+                    effect_ui_name, ret, lv, condition_active=condition_active
+                )
                 return ret
 
             case "ability_description_n_times":
@@ -486,7 +553,7 @@ class WorldFlipperAbility:
                             lv,
                             _leader(party).total_power_flips,
                         )
-                        self._apply_main_effect(effect_ui_name, ret, times=times)
+                        self._apply_main_effect(effect_ui_name, ret, lv, times=times)
                         return ret
                     case "ability_description_instant_trigger_kind_skill_hit":
                         times = _calc_req_units(
@@ -497,7 +564,7 @@ class WorldFlipperAbility:
                             lv,
                             char.total_skill_hits,
                         )
-                        self._apply_main_effect(effect_ui_name, ret, times=times)
+                        self._apply_main_effect(effect_ui_name, ret, lv, times=times)
                         return ret
 
         return ret
@@ -509,9 +576,11 @@ class WorldFlipperAbility:
         return None
 
     def eval_effect(
-        self, lv: int, char: Self, enemy, party: list[Self]
+        self, lv: int, char: Self, enemy, party: list[Self], condition_active=True
     ) -> DamageFormulaContext | None:
         if self.is_main_effect():
-            return self._eval_main_effect(lv, char, enemy, party)
+            return self._eval_main_effect(
+                lv, char, enemy, party, condition_active=condition_active
+            )
         else:
             return self._eval_continuous_effect(lv, char, enemy, party)
