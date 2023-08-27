@@ -580,6 +580,15 @@ class WorldFlipperAbility:
     ) -> DamageFormulaContext | None:
         return None
 
+    # TODO: Should probably create an "eval context" kind of thing for holding artifical state from user.
+    # Basically the thing that holds all the info a user would be able to set up for figuring out damage
+    # numbers, such as how many power flips have happened so far, skill hits, balls being launched, party
+    # composition, ability levels, etc.
+    # That can hopefully help prevent having a huge amount of data being put directly into somewhere like
+    # a character, and instead isolate the UI setup into its own distinct area that can then be used
+    # during eval.
+    # Should also hopefully help prevent an explosion of parameters from being sent to the eval functions
+    # as well.
     def eval_effect(
         self, lv: int, char: Self, enemy, party: list[Self], condition_active=True
     ) -> DamageFormulaContext | None:
