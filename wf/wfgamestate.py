@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING, Union
+
 from .wfenum import CharPosition
+
+if TYPE_CHECKING:
+    from .wfchar import WorldFlipperCharacter
 
 
 class GameState:
@@ -9,7 +14,7 @@ class GameState:
         # 3: UNISON        (col 1)
         # 4: MAIN          (col 2)
         # 5: UNISON        (col 2)
-        self.party = [None] * 6
+        self.party: list[Union["WorldFlipperCharacter", None]] = [None] * 6
         # Each entry corresponds to the member at the same entry in party. Each
         # inner list int corresponds to the same number (+1) ability for that
         # character.
@@ -23,7 +28,9 @@ class GameState:
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
 
-    def set_member(self, char, column: int, position: CharPosition):
+    def set_member(
+        self, char: "WorldFlipperCharacter", column: int, position: CharPosition
+    ):
         if position == CharPosition.LEADER:
             self.party[0] = char
             return
