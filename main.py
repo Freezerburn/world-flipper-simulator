@@ -1,4 +1,4 @@
-from wfdata.wfjson.wfjson import WfJson, WfJsonCharacter
+from wf.wfjson.wfjson import WfJson, WfJsonCharacter
 from typing import Literal
 import pprint
 import deepdiff

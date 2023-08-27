@@ -1,8 +1,8 @@
 import json
 import weakref
 
-from wfdata.wfenum import PowerFlip, Element
-from wfdata.wfjson.wfability.wfability import AbilityJson
+from wf.wfenum import PowerFlip, Element
+from wf.wfjson.wfability.wfability import AbilityJson
 
 
 class WfJsonCharacter:

@@ -1,6 +1,6 @@
-from wfdata import wfenum
-from wfdata.wfeffect import Effect, StatBuff, DealDamage
-from wfdata.wfdmgformula import DamageFormulaContext
+from wf import wfenum
+from wf.wfeffect import Effect, StatBuff, DealDamage
+from wf.wfdmgformula import DamageFormulaContext
 
 from wfchar import Character
 

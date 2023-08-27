@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from wfdata.wfeffect import Effect
-from wfdata.wfdmgformula import DamageFormulaContext
+from wf.wfeffect import Effect
+from wf.wfdmgformula import DamageFormulaContext
 
 
 # TODO: Planning on deprecating this in favor of "WfJsonCharacter", which will likely get renamed.
