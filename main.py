@@ -5,6 +5,8 @@ import deepdiff
 from wf import CharPosition
 from wf.wf import WorldFlipperData
 from wf.wfchar import WorldFlipperCharacter
+from wf.wfenemy import Enemy
+from wf.wfenum import Debuff
 from wf.wfgamestate import GameState
 from wf.wfdmgformula import DamageFormulaContext
 
@@ -170,13 +172,40 @@ def test_abilities():
     print(df)
 
 
+def test_abilities2():
+    wf = WorldFlipperData("wf_data_json")
+    state = GameState()
+    ahanabi = wf.find("kunoichi_1anv")
+    state.set_member(ahanabi, 0, CharPosition.LEADER, level=80)
+    state.ability_lvs[0][:] = [6] * 6
+    # state.ability_lvs[0][4] = 6
+    # state.ability_lvs[0][5] = 1
+    # state.set_powerflips(2, 50)
+    state.enemy = Enemy()
+    state.enemy.debuffs.append(Debuff.FIRE_RESISTANCE)
+
+    dfs = []
+    for abs in ahanabi.abilities:
+        for ab in abs:
+            df = ab.eval_effect(ahanabi, state)
+            if df is not None:
+                dfs.append(df)
+    df = DamageFormulaContext(ahanabi)
+    for df2 in dfs:
+        df.combine(df2)
+    df.created_by_da = True
+    print(df.calculate(state))
+    print()
+    print(df)
+
+
 def main():
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
     # find_effect("main_condition", "100")
     # diff_effect("main_condition", "0", base="fire_dragon_4")
-    test_abilities()
+    test_abilities2()
 
 
 if __name__ == "__main__":

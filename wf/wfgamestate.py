@@ -6,6 +6,7 @@ from .wfenum import CharPosition
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
     from .wfability import WorldFlipperAbility
+    from .wfenemy import Enemy
 
 
 class GameState:
@@ -32,7 +33,7 @@ class GameState:
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
-        self.enemy = None
+        self.enemy: Optional[Enemy] = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:
         try:

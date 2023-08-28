@@ -3,7 +3,7 @@ from typing import Literal, Optional, TYPE_CHECKING
 
 from .wfabilitymapping import _main_condition_mapping, _main_effect_mapping
 from .wfdmgformula import DamageFormulaContext
-from .wfenum import CharPosition, Element
+from .wfenum import CharPosition, Element, Debuff
 from .wfgamestate import GameState
 
 if TYPE_CHECKING:
@@ -110,7 +110,7 @@ class WorldFlipperAbility:
         # "(None)"
         self.main_effect_max_multiplier = data[30]
         self.cooldown_time = data[31]  # Seconds multiplied by 60.
-        self.effect_target_element = data[32]
+        self.condition_target_element = data[32]
         self.slot33 = data[33]
         self.slot34 = data[34]
         self.slot35 = data[35]
@@ -133,6 +133,9 @@ class WorldFlipperAbility:
         self.slot49 = data[49]
         self.slot50 = data[50]
         # Duration stored in seconds * 6,000,000
+        # NOTE: In general it seems like this can be "added" to any main effect in order to
+        # give it some kind of time limit. It doesn't seem to be specific to any particular
+        # index.
         self.main_effect_duration_min = data[51]
         self.main_effect_duration_max = data[52]
         # If a main effect is one that has a duration applied to it, it might be able
@@ -304,7 +307,9 @@ class WorldFlipperAbility:
                 f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
             )
 
-    def _target_applies_to(self, target: str, element: str, char: WorldFlipperCharacter) -> bool:
+    def _target_applies_to(
+        self, target: str, element: str, char: WorldFlipperCharacter
+    ) -> bool:
         match target:
             case "":
                 return True
@@ -371,6 +376,34 @@ class WorldFlipperAbility:
                 ctx.stat_mod_pf_lv_damage_slayer += amt * times
                 ctx.stat_mod_pf_lv_damage_slayer_lv = 3
 
+            case "ability_description_common_content_skill_damage":
+                amt = _calc_abil_lv(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv,
+                )
+                ctx.stat_mod_sd_damage += amt * times
+
+            case "ability_description_common_content_condition_slayer":
+                amt = _calc_abil_lv(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv,
+                )
+                if state.enemy is None:
+                    return
+                try:
+                    state.enemy.debuffs.index(Debuff.FIRE_RESISTANCE)
+                    ctx.condition_slayer += amt
+                except ValueError:
+                    pass
+
+            case "ability_description_common_content_second_skill_gauge":
+                # TODO: Implement storing skill gauge max increase for UI purposes.
+                pass
+
             case "ability_description_instant_content_skill_gauge":
                 # TODO: Implement storing start of round skill gauge for UI purposes.
                 pass
@@ -424,6 +457,24 @@ class WorldFlipperAbility:
                     int(self.main_effect_max_multiplier),
                     lv,
                     state.powerflips_by_lv[2],
+                )
+                self._apply_main_effect(effect_ui_name, ret, state, times=times)
+
+            case "ability_description_instant_trigger_kind_member":
+                num_element = 0
+                element = self.element_enum(self.condition_target_element)
+                for p in state.party:
+                    if p is None:
+                        continue
+                    if p.element == element:
+                        num_element += 1
+                times = _calc_req_units(
+                    int(self.main_condition_min),
+                    int(self.main_condition_max),
+                    _COUNT_CONVERT,
+                    int(self.main_effect_max_multiplier),
+                    lv,
+                    num_element,
                 )
                 self._apply_main_effect(effect_ui_name, ret, state, times=times)
 

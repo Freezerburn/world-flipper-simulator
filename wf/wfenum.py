@@ -31,3 +31,7 @@ class CharPosition(StrEnum):
     LEADER = auto()
     MAIN = auto()
     UNISON = auto()
+
+
+class Debuff(StrEnum):
+    FIRE_RESISTANCE = auto()
