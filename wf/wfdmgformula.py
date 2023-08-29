@@ -309,8 +309,23 @@ class DamageFormulaContext:
                     return 4
                 return 0
 
+    def _fmt_resist(self, r, name):
+        plus_minus = "+"
+        if r < 1:
+            plus_minus = "-"
+        return f"  {plus_minus}{(r - 1) * 100}% {name} RESIST"
+
     def __str__(self):
         out = ["== WF DMG FORMULA START =="]
+        if self.stat_mod_pf_resist_mult != 1:
+            out.append(self._fmt_resist(self.stat_mod_pf_resist_mult, "PF"))
+        if self.stat_mod_da_resist_mult != 1:
+            out.append(self._fmt_resist(self.stat_mod_da_resist_mult, "DA"))
+        if self.stat_mod_sd_resist_mult != 1:
+            out.append(self._fmt_resist(self.stat_mod_sd_resist_mult, "SD"))
+        if self.stat_mod_ad_resist_mult != 1:
+            out.append(self._fmt_resist(self.stat_mod_ad_resist_mult, "AD"))
+
         if self.attack_modifier > 0:
             out.append(f"  +{self.attack_modifier * 100}% ATK")
         if self.total_resist > 0:
@@ -339,9 +354,6 @@ class DamageFormulaContext:
             pass
         if self.stat_mod_pf_damage > 0:
             out.append(f"  +{self.stat_mod_pf_damage * 100}% PF DAMAGE")
-        if self.stat_mod_pf_resist_mult != 1:
-            # TODO
-            pass
         if self.stat_mod_pf_resist_multi > 0:
             # TODO
             pass
