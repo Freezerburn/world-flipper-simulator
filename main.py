@@ -176,7 +176,7 @@ def test_abilities2():
     wf = WorldFlipperData("wf_data_json")
     state = GameState()
     ahanabi = wf.find("kunoichi_1anv")
-    state.set_member(ahanabi, 0, CharPosition.LEADER, level=80)
+    state.set_member(ahanabi, CharPosition.LEADER, level=80)
     state.ability_lvs[0][:] = [6] * 6
     # state.ability_lvs[0][4] = 6
     # state.ability_lvs[0][5] = 1

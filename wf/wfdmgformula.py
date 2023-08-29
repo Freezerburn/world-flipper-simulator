@@ -309,6 +309,56 @@ class DamageFormulaContext:
                     return 4
                 return 0
 
+    def changed_values(self):
+        out = []
+        if self.stat_mod_pf_resist_mult != 1:
+            out.append(("PF_RESIST", self.stat_mod_pf_resist_mult))
+        if self.stat_mod_da_resist_mult != 1:
+            out.append(("DA_RESIST", self.stat_mod_da_resist_mult))
+        if self.stat_mod_sd_resist_mult != 1:
+            out.append(("SD_RESIST", self.stat_mod_sd_resist_mult))
+        if self.stat_mod_ad_resist_mult != 1:
+            out.append(("AD_RESIST", self.stat_mod_ad_resist_mult))
+
+        if self.attack_modifier > 0:
+            out.append(("ATTACK_MODIFIER", self.attack_modifier))
+        if self.total_resist > 0:
+            out.append(("TOTAL_RESIST", self.total_resist))
+        if self.stat_mod_pinch_slayer:
+            out.append(("DOWNED_SLAYER", self.stat_mod_pinch_slayer))
+        if self.condition_slayer > 0:
+            out.append(("CONDITION_SLAYER", self.condition_slayer))
+        if self.character_slayer > 0:
+            out.append(("CHARACTER_SLAYER", self.character_slayer))
+        if self.stat_mod_adversity > 0:
+            # TODO
+            pass
+        if self.attacker_fraction_health_lost > 0:
+            # TODO
+            pass
+        if self.stat_mod_da_damage > 0:
+            out.append(("DA_DAMAGE", self.stat_mod_da_damage))
+        if (
+            self.stat_mod_additional_da_damage > 0
+            and self.stat_mod_additional_da_times > 1
+        ):
+            # TODO: Multihit
+            pass
+        if self.stat_mod_pf_damage > 0:
+            out.append(("PF_DAMAGE", self.stat_mod_pf_damage))
+        if self.stat_mod_pf_resist_multi > 0:
+            # TODO
+            pass
+        if self.charge_level > 0:
+            out.append(("PF_LV", self.charge_level))
+            out.append(("PF_MOD_DAMAGE", self._calc_pf_mod_dmg()))
+        if self.stat_mod_pf_lv_damage_slayer > 0:
+            out.append(("PF_LV_SLAYER", self.stat_mod_pf_lv_damage_slayer))
+        if self.stat_mod_sd_damage > 0:
+            out.append(("SD_DAMAGE", self.stat_mod_sd_damage))
+        # TODO: Remaining attributes.
+        return out
+
     def _fmt_resist(self, r, name):
         plus_minus = "+"
         if r < 1:

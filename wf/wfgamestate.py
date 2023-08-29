@@ -65,8 +65,8 @@ class GameState:
     def set_member(
         self,
         char: Optional[WorldFlipperCharacter],
-        column: int,
         position: CharPosition,
+        column: int = -1,
         level=1,
         uncaps=0,
     ):
