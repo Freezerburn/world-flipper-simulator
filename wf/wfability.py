@@ -274,7 +274,7 @@ class WorldFlipperAbility:
             or len(_main_effect_mapping[self.main_effect_index]) == 0
         ):
             raise RuntimeError(
-                f"[{self.name}] Unknown main condition index: {self.main_effect_index}"
+                f"[{self.name}] Unknown main effect index: {self.main_effect_index}"
             )
         return _main_effect_mapping[self.main_effect_index]
 
