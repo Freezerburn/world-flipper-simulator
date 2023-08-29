@@ -30,6 +30,9 @@ class GameState:
         # Each entry corresponds to the member at the same index in party.
         self.skill_hits = [0] * 6
         self.total_skill_hits = 0
+        # Same layout as party.
+        self.skill_activations = [0] * 6
+        self.total_skill_activations = 0
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
@@ -84,6 +87,13 @@ class GameState:
     def set_powerflips(self, lv: int, count: int):
         self.powerflips_by_lv[lv] = count
         self.total_powerflips = sum(self.powerflips_by_lv)
+
+    def set_skill_activations(self, char: int | WorldFlipperCharacter, count: int):
+        if isinstance(char, int):
+            self.skill_activations[char] = count
+        else:
+            self.skill_activations[self.party.index(char)] = count
+        self.total_skill_activations = sum(self.skill_activations)
 
     def ability_index(self, ability: WorldFlipperAbility) -> (int, int):
         for char_idx, char in enumerate(self.party):

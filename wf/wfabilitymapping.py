@@ -94,7 +94,7 @@ _main_effect_mapping: dict[str, list[str]] = {
     "24": [],
     "243": ["ability_description_common_content_second_skill_gauge"],
     "245": [],
-    "249": [],
+    "249": ["ability_description_instant_content_enemy_damage"],
     "251": [],
     "253": [],
     "26": [

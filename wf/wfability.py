@@ -226,6 +226,8 @@ class WorldFlipperAbility:
                 return Element.LIGHT
             case "Black":
                 return Element.DARK
+            case _:
+                return None
 
     def target_index_friendly(self, target, element=None):
         """
@@ -319,16 +321,13 @@ class WorldFlipperAbility:
                 return self.from_char.internal_name != char.internal_name
             case "2":
                 return char.position == CharPosition.LEADER
-            case "5":
+            case "5" | "7":
                 if not element:
                     return True
                 else:
                     return char.element == self.element_enum(element)
-            case "7":
-                # TODO: Implement
-                return False
             case "8":
-                # TODO: Implement
+                # TODO: Implement multiball
                 return False
 
         return False
@@ -412,6 +411,11 @@ class WorldFlipperAbility:
                 # TODO: Implement storing PF combo requirements for UI purposes.
                 pass
 
+            case "ability_description_instant_trigger_kind_skill_invoke":
+                # This does instant damage when a skill is invoked, so there's nothing to really
+                # do in the simulator.
+                pass
+
             case _:
                 raise RuntimeError(
                     f"[{self.name}] Failed to apply main effect: {ui_name}"
@@ -422,13 +426,18 @@ class WorldFlipperAbility:
     ) -> Optional[DamageFormulaContext]:
         if not self.is_main_effect():
             return None
-        if state.position(char) is None:
+        position = state.position(char)
+        if position is None:
             return None
         char_idx, ab_idx = state.ability_index(self)
         if char_idx == -1:
             return None
         lv = state.ability_lvs[char_idx][ab_idx]
         if lv == 0:
+            return None
+        # Don't apply an effect if it requires a character to be in a main slot and the unit is
+        # a unison.
+        if self.is_main and position == CharPosition.UNISON:
             return None
         if not self._target_applies_to(
             self.main_effect_target, self.main_effect_element, char
@@ -476,6 +485,34 @@ class WorldFlipperAbility:
                     lv,
                     num_element,
                 )
+                self._apply_main_effect(effect_ui_name, ret, state, times=times)
+
+            case "ability_description_instant_trigger_kind_skill_invoke":
+                # TODO: Deal with different target types.
+                # AHanabi AB2 specifically says that Fire units that use skills get an attack buff.
+                # This is indicated by the "7" target in the ability JSON. So we need to make sure
+                # that if that's the target, we're only checking that unit's skill activations as
+                # opposed to a target that might apply an attack buff to all units when a skill is
+                # activated.
+                # There are probably other abilities that need to handle this kind of logic beyond
+                # this specific one, so they need to be evaluated.
+                # As it currently stands, this logic is actually incorrect right now.
+                activations_per_effect = _calc_abil_lv(
+                    int(self.continuous_effect_min),
+                    int(self.continuous_effect_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                element = self.element_enum(self.condition_target_element)
+                times = 0
+                for idx, p in enumerate(state.party):
+                    if p is None:
+                        continue
+                    if element is None or p.element == element:
+                        times += state.skill_activations[idx] / activations_per_effect
+                max_mult = int(self.main_effect_max_multiplier)
+                if times > max_mult:
+                    times = max_mult
                 self._apply_main_effect(effect_ui_name, ret, state, times=times)
 
             case "ability_description_n_times":
