@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Literal, Optional, TYPE_CHECKING
 
+import math
+
 from .wfabilitymapping import _main_condition_mapping, _main_effect_mapping
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import CharPosition, Element, Debuff
@@ -54,7 +56,7 @@ def _calc_req_units(
     :return:
     """
     req = _calc_abil_lv(u_min, u_max, conv, lv)
-    times = count / req
+    times = math.floor(count / req)
     if times >= cap:
         times = cap
     return times
