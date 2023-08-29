@@ -5,18 +5,44 @@ from wf.wfenemy import Enemy
 from wf.wfgamestate import GameState
 
 
-class TestWorldFlipperAbility(TestCase):
+class TestWorldFlipperAbilityFire5(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.wf_data = WorldFlipperData("wf_data_json")
 
-    def test_pf_increase(self):
+    def test_vagner_ab1(self):
         """
-        Checks the simple common effect of increasing powerflip damage with no conditions.
+        Verifies that Vagner's ability 1, which increases powerflip damage, correctly applies
+        to only the leader.
         """
         vagner, state = self._base_state("fire_dragon")
         df = vagner.abilities[0][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.3, df.stat_mod_pf_damage)
+
+        ahanabi = self.wf_data.find("kunoichi_1anv")
+        state.set_member(ahanabi, CharPosition.LEADER)
+        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.ability_lvs[1][0] = 6
+
+        df = vagner.abilities[0][0].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.3, df.stat_mod_pf_damage)
+        df = vagner.abilities[0][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+    def test_vagner_ab2(self):
+        """
+        Checks that Vagner's ability 2, increasing attack after a number of powerflips, correctly
+        applies to only him.
+        """
+        vagner, state = self._base_state("fire_dragon")
+        ahanabi = self.wf_data.find("kunoichi_1anv")
+        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.set_powerflips(1, 11)
+
+        df = vagner.abilities[1][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.3, df.attack_modifier)
+        df = vagner.abilities[1][0].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
 
     def test_every_pfs_atk_this_unit(self):
         """
