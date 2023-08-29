@@ -28,7 +28,7 @@ class TestWorldFlipperAbility(TestCase):
         vagner, state = self._base_state("fire_dragon")
         ahanabi = self.wf_data.find("kunoichi_1anv")
         state.set_member(ahanabi, CharPosition.UNISON, 0)
-        state.set_powerflips(0, 15)
+        state.set_powerflips(1, 15)
 
         df = vagner.abilities[1][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.45, df.attack_modifier)

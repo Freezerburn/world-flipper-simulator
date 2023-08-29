@@ -154,7 +154,7 @@ def test_abilities():
     state.ability_lvs[0][:] = [6] * 6
     state.ability_lvs[0][4] = 6
     state.ability_lvs[0][5] = 1
-    state.set_powerflips(2, 50)
+    state.set_powerflips(3, 50)
 
     dfs = []
     for abs in vagner.abilities:

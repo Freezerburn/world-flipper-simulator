@@ -85,7 +85,7 @@ class GameState:
         self.ability_condition_active[idx] = [False] * 6
 
     def set_powerflips(self, lv: int, count: int):
-        self.powerflips_by_lv[lv] = count
+        self.powerflips_by_lv[lv - 1] = count
         self.total_powerflips = sum(self.powerflips_by_lv)
 
     def set_skill_activations(self, char: int | WorldFlipperCharacter, count: int):
