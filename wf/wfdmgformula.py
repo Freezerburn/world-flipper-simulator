@@ -24,6 +24,7 @@ class DamageFormulaContext:
         self.bow_pf_hits = [False, False, True, False, False]
         self.pf_combo_reduction = [0] * 3
         self.skill_charge = [0] * 3
+        self.skill_charge_speed = [1] * 3
         self.skill_gauge_max = [100] * 3
 
         # The different types of methods of applying damage have their own bools to enable each of them.

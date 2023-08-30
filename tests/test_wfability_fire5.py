@@ -132,7 +132,25 @@ class TestWorldFlipperAbilityFire5(TestCase):
         self.assertIsNone(df)
 
     def test_ahanabi_b3(self):
-        pass
+        ahanabi, state = self._base_state("kunoichi_1anv")
+        vagner = self.wf_data.find("fire_dragon")
+        sonia = self.wf_data.find("brown_fighter")
+        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.skill_charge[0] = 100
+        state.times_skill_reached_100[0] = 1
+
+        df = ahanabi.abilities[2][0].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(1.2, df.skill_charge_speed[0])
+        df = ahanabi.abilities[2][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+        df = ahanabi.abilities[2][1].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.125, df.attack_modifier)
+        df = ahanabi.abilities[2][1].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.125, df.attack_modifier)
+        df = ahanabi.abilities[2][1].eval_effect(sonia, state)
+        self.assertIsNone(df)
 
     def test_every_pfs_atk_this_unit(self):
         """

@@ -33,11 +33,13 @@ class GameState:
         # Same layout as party.
         self.skill_activations = [0] * 6
         self.total_skill_activations = 0
+        self.times_skill_reached_100 = [0] * 3
         self.skill_gauge_max = [100] * 3
         self.skill_charge = [0] * 3
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
+        self.num_multiballs = 0
         self.enemy: Optional[Enemy] = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:

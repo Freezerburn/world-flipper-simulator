@@ -17,7 +17,7 @@ _main_condition_mapping: dict[str, list[str]] = {
     "15": [],
     "16": [],
     "18": ["ability_description_instant_trigger_kind_skill_invoke"],
-    "19": [],
+    "19": ["ability_description_instant_trigger_kind_skill_max"],
     "2": [],
     "20": [],
     "22": [],
@@ -163,4 +163,17 @@ _main_effect_mapping: dict[str, list[str]] = {
     "8": [],
     "95": [],
     "98": [],
+}
+
+_continuous_condition_mapping: dict[str, list[str]] = {
+    "5": ["ability_description_during_trigger_kind_multiball"],
+    "8": ["ability_description_during_trigger_kind_condition"],
+    "105": ["ability_description_during_trigger_kind_skill_gauge_high"],
+}
+
+_continuous_effect_mapping: dict[str, list[str]] = {
+    "0": ["ability_description_common_content_attack"],
+    "3": ["ability_description_common_content_skill_gauge_chaging"],
+    # NOTE: Direct hits number (so far) is always hardcoded to 2.
+    "45": ["ability_description_common_content_aditional_direct_attack_and_damage"],
 }

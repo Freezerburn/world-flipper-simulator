@@ -3,7 +3,12 @@ from typing import Literal, Optional, TYPE_CHECKING
 
 import math
 
-from .wfabilitymapping import _main_condition_mapping, _main_effect_mapping
+from .wfabilitymapping import (
+    _main_condition_mapping,
+    _main_effect_mapping,
+    _continuous_condition_mapping,
+    _continuous_effect_mapping,
+)
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import CharPosition, Element, Debuff
 from .wfgamestate import GameState
@@ -283,33 +288,22 @@ class WorldFlipperAbility:
         return _main_effect_mapping[self.main_effect_index]
 
     def continuous_condition_ui(self):
-        if self.effect_type != "1":
-            return "(None)"
-
-        if self.continuous_condition_index == "5":
-            return "ability_description_during_trigger_kind_multiball"
-        elif self.continuous_condition_index == "8":
-            return "ability_description_during_trigger_kind_condition"
-        else:
+        if self.is_main_effect():
+            return None
+        if self.continuous_condition_index not in _continuous_condition_mapping:
             raise RuntimeError(
                 f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
             )
+        return _continuous_condition_mapping[self.continuous_condition_index]
 
     def continuous_effect_ui(self):
-        if self.effect_type != "1":
-            return "(None)"
-
-        if self.continuous_effect_index == "0":
-            return "ability_description_common_content_attack"
-        elif self.continuous_effect_index == "45":
-            # NOTE: Direct hits number (so far) is always hardcoded to 2.
-            return (
-                "ability_description_common_content_aditional_direct_attack_and_damage"
-            )
-        else:
+        if self.is_main_effect():
+            return None
+        if self.continuous_effect_index not in _continuous_effect_mapping:
             raise RuntimeError(
-                f"[{self.name}] Unknown continuous index: {self.continuous_effect_index}"
+                f"[{self.name} Unknown continuous effect index: {self.continuous_effect_index}"
             )
+        return _continuous_effect_mapping[self.continuous_effect_index]
 
     def _target_applies_to(
         self, target: str, element: str, char: WorldFlipperCharacter
@@ -569,7 +563,7 @@ class WorldFlipperAbility:
                             lv,
                             state.skill_hits[ab_char_idx],
                         )
-                        self._apply_main_effect(effect_ui_name, ret, lv, times=times)
+                        self._apply_main_effect(effect_ui_name, ret, state, times=times)
 
                     case "ability_description_instant_trigger_kind_ball_flip":
                         pass
@@ -578,6 +572,17 @@ class WorldFlipperAbility:
                         raise RuntimeError(
                             f"[{self.name}] Failed to eval secondary condition: {condition_ui_name[1]}"
                         )
+
+            case "ability_description_instant_trigger_kind_skill_max":
+                times = _calc_req_units(
+                    int(self.main_condition_min),
+                    int(self.main_condition_max),
+                    _COUNT_CONVERT,
+                    int(self.main_effect_max_multiplier),
+                    lv,
+                    state.times_skill_reached_100[ab_char_idx],
+                )
+                self._apply_main_effect(effect_ui_name, ret, state, times=times)
 
             case _:
                 raise RuntimeError(
@@ -588,11 +593,95 @@ class WorldFlipperAbility:
             return None
         return ret
 
+    def _apply_continuous_effect(
+        self,
+        ui_name: list[str],
+        ctx: DamageFormulaContext,
+        state: GameState,
+        times=1,
+    ):
+        char_idx, ab_idx = state.ability_index(self)
+        lv = state.ability_lvs[char_idx][ab_idx]
+        match ui_name[0]:
+            case "ability_description_common_content_skill_gauge_chaging":
+                amt = _calc_abil_lv(
+                    int(self.continuous_effect_min),
+                    int(self.continuous_effect_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                ctx.skill_charge_speed[char_idx] += amt
+
     # TODO: Implement
     def _eval_continuous_effect(
         self, char: WorldFlipperCharacter, state: GameState
     ) -> Optional[DamageFormulaContext]:
-        return None
+        if self.is_main_effect():
+            return None
+        position = state.position(char)
+        if position is None:
+            return None
+        char_idx = state.party.index(char)
+        ab_char_idx, ab_idx = state.ability_index(self)
+        if ab_char_idx == -1:
+            return None
+        lv = state.ability_lvs[ab_char_idx][ab_idx]
+        if lv == 0:
+            return None
+        # Don't apply an effect if it requires a character to be in a main slot and the unit is
+        # a unison.
+        if (
+            self.requires_main
+            and state.position(state.party[ab_char_idx]) == CharPosition.UNISON
+        ):
+            return None
+        if not self._target_applies_to(
+            self.continuous_effect_target, self.continuous_effect_element, char
+        ):
+            return None
+
+        ret = DamageFormulaContext()
+        condition_ui_name = self.continuous_condition_ui()
+        effect_ui_name = self.continuous_effect_ui()
+        match condition_ui_name[0]:
+            case "ability_description_during_trigger_kind_multiball":
+                amt = _calc_abil_lv(
+                    int(self.continuous_condition_min),
+                    int(self.continuous_condition_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                if state.num_multiballs >= amt:
+                    self._apply_continuous_effect(effect_ui_name, ret, state)
+
+            case "ability_description_during_trigger_kind_condition":
+                pass
+
+            case "ability_description_during_trigger_kind_skill_gauge_high":
+                amt = _calc_abil_lv(
+                    int(self.continuous_condition_min),
+                    int(self.continuous_condition_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                target_char_idx = -1
+                match self.continuous_effect_target:
+                    case "0":
+                        target_char_idx = ab_char_idx
+                    case "7":
+                        target_char_idx = char_idx
+                    case _:
+                        raise RuntimeError(
+                            f"[{condition_ui_name[0]}] Unhandled continuous "
+                            f"target: {self.continuous_effect_target}"
+                        )
+                if state.skill_charge[target_char_idx] <= amt:
+                    return None
+                self._apply_continuous_effect(effect_ui_name, ret, state)
+
+        if not ret.valid:
+            return None
+        return ret
 
     # TODO: Should probably create an "eval context" kind of thing for holding artifical state from user.
     # Basically the thing that holds all the info a user would be able to set up for figuring out damage
