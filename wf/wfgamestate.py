@@ -33,6 +33,8 @@ class GameState:
         # Same layout as party.
         self.skill_activations = [0] * 6
         self.total_skill_activations = 0
+        self.skill_gauge_max = [100] * 3
+        self.skill_charge = [0] * 3
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
@@ -48,6 +50,11 @@ class GameState:
             return CharPosition.UNISON
         except ValueError:
             return None
+
+    def main_index(self, char_idx: int):
+        if char_idx % 2 == 0:
+            return char_idx
+        return char_idx - 1
 
     def leader(self) -> Optional[CharPosition]:
         return self.party[0]

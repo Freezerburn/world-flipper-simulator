@@ -44,6 +44,29 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = vagner.abilities[1][0].eval_effect(ahanabi, state)
         self.assertIsNone(df)
 
+    def test_vagner_ab3(self):
+        vagner, state = self._base_state("fire_dragon")
+        ahanabi = self.wf_data.find("kunoichi_1anv")
+        state.set_member(ahanabi, CharPosition.LEADER)
+        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.ability_lvs[1][3] = 6
+
+        df = vagner.abilities[2][1].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
+        df = vagner.abilities[2][1].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+    def test_vagner_ab4(self):
+        vagner, state = self._base_state("fire_dragon")
+        df = vagner.abilities[3][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.5, state.skill_charge[0])
+        self.assertEqual(0, len(df.changed_values()))
+
+    def test_vagner_ab5(self):
+        vagner, state = self._base_state("fire_dragon")
+        df = vagner.abilities[4][1].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.05, df.stat_mod_pf_lv_damage_slayer)
+
     def test_every_pfs_atk_this_unit(self):
         """
         Checks that the condition based on number of powerflips is working along with the effect

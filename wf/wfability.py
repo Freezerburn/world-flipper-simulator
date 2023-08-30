@@ -402,12 +402,16 @@ class WorldFlipperAbility:
                     pass
 
             case "ability_description_common_content_second_skill_gauge":
-                # TODO: Implement storing skill gauge max increase for UI purposes.
-                pass
+                state.skill_gauge_max[char_idx] += 100
 
             case "ability_description_instant_content_skill_gauge":
-                # TODO: Implement storing start of round skill gauge for UI purposes.
-                pass
+                amt = _calc_abil_lv(
+                    int(self.main_effect_min),
+                    int(self.main_effect_max),
+                    _PERCENT_CONVERT,
+                    lv
+                )
+                state.skill_charge[state.main_index(char_idx)] += amt
 
             case "ability_description_common_content_power_flip_combo_count_down":
                 # TODO: Implement storing PF combo requirements for UI purposes.
