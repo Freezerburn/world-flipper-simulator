@@ -17,10 +17,14 @@ BOW_FAR_RIGHT = 4
 
 class DamageFormulaContext:
     def __init__(self, char: Optional[WorldFlipperCharacter] = None, unison=None):
+        self.valid = True
         self.char: Optional[WorldFlipperCharacter] = char
         self.unison = unison
         # Layout: Far Left, Near Left, Middle, Near Right, Far Right
         self.bow_pf_hits = [False, False, True, False, False]
+        self.pf_combo_reduction = [0] * 3
+        self.skill_charge = [0] * 3
+        self.skill_gauge_max = [100] * 3
 
         # The different types of methods of applying damage have their own bools to enable each of them.
         # Only a single of these should ever be applied at one time, because the game will only ever have

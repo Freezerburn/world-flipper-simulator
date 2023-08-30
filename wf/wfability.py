@@ -75,7 +75,7 @@ class WorldFlipperAbility:
     def __init__(self, data, from_char):
         self.from_char = from_char
         self.name = data[0]
-        self.is_main = data[1] == "true"
+        self.requires_main = data[1] == "false"
         self.ability_statue_group = data[2]
         self.effect_type: Literal["0", "1"] = data[
             3
@@ -359,6 +359,9 @@ class WorldFlipperAbility:
                 ctx.attack_modifier += amt * times
 
             case "ability_description_common_content_power_flip_damage":
+                if state.position(ctx.char) != CharPosition.LEADER:
+                    ctx.valid = False
+                    return
                 amt = _calc_abil_lv(
                     int(self.main_effect_min),
                     int(self.main_effect_max),
@@ -402,25 +405,25 @@ class WorldFlipperAbility:
                     pass
 
             case "ability_description_common_content_second_skill_gauge":
-                state.skill_gauge_max[char_idx] += 100
+                ctx.skill_gauge_max[char_idx] = 200
 
             case "ability_description_instant_content_skill_gauge":
                 amt = _calc_abil_lv(
                     int(self.main_effect_min),
                     int(self.main_effect_max),
                     _PERCENT_CONVERT,
-                    lv
+                    lv,
                 )
-                state.skill_charge[state.main_index(char_idx)] += amt
+                ctx.skill_charge[state.main_index(char_idx)] += amt
 
             case "ability_description_common_content_power_flip_combo_count_down":
-                # TODO: Implement storing PF combo requirements for UI purposes.
-                pass
+                ctx.pf_combo_reduction[2] += 5
 
             case "ability_description_instant_content_enemy_damage":
                 # This does instant damage when a skill is invoked, so there's nothing to really
                 # do in the simulator.
-                pass
+                # Just mark it as invalid so nothing gets returned.
+                ctx.valid = False
 
             case _:
                 raise RuntimeError(
@@ -444,7 +447,10 @@ class WorldFlipperAbility:
             return None
         # Don't apply an effect if it requires a character to be in a main slot and the unit is
         # a unison.
-        if self.is_main and position == CharPosition.UNISON:
+        if (
+            self.requires_main
+            and state.position(state.party[ab_char_idx]) == CharPosition.UNISON
+        ):
             return None
         if not self._target_applies_to(
             self.main_effect_target, self.main_effect_element, char
@@ -514,6 +520,13 @@ class WorldFlipperAbility:
                         continue
                     if element is None or p.element == element:
                         times += state.skill_activations[idx] / activations_per_effect
+                # If we didn't achieve the activation condition across the entire party, then this damage
+                # calculation is invalid. The best example of this is if there's an activation condition
+                # that has a character getting a buff when activating a skill, but it has an element
+                # restriction on it. In that case if the unit isn't that element, then we'd end up with
+                # an invalid formula.
+                if times == 0:
+                    return None
                 # There are effect types that don't care about multipliers. An example of this is
                 # AHanabi's ability 2, which deals damage to all units when a skill is activated with
                 # a cooldown on how often this can occur.
@@ -571,6 +584,8 @@ class WorldFlipperAbility:
                     f"[{self.name}] Failed to eval primary condition: {condition_ui_name[0]}"
                 )
 
+        if not ret.valid:
+            return None
         return ret
 
     # TODO: Implement

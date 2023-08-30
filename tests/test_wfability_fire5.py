@@ -47,6 +47,11 @@ class TestWorldFlipperAbilityFire5(TestCase):
     def test_vagner_ab3(self):
         vagner, state = self._base_state("fire_dragon")
         ahanabi = self.wf_data.find("kunoichi_1anv")
+        df = vagner.abilities[2][0].eval_effect(vagner, state)
+        self.assertEqual(5, df.pf_combo_reduction[2])
+        df = vagner.abilities[2][1].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.4, df.stat_mod_pf_damage)
+
         state.set_member(ahanabi, CharPosition.LEADER)
         state.set_member(vagner, CharPosition.UNISON, 0)
         state.ability_lvs[1][3] = 6
@@ -59,7 +64,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
     def test_vagner_ab4(self):
         vagner, state = self._base_state("fire_dragon")
         df = vagner.abilities[3][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.5, state.skill_charge[0])
+        self.assertAlmostEqual(0.5, df.skill_charge[0])
         self.assertEqual(0, len(df.changed_values()))
 
     def test_vagner_ab5(self):
@@ -73,6 +78,61 @@ class TestWorldFlipperAbilityFire5(TestCase):
         state.set_powerflips(3, 2)
         df = vagner.abilities[5][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.16, df.stat_mod_pf_damage)
+
+    def test_ahanabi_ab1(self):
+        ahanabi, state = self._base_state("kunoichi_1anv")
+        vagner = self.wf_data.find("fire_dragon")
+        sonia = self.wf_data.find("brown_fighter")
+        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.set_member(sonia, CharPosition.MAIN, 1)
+
+        df = ahanabi.abilities[0][0].eval_effect(ahanabi, state)
+        self.assertEqual(200, df.skill_gauge_max[0])
+        df = ahanabi.abilities[0][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+        df = ahanabi.abilities[0][1].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.2, df.attack_modifier)
+        df = ahanabi.abilities[0][1].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+        state.set_member(vagner, CharPosition.LEADER)
+        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.ability_lvs[1][0] = 6
+        df = ahanabi.abilities[0][1].eval_effect(vagner, state)
+        self.assertIsNone(df)
+        df = ahanabi.abilities[0][1].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
+
+    def test_ahanabi_b2(self):
+        ahanabi, state = self._base_state("kunoichi_1anv")
+        vagner = self.wf_data.find("fire_dragon")
+        sonia = self.wf_data.find("brown_fighter")
+        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.skill_activations[0] = 2
+        state.skill_activations[1] = 1
+
+        df = ahanabi.abilities[1][0].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.16, df.attack_modifier)
+        df = ahanabi.abilities[1][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.08, df.attack_modifier)
+        df = ahanabi.abilities[1][0].eval_effect(sonia, state)
+        self.assertIsNone(df)
+
+        df = ahanabi.abilities[1][1].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
+
+        state.set_member(vagner, CharPosition.LEADER)
+        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.ability_lvs[1][1] = 6
+        df = ahanabi.abilities[1][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+        df = ahanabi.abilities[1][1].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
+
+    def test_ahanabi_b3(self):
+        pass
 
     def test_every_pfs_atk_this_unit(self):
         """
