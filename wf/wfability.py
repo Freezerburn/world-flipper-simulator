@@ -467,8 +467,8 @@ class WorldFlipperAbility:
 
             case "ability_description_instant_trigger_kind_power_flip_lv":
                 times = _calc_req_units(
-                    int(self.main_effect_min),
-                    int(self.main_effect_max),
+                    int(self.main_condition_min),
+                    int(self.main_condition_max),
                     _COUNT_CONVERT,
                     int(self.main_effect_max_multiplier),
                     lv,

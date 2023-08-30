@@ -67,6 +67,13 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = vagner.abilities[4][1].eval_effect(vagner, state)
         self.assertAlmostEqual(0.05, df.stat_mod_pf_lv_damage_slayer)
 
+    def test_vagner_ab6(self):
+        vagner, state = self._base_state("fire_dragon")
+        state.set_powerflips(2, 1)
+        state.set_powerflips(3, 2)
+        df = vagner.abilities[5][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.16, df.stat_mod_pf_damage)
+
     def test_every_pfs_atk_this_unit(self):
         """
         Checks that the condition based on number of powerflips is working along with the effect
