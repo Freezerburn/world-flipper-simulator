@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from .wfenum import CharPosition
 
@@ -61,7 +61,7 @@ class GameState:
             return char_idx
         return char_idx - 1
 
-    def leader(self) -> Optional[CharPosition]:
+    def leader(self) -> Optional[WorldFlipperCharacter]:
         return self.party[0]
 
     def evolved(self, char: WorldFlipperCharacter) -> bool:
@@ -107,8 +107,10 @@ class GameState:
             self.skill_activations[self.party.index(char)] = count
         self.total_skill_activations = sum(self.skill_activations)
 
-    def ability_index(self, ability: WorldFlipperAbility) -> (int, int):
+    def ability_index(self, ability: WorldFlipperAbility) -> Tuple[int, int]:
         for char_idx, char in enumerate(self.party):
+            if char is None:
+                continue
             for char_abs_idx, char_abs in enumerate(char.abilities):
                 for char_ab in char_abs:
                     if char_ab == ability:

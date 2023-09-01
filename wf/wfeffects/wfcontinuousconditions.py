@@ -60,9 +60,12 @@ class DebuffsOnEnemyContinuousCondition(WorldFlipperContinuousCondition):
         ]
 
     def eval(self) -> bool:
+        enemy = self.state.enemy
+        if enemy is None:
+            return False
         element = element_ab_to_enum(self.ability.continuous_effect_element)
         if element is not None and self.target_char.element != element:
             return False
 
-        self.multiplier = len(self.state.enemy.debuffs) * self._calc_abil_lv()
+        self.multiplier = len(enemy.debuffs) * self._calc_abil_lv()
         return True

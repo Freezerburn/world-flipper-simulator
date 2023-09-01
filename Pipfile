@@ -9,6 +9,7 @@ deepdiff = "*"
 ujson = "*"
 
 [dev-packages]
+types-ujson = "*"
 black = "*"
 mypy = "*"
 

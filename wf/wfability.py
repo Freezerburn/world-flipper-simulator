@@ -274,13 +274,14 @@ class WorldFlipperAbility:
             )
 
         ab_char_idx, _ = state.ability_index(self)
+        ab_char = state.party[ab_char_idx]
+        if ab_char is None:
+            raise RuntimeError(
+                f"Impossible state: Found ability char but was None in party."
+            )
         ctx = DamageFormulaContext()
-        condition_param = EffectParams(
-            condition_ui, self, state, char, state.party[ab_char_idx], ctx
-        )
-        effect_param = EffectParams(
-            effect_ui, self, state, char, state.party[ab_char_idx], ctx
-        )
+        condition_param = EffectParams(condition_ui, self, state, char, ab_char, ctx)
+        effect_param = EffectParams(effect_ui, self, state, char, ab_char, ctx)
 
         condition = main_condition_mapping[self.main_condition_index](condition_param)
 
@@ -310,13 +311,14 @@ class WorldFlipperAbility:
             )
 
         ab_char_idx, _ = state.ability_index(self)
+        ab_char = state.party[ab_char_idx]
+        if ab_char is None:
+            raise RuntimeError(
+                f"Impossible state: Found ability char but was None in party."
+            )
         ctx = DamageFormulaContext()
-        condition_param = EffectParams(
-            condition_ui, self, state, char, state.party[ab_char_idx], ctx
-        )
-        effect_param = EffectParams(
-            effect_ui, self, state, char, state.party[ab_char_idx], ctx
-        )
+        condition_param = EffectParams(condition_ui, self, state, char, ab_char, ctx)
+        effect_param = EffectParams(effect_ui, self, state, char, ab_char, ctx)
 
         condition = continuous_condition_mapping[self.continuous_condition_index](
             condition_param
