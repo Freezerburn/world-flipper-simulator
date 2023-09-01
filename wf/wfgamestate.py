@@ -43,6 +43,7 @@ class GameState:
         self.num_multiballs = 0
         self.buffs = [[], [], []]
         self.combos_reached: dict[int, int] = {}
+        self.in_fever = False
         self.enemy: Optional[Enemy] = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:

@@ -166,3 +166,12 @@ class ComboReachedMainCondition(WorldFlipperMainCondition):
             return False
         self.multiplier = num_combos
         return True
+
+
+class InFeverCondition(WorldFlipperMainCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_instant_trigger_kind_fever"]
+
+    def eval(self) -> bool:
+        return self.state.in_fever

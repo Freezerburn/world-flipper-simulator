@@ -113,7 +113,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
             case "2":
                 return char.position == CharPosition.LEADER
             case "5" | "7":
-                if not element:
+                if not element or element == "(None)":
                     return True
                 else:
                     return char.element == element_ab_to_enum(element)

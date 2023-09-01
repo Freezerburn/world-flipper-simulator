@@ -43,6 +43,41 @@ class TestWorldFlipperAbilityWater5(TestCase):
         df = sonia.abilities[2][0].eval_effect(vagner, state)
         self.assertIsNone(df)
 
+    def test_sonia_ab4(self):
+        sonia, state = self._base_state("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.skill_hits[0] = 23
+
+        df = sonia.abilities[3][0].eval_effect(sonia, state)
+        self.assertAlmostEqual(1.1, df.fever_gain_from_attacks)
+        df = sonia.abilities[3][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+    def test_sonia_ab5(self):
+        sonia, state = self._base_state("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.in_fever = True
+        state.ability_condition_active[0][4] = True
+
+        df = sonia.abilities[4][0].eval_effect(sonia, state)
+        self.assertAlmostEqual(0.4, df.attack_modifier)
+        df = sonia.abilities[4][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.4, df.attack_modifier)
+
+    def test_sonia_ab6(self):
+        sonia, state = self._base_state("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.in_fever = True
+        state.ability_condition_active[0][5] = True
+
+        df = sonia.abilities[5][0].eval_effect(sonia, state)
+        self.assertAlmostEqual(0.4, df.attack_modifier)
+        df = sonia.abilities[5][0].eval_effect(vagner, state)
+        self.assertAlmostEqual(0.4, df.attack_modifier)
+
     def test_acipher_ab1(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")
