@@ -1,10 +1,8 @@
 from __future__ import annotations
 from typing import Literal, Optional, TYPE_CHECKING
 
-import math
-
 from .wfdmgformula import DamageFormulaContext
-from .wfenum import CharPosition, Element
+from .wfenum import AbilityElementType
 from .wfgamestate import GameState
 
 from .wfeffects.wfeffect import EffectParams
@@ -27,45 +25,6 @@ _SEC_CONVERT = 600_000
 # condition for when the effect is going to be applied. Or showing a slider or something for when
 # something requires a certain number of powerflips so that the user can decide what level of buff
 # is currently active for the purposes of calculations.
-
-
-def _leader(party: list):
-    for c in party:
-        if c.position == CharPosition.LEADER:
-            return c
-    raise RuntimeError(f"Invalid party state: No Leader!")
-
-
-def _calc_abil_lv(u_min: int, u_max: int, conv: int, lv: int) -> float:
-    v_min = u_min / conv
-    v_max = u_max / conv
-    step = abs(v_max - v_min) / 5
-    return v_min + step * (lv - 1)
-
-
-def _calc_req_units(
-    u_min: int, u_max: int, conv: int, cap: int, lv: int, count: int
-) -> int:
-    """
-    Abilities generally have a linear increment on each level they gain on the mana board between a minimum
-    and a maximum. This calculates the current value for an ability based on its current level.
-    :param u_min: The minimum value of an ability/condition.
-    :param u_max: The maximum value of an ability/condition.
-    :param conv: What the min/max value needs to be divided by in order to turn it into how it will be used
-    in calculations/displayed in the UI. As an example: When an ability mentions "every N power flips", the
-    JSON stores N * 100,000. So "every 5 power flips" would be stored as 500000.
-    :param cap: Every ability that can be triggered multiple times has a limit on how many times it can be
-    applied. The JSON stores the multiplier/total number of times it can be triggered in the JSON, so we can
-    use that directly to make sure that we don't go over it.
-    :param lv: The current level of the ability.
-    :param count: The number of times the condition for an ability has been triggered.
-    :return:
-    """
-    req = _calc_abil_lv(u_min, u_max, conv, lv)
-    times = math.floor(count / req)
-    if times >= cap:
-        times = cap
-    return times
 
 
 class EffectParameters:
@@ -91,7 +50,7 @@ class WorldFlipperAbility:
         self.slot6 = data[6]
         self.slot7 = data[7]
         self.slot8 = data[8]
-        self.party_condition_element = data[9]  # TODO: Verify
+        self.party_condition_element: AbilityElementType = data[9]  # TODO: Verify
         self.slot10 = data[10]
         self.slot11 = data[11]
         self.slot12 = data[12]
@@ -109,7 +68,7 @@ class WorldFlipperAbility:
         self.slot24 = data[24]
         self.main_condition_index = data[25]
         self.main_condition_target = data[26]
-        self.main_condition_element = data[27]
+        self.main_condition_element: AbilityElementType = data[27]
         self.main_condition_min = data[28]
         self.main_condition_max = data[29]
         # Valid values:
@@ -118,7 +77,7 @@ class WorldFlipperAbility:
         # "(None)"
         self.main_effect_max_multiplier = data[30]
         self.cooldown_time = data[31]  # Seconds multiplied by 60.
-        self.condition_target_element = data[32]
+        self.condition_target_element: AbilityElementType = data[32]
         self.slot33 = data[33]
         self.slot34 = data[34]
         self.slot35 = data[35]
@@ -133,7 +92,7 @@ class WorldFlipperAbility:
         # Element here is used when the effect target needs to discriminate on which characters
         # it's going to actually do something to. e.g.: Increase attack damage for all
         # Water units, versus all units.
-        self.main_effect_element = data[44]
+        self.main_effect_element: AbilityElementType = data[44]
         self.main_effect_min = data[45]
         self.main_effect_max = data[46]
         self.slot47 = data[47]
@@ -158,7 +117,7 @@ class WorldFlipperAbility:
         self.slot60 = data[60]
         self.continuous_condition_index = data[61]
         self.continuous_condition_target = data[62]
-        self.continuous_condition_element = data[63]
+        self.continuous_condition_element: AbilityElementType = data[63]
         self.continuous_condition_min = data[64]
         self.continuous_condition_max = data[65]
         self.continuous_effect_max_multiplier = data[66]  # TODO: Verify
@@ -171,7 +130,7 @@ class WorldFlipperAbility:
         self.slot72 = data[72]
         self.continuous_effect_index = data[73]
         self.continuous_effect_target = data[74]
-        self.continuous_effect_element = data[75]
+        self.continuous_effect_element: AbilityElementType = data[75]
         self.continuous_effect_min = data[76]
         self.continuous_effect_max = data[77]
         self.slot78 = data[78]
@@ -219,23 +178,6 @@ class WorldFlipperAbility:
             return "Dark"
         else:
             raise RuntimeError(f"[{self.name}] Unknown element: {element}")
-
-    def element_enum(self, element):
-        match element:
-            case "Red":
-                return Element.FIRE
-            case "Yellow":
-                return Element.THUNDER
-            case "Green":
-                return Element.WIND
-            case "Blue":
-                return Element.WATER
-            case "White":
-                return Element.LIGHT
-            case "Black":
-                return Element.DARK
-            case _:
-                return None
 
     def target_index_friendly(self, target, element=None):
         """
@@ -314,29 +256,6 @@ class WorldFlipperAbility:
                 ret.append(key)
         return ret
 
-    def _target_applies_to(
-        self, target: str, element: str, char: WorldFlipperCharacter
-    ) -> bool:
-        match target:
-            case "":
-                return True
-            case "0":
-                return self.from_char.internal_name == char.internal_name
-            case "1":
-                return self.from_char.internal_name != char.internal_name
-            case "2":
-                return char.position == CharPosition.LEADER
-            case "5" | "7":
-                if not element:
-                    return True
-                else:
-                    return char.element == self.element_enum(element)
-            case "8":
-                # TODO: Implement multiball
-                return False
-
-        return False
-
     def _eval_main_effect(
         self,
         char: WorldFlipperCharacter,
@@ -413,15 +332,6 @@ class WorldFlipperAbility:
                 return None
         return effect_param.ctx
 
-    # TODO: Should probably create an "eval context" kind of thing for holding artifical state from user.
-    # Basically the thing that holds all the info a user would be able to set up for figuring out damage
-    # numbers, such as how many power flips have happened so far, skill hits, balls being launched, party
-    # composition, ability levels, etc.
-    # That can hopefully help prevent having a huge amount of data being put directly into somewhere like
-    # a character, and instead isolate the UI setup into its own distinct area that can then be used
-    # during eval.
-    # Should also hopefully help prevent an explosion of parameters from being sent to the eval functions
-    # as well.
     def eval_effect(
         self,
         char: WorldFlipperCharacter,

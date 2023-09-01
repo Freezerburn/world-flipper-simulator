@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Type
 from abc import ABC
 
-from wf.wfenum import CharPosition, Debuff, Element
+from wf.wfenum import CharPosition, Debuff, Element, element_ab_to_enum
 from wf.wfeffects.wfeffect import WorldFlipperEffect
 
 
@@ -193,7 +193,7 @@ class ResistUpMainEffect(WorldFlipperMainEffect):
         return ["ability_description_common_content_element_resistance"]
 
     def eval(self) -> bool:
-        element = self.ability.element_enum(self.ability.main_effect_element)
+        element = element_ab_to_enum(self.ability.main_effect_element)
         if self.target_char.element != element:
             return False
         self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()

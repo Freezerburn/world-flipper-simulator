@@ -1,4 +1,5 @@
 from enum import StrEnum, auto
+from typing import Optional, Literal
 
 
 class Element(StrEnum):
@@ -35,3 +36,24 @@ class CharPosition(StrEnum):
 
 class Debuff(StrEnum):
     FIRE_RESISTANCE = auto()
+
+
+AbilityElementType = Literal["Red", "Yellow", "Green", "Blue", "White", "Black"]
+
+
+def element_ab_to_enum(element: AbilityElementType) -> Optional[Element]:
+    match element:
+        case "Red":
+            return Element.FIRE
+        case "Yellow":
+            return Element.THUNDER
+        case "Green":
+            return Element.WIND
+        case "Blue":
+            return Element.WATER
+        case "White":
+            return Element.LIGHT
+        case "Black":
+            return Element.DARK
+        case _:
+            return None

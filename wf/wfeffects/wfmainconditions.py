@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Type
 from abc import ABC
 import math
 
-from wf.wfenum import CharPosition
+from wf.wfenum import CharPosition, element_ab_to_enum
 from wf.wfeffects.wfeffect import WorldFlipperCondition
 
 if TYPE_CHECKING:
@@ -71,7 +71,7 @@ class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
 
     def eval(self) -> bool:
         activations_per_effect = self._calc_abil_lv()
-        element = self.ability.element_enum(self.ability.main_condition_element)
+        element = element_ab_to_enum(self.ability.main_condition_element)
         self.multiplier = 0
         for idx, p in enumerate(self.state.party):
             if p is None:
@@ -125,7 +125,7 @@ class PartyMembersAddedMainCondition(WorldFlipperMainCondition):
 
     def eval(self) -> bool:
         num_element = 0
-        element = self.ability.element_enum(self.ability.condition_target_element)
+        element = element_ab_to_enum(self.ability.condition_target_element)
         for p in self.state.party:
             if p is None:
                 continue

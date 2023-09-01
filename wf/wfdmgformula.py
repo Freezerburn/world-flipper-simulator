@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Self, Optional, TYPE_CHECKING
+from typing import Self, Optional, TYPE_CHECKING, Tuple
 
 from .wfenum import PowerFlip, Element
 
@@ -127,7 +127,7 @@ class DamageFormulaContext:
         if self.stat_mod_additional_da_times > 2:
             self.stat_mod_additional_da_times = 2
 
-    def calculate(self, state: GameState) -> (float, float):
+    def calculate(self, state: GameState) -> Tuple[float, float]:
         # Find the lowest possible random damage and the highest possible. Allows for displaying the full range
         # in a UI.
         low_range = self._calculate_internal(state, 0, -0.05)
@@ -227,7 +227,7 @@ class DamageFormulaContext:
         # 14 - 19
         if self.created_by_skill_action:
             # 14, 15
-            sdmg = (
+            sdmg: float = (
                 (1 + self.stat_mod_sd_damage)
                 * self.stat_mod_sd_resist_mult
                 * self.skill_multiplier

@@ -1,6 +1,7 @@
 from abc import ABC
 
 from wf.wfeffects.wfeffect import WorldFlipperCondition
+from wf.wfenum import element_ab_to_enum
 
 
 class WorldFlipperContinuousCondition(WorldFlipperCondition, ABC):
@@ -59,7 +60,7 @@ class DebuffsOnEnemyContinuousCondition(WorldFlipperContinuousCondition):
         ]
 
     def eval(self) -> bool:
-        element = self.ability.element_enum(self.ability.continuous_effect_element)
+        element = element_ab_to_enum(self.ability.continuous_effect_element)
         if element is not None and self.target_char.element != element:
             return False
 

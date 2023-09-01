@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
 
-from wf.wfenum import CharPosition
+from wf.wfenum import CharPosition, element_ab_to_enum, AbilityElementType
 
 if TYPE_CHECKING:
     from wf import (
@@ -56,6 +56,10 @@ class WorldFlipperEffect(ABC):
 
     @abstractmethod
     def _calc_abil_lv(self) -> int:
+        """
+        Abilities generally have a linear increment on each level they gain on the mana board between a minimum
+        and a maximum. This calculates the current value for an ability based on its current level.
+        """
         pass
 
 
@@ -97,7 +101,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
         return True
 
     def _target_applies_to(
-        self, target: str, element: str, char: WorldFlipperCharacter
+        self, target: str, element: AbilityElementType, char: WorldFlipperCharacter
     ) -> bool:
         match target:
             case "":
@@ -112,7 +116,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
                 if not element:
                     return True
                 else:
-                    return char.element == self.ability.element_enum(element)
+                    return char.element == element_ab_to_enum(element)
             case "8":
                 # TODO: Implement multiball
                 return False
