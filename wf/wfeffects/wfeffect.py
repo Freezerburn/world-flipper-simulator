@@ -3,11 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import math
 
-from wf.wfdmgformula import DamageFormulaContext
+from wf.wfenum import CharPosition
 
 if TYPE_CHECKING:
-    from wf import WorldFlipperAbility, WorldFlipperCharacter, DamageFormulaContext
+    from wf import (
+        WorldFlipperAbility,
+        WorldFlipperCharacter,
+        DamageFormulaContext,
+    )
     from wf.wfgamestate import GameState
 
 
@@ -52,3 +57,64 @@ class WorldFlipperEffect(ABC):
     @abstractmethod
     def _calc_abil_lv(self) -> int:
         pass
+
+
+class WorldFlipperCondition(WorldFlipperEffect, ABC):
+    def _calc_multiplier(self, cap: int, count: int) -> int:
+        abil = self._calc_abil_lv()
+        times = math.floor(count / abil)
+        if times >= cap:
+            times = cap
+        return times
+
+    def should_run(self) -> bool:
+        if self.target_char_position is None:
+            return False
+        if self.ability_char_idx == -1:
+            return False
+        if self.lv == 0:
+            return False
+        # Don't apply an effect if it requires a character to be in a main slot and the unit is
+        # a unison.
+        if (
+            self.ability.requires_main
+            and self.ability_char_position == CharPosition.UNISON
+        ):
+            return False
+
+        if self.ability.is_main_effect():
+            target = self.ability.main_effect_target
+            element = self.ability.main_effect_element
+        else:
+            target = self.ability.continuous_effect_target
+            element = self.ability.continuous_effect_element
+        if not self._target_applies_to(
+            target,
+            element,
+            self.target_char,
+        ):
+            return False
+        return True
+
+    def _target_applies_to(
+        self, target: str, element: str, char: WorldFlipperCharacter
+    ) -> bool:
+        match target:
+            case "":
+                return True
+            case "0":
+                return self.ability_char.internal_name == char.internal_name
+            case "1":
+                return self.ability_char.internal_name != char.internal_name
+            case "2":
+                return char.position == CharPosition.LEADER
+            case "5" | "7":
+                if not element:
+                    return True
+                else:
+                    return char.element == self.ability.element_enum(element)
+            case "8":
+                # TODO: Implement multiball
+                return False
+
+        return False

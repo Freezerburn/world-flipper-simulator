@@ -5,73 +5,19 @@ from abc import ABC
 import math
 
 from wf.wfenum import CharPosition
-from wf.wfeffects.wfeffect import WorldFlipperEffect
+from wf.wfeffects.wfeffect import WorldFlipperCondition
 
 if TYPE_CHECKING:
     from wf.wfchar import WorldFlipperCharacter
     from wf.wfeffects.wfeffect import WorldFlipperEffect
 
 
-class WorldFlipperMainCondition(WorldFlipperEffect, ABC):
+class WorldFlipperMainCondition(WorldFlipperCondition, ABC):
     def _calc_abil_lv(self) -> int:
         v_min = int(self.ability.main_condition_min) / 100_000
         v_max = int(self.ability.main_condition_max) / 100_000
         step = abs(v_max - v_min) / 5
         return v_min + step * (self.lv - 1)
-
-    def _calc_multiplier(self, cap: int, count: int) -> int:
-        abil = self._calc_abil_lv()
-        times = math.floor(count / abil)
-        if times >= cap:
-            times = cap
-        return times
-
-    def should_run(self) -> bool:
-        if not self.ability.is_main_effect():
-            return False
-        if self.target_char_position is None:
-            return False
-        if self.ability_char_idx == -1:
-            return False
-        if self.lv == 0:
-            return False
-        # Don't apply an effect if it requires a character to be in a main slot and the unit is
-        # a unison.
-        if (
-            self.ability.requires_main
-            and self.ability_char_position == CharPosition.UNISON
-        ):
-            return False
-        if not self._target_applies_to(
-            self.ability.main_effect_target,
-            self.ability.main_effect_element,
-            self.target_char,
-        ):
-            return False
-        return True
-
-    def _target_applies_to(
-        self, target: str, element: str, char: WorldFlipperCharacter
-    ) -> bool:
-        match target:
-            case "":
-                return True
-            case "0":
-                return self.ability_char.internal_name == char.internal_name
-            case "1":
-                return self.ability_char.internal_name != char.internal_name
-            case "2":
-                return char.position == CharPosition.LEADER
-            case "5" | "7":
-                if not element:
-                    return True
-                else:
-                    return char.element == self.ability.element_enum(element)
-            case "8":
-                # TODO: Implement multiball
-                return False
-
-        return False
 
 
 class OnBattleStartMainCondition(WorldFlipperMainCondition):

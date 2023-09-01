@@ -3,16 +3,16 @@ from typing import Literal, Optional, TYPE_CHECKING
 
 import math
 
-from .wfabilitymapping import (
-    _continuous_condition_mapping,
-    _continuous_effect_mapping,
-)
 from .wfdmgformula import DamageFormulaContext
-from .wfenum import CharPosition, Element, Debuff
+from .wfenum import CharPosition, Element
 from .wfgamestate import GameState
 
 from .wfeffects.wfeffect import EffectParams
 from .wfeffects.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
+from .wfeffects.wfcontinuousmapping import (
+    continuous_condition_mapping,
+    continuous_effect_mapping,
+)
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
@@ -295,20 +295,24 @@ class WorldFlipperAbility:
     def continuous_condition_ui(self):
         if self.is_main_effect():
             return None
-        if self.continuous_condition_index not in _continuous_condition_mapping:
+        if self.continuous_condition_index not in continuous_condition_mapping:
             raise RuntimeError(
                 f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
             )
-        return _continuous_condition_mapping[self.continuous_condition_index]
+        return continuous_condition_mapping[self.continuous_condition_index].ui_key()
 
     def continuous_effect_ui(self):
         if self.is_main_effect():
             return None
-        if self.continuous_effect_index not in _continuous_effect_mapping:
+        if self.continuous_effect_index not in continuous_effect_mapping:
             raise RuntimeError(
                 f"[{self.name} Unknown continuous effect index: {self.continuous_effect_index}"
             )
-        return _continuous_effect_mapping[self.continuous_effect_index]
+        ret = []
+        for e in continuous_effect_mapping[self.continuous_effect_index]:
+            for key in e.ui_key():
+                ret.append(key)
+        return ret
 
     def _target_applies_to(
         self, target: str, element: str, char: WorldFlipperCharacter
@@ -371,127 +375,43 @@ class WorldFlipperAbility:
                 return None
         return effect_param.ctx
 
-    def _apply_continuous_effect(
-        self,
-        ui_name: list[str],
-        ctx: DamageFormulaContext,
-        state: GameState,
-        times=1,
-    ):
-        char_idx, ab_idx = state.ability_index(self)
-        lv = state.ability_lvs[char_idx][ab_idx]
-        match ui_name[0]:
-            case "ability_description_common_content_skill_gauge_chaging":
-                amt = _calc_abil_lv(
-                    int(self.continuous_effect_min),
-                    int(self.continuous_effect_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                ctx.skill_charge_speed[char_idx] += amt
-
-            case "ability_description_common_content_direct_damage":
-                amt = _calc_abil_lv(
-                    int(self.continuous_effect_min),
-                    int(self.continuous_effect_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                ctx.stat_mod_da_damage += amt * times
-
-            case "ability_description_common_content_attack":
-                amt = _calc_abil_lv(
-                    int(self.continuous_effect_min),
-                    int(self.continuous_effect_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                ctx.attack_modifier += amt * times
-
-    # TODO: Implement
     def _eval_continuous_effect(
         self, char: WorldFlipperCharacter, state: GameState
     ) -> Optional[DamageFormulaContext]:
-        if self.is_main_effect():
-            return None
-        position = state.position(char)
-        if position is None:
-            return None
-        char_idx = state.party.index(char)
-        ab_char_idx, ab_idx = state.ability_index(self)
-        if ab_char_idx == -1:
-            return None
-        lv = state.ability_lvs[ab_char_idx][ab_idx]
-        if lv == 0:
-            return None
-        # Don't apply an effect if it requires a character to be in a main slot and the unit is
-        # a unison.
-        if (
-            self.requires_main
-            and state.position(state.party[ab_char_idx]) == CharPosition.UNISON
-        ):
-            return None
-        if not self._target_applies_to(
-            self.continuous_effect_target, self.continuous_effect_element, char
-        ):
-            return None
+        condition_ui = self.main_condition_ui()
+        effect_ui = self.main_effect_ui()
 
-        ret = DamageFormulaContext()
-        condition_ui_name = self.continuous_condition_ui()
-        effect_ui_name = self.continuous_effect_ui()
-        match condition_ui_name[0]:
-            case "ability_description_during_trigger_kind_multiball":
-                amt = _calc_abil_lv(
-                    int(self.continuous_condition_min),
-                    int(self.continuous_condition_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                if state.num_multiballs >= amt:
-                    self._apply_continuous_effect(effect_ui_name, ret, state)
+        if self.continuous_condition_index not in continuous_condition_mapping:
+            raise RuntimeError(
+                f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
+            )
+        if self.continuous_effect_index not in continuous_effect_mapping:
+            raise RuntimeError(
+                f"[{self.name}] Unknown main effect: {self.continuous_effect_index}"
+            )
 
-            case "ability_description_during_trigger_kind_condition":
-                pass
+        ab_char_idx, _ = state.ability_index(self)
+        ctx = DamageFormulaContext()
+        condition_param = EffectParams(
+            condition_ui, self, state, char, state.party[ab_char_idx], ctx
+        )
+        effect_param = EffectParams(
+            effect_ui, self, state, char, state.party[ab_char_idx], ctx
+        )
 
-            case "ability_description_during_trigger_kind_skill_gauge_high":
-                amt = _calc_abil_lv(
-                    int(self.continuous_condition_min),
-                    int(self.continuous_condition_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                target_char_idx = -1
-                match self.continuous_effect_target:
-                    case "0":
-                        target_char_idx = ab_char_idx
-                    case "7":
-                        target_char_idx = char_idx
-                    case _:
-                        raise RuntimeError(
-                            f"[{condition_ui_name[0]}] Unhandled continuous "
-                            f"target: {self.continuous_effect_target}"
-                        )
-                if state.skill_charge[target_char_idx] <= amt:
-                    return None
-                self._apply_continuous_effect(effect_ui_name, ret, state)
+        condition = continuous_condition_mapping[self.continuous_condition_index](
+            condition_param
+        )
 
-            case "ability_description_during_trigger_kind_one_of_enemy_condition_high_count":
-                element = self.element_enum(self.continuous_effect_element)
-                if element is not None and char.element != element:
-                    return None
-                times = _calc_req_units(
-                    int(self.continuous_condition_min),
-                    int(self.continuous_condition_max),
-                    _COUNT_CONVERT,
-                    int(self.continuous_effect_max_multiplier),
-                    lv,
-                    len(state.enemy.debuffs),
-                )
-                self._apply_continuous_effect(effect_ui_name, ret, state, times=times)
-
-        if not ret.valid:
+        if not condition.should_run():
             return None
-        return ret
+        if not condition.eval():
+            return None
+        effect_param.multiplier = condition.multiplier
+        for e in continuous_effect_mapping[self.continuous_effect_index]:
+            if not e(effect_param).eval():
+                return None
+        return effect_param.ctx
 
     # TODO: Should probably create an "eval context" kind of thing for holding artifical state from user.
     # Basically the thing that holds all the info a user would be able to set up for figuring out damage

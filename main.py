@@ -204,7 +204,7 @@ def main():
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
-    find_effect("main_effect", "49")
+    find_effect("continuous_condition", "134")
     # diff_effect("main_condition", "0", base="fire_dragon_4")
     # diff_effect("continuous_condition", "134", base="ice_witch_2anv_1")
     # test_abilities2()
