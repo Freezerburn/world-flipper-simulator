@@ -21,6 +21,28 @@ class TestWorldFlipperAbilityWater5(TestCase):
         df = sonia.abilities[0][0].eval_effect(vagner, state)
         self.assertIsNone(df)
 
+    def test_sonia_ab2(self):
+        sonia, state = self._base_state("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(vagner, CharPosition.MAIN, 1)
+
+        df = sonia.abilities[1][0].eval_effect(sonia, state)
+        self.assertAlmostEqual(1.5, df.attack_buff_extension)
+        df = sonia.abilities[1][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+    def test_sonia_ab3(self):
+        sonia, state = self._base_state("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.buffs[0] = [1]
+
+        df = sonia.abilities[2][0].eval_effect(sonia, state)
+        self.assertEqual(2, df.stat_mod_additional_da_times)
+        self.assertAlmostEqual(0.5, df.stat_mod_additional_da_damage)
+        df = sonia.abilities[2][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
     def test_acipher_ab1(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")

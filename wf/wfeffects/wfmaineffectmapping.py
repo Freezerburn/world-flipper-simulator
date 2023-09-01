@@ -33,7 +33,6 @@ main_condition_mapping: dict[str, Type[WorldFlipperMainCondition]] = {
     "59": None,
     # "6": ["ability_description_instant_trigger_kind_enemy_kill"],
     "63": None,
-    # "7": ["ability_description_instant_trigger_kind_combo"],
     "7": ComboReachedMainCondition,
     "70": None,
     "8": None,
