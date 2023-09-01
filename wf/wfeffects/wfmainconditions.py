@@ -149,3 +149,20 @@ class Lv3PowerFlipsMainCondition(WorldFlipperMainCondition):
             self.state.powerflips_by_lv[2],
         )
         return True
+
+
+class ComboReachedMainCondition(WorldFlipperMainCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_instant_trigger_kind_combo"]
+
+    def eval(self) -> bool:
+        combo_req = self._calc_abil_lv()
+        num_combos = self.state.combos_reached.get(combo_req, 0)
+        max_combos = int(self.ability.main_effect_max_multiplier)
+        if num_combos > max_combos:
+            num_combos = max_combos
+        if num_combos == 0:
+            return False
+        self.multiplier = num_combos
+        return True

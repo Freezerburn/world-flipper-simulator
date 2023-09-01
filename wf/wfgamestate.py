@@ -42,6 +42,7 @@ class GameState:
         self.total_ball_flips = 0
         self.num_multiballs = 0
         self.buffs = [[], [], []]
+        self.combos_reached: dict[int, int] = {}
         self.enemy: Optional[Enemy] = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:

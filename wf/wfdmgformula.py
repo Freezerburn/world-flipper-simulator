@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Self, Optional, TYPE_CHECKING
 
-from .wfenum import PowerFlip
+from .wfenum import PowerFlip, Element
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
@@ -44,6 +44,14 @@ class DamageFormulaContext:
         self.weak = False
         self.target_has_pinch = False
 
+        self.stat_mod_element_resists = {
+            Element.FIRE: 1,
+            Element.WATER: 1,
+            Element.THUNDER: 1,
+            Element.WIND: 1,
+            Element.DARK: 1,
+            Element.LIGHT: 1,
+        }
         self.stat_mod_pf_resist_mult = 1
         self.stat_mod_da_resist_mult = 1
         self.stat_mod_sd_resist_mult = 1

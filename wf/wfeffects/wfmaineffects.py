@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Type
 from abc import ABC
 
-from wf.wfenum import CharPosition, Debuff
+from wf.wfenum import CharPosition, Debuff, Element
 from wf.wfeffects.wfeffect import WorldFlipperEffect
 
 
@@ -184,4 +184,17 @@ class FeverGainRateMainEffect(WorldFlipperMainEffect):
 
     def eval(self) -> bool:
         self.ctx.fever_gain_from_attacks += self._calc_abil_lv()
+        return True
+
+
+class ResistUpMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_element_resistance"]
+
+    def eval(self) -> bool:
+        element = self.ability.element_enum(self.ability.main_effect_element)
+        if self.target_char.element != element:
+            return False
+        self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()
         return True
