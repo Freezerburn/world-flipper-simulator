@@ -22,10 +22,16 @@ class DamageFormulaContext:
         self.unison = unison
         # Layout: Far Left, Near Left, Middle, Near Right, Far Right
         self.bow_pf_hits = [False, False, True, False, False]
+
+        # These values aren't actually used for anything when calculating damage, but instead are here
+        # to track things that are modified by abilities that we might want to see in the UI.
         self.pf_combo_reduction = [0] * 3
         self.skill_charge = [0] * 3
         self.skill_charge_speed = [1] * 3
         self.skill_gauge_max = [100] * 3
+        self.attack_buff_extension = 1
+        self.pierce_active = False
+        self.fever_gain_from_attacks = 1
 
         # The different types of methods of applying damage have their own bools to enable each of them.
         # Only a single of these should ever be applied at one time, because the game will only ever have

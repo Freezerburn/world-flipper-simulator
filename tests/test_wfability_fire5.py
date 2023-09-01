@@ -92,7 +92,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         self.assertIsNone(df)
 
         df = ahanabi.abilities[0][1].eval_effect(ahanabi, state)
-        self.assertAlmostEqual(0.2, df.attack_modifier)
+        self.assertAlmostEqual(
+            0.2, df.attack_modifier, msg=f"[{ahanabi.abilities[0][1].name} | 2nd]"
+        )
         df = ahanabi.abilities[0][1].eval_effect(vagner, state)
         self.assertIsNone(df)
 
@@ -104,7 +106,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[0][1].eval_effect(ahanabi, state)
         self.assertIsNone(df)
 
-    def test_ahanabi_b2(self):
+    def test_ahanabi_ab2(self):
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("fire_dragon")
         sonia = self.wf_data.find("brown_fighter")
@@ -131,7 +133,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[1][1].eval_effect(ahanabi, state)
         self.assertIsNone(df)
 
-    def test_ahanabi_b3(self):
+    def test_ahanabi_ab3(self):
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("fire_dragon")
         sonia = self.wf_data.find("brown_fighter")
@@ -151,6 +153,32 @@ class TestWorldFlipperAbilityFire5(TestCase):
         self.assertAlmostEqual(0.125, df.attack_modifier)
         df = ahanabi.abilities[2][1].eval_effect(sonia, state)
         self.assertIsNone(df)
+
+    def test_ahanabi_ab4(self):
+        self.skipTest(
+            "[AHanabi AB4] No way to test skill charge after using a "
+            "skill for a non-realtime simulator."
+        )
+
+    def test_ahanabi_ab5(self):
+        ahanabi, state = self._base_state("kunoichi_1anv")
+        vagner = self.wf_data.find("fire_dragon")
+        state.times_skill_reached_100[0] = 2
+        state.times_skill_reached_100[1] = 1
+        state.set_member(vagner, CharPosition.UNISON, 0)
+
+        df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.2, df.attack_modifier)
+        df = ahanabi.abilities[4][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+
+        state.set_member(vagner, CharPosition.LEADER)
+        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.ability_lvs[1][4] = 6
+        df = ahanabi.abilities[4][0].eval_effect(vagner, state)
+        self.assertIsNone(df)
+        df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
+        self.assertAlmostEqual(0.1, df.attack_modifier)
 
     def test_every_pfs_atk_this_unit(self):
         """

@@ -39,6 +39,7 @@ class GameState:
         self.powerflips_by_lv = [0] * 3
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
+        self.total_ball_flips = 0
         self.num_multiballs = 0
         self.enemy: Optional[Enemy] = None
 

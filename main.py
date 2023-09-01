@@ -54,9 +54,10 @@ def diff_effect(effect_type: EffectEnum, effect_index: str, base=None):
     else:
         base = effects[0]
     for other in effects[1:]:
-        dd = deepdiff.diff.DeepDiff(base, other, exclude_types=[WorldFlipperCharacter])[
-            "values_changed"
-        ]
+        dd = deepdiff.diff.DeepDiff(base, other, exclude_types=[WorldFlipperCharacter])
+        if "values_changed" not in dd:
+            continue
+        dd = dd["values_changed"]
         for ignore in [
             "root.ability_statue_group",
             "root.main_effect_min",
@@ -203,9 +204,10 @@ def main():
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
-    # find_effect("main_condition", "100")
+    find_effect("main_effect", "49")
     # diff_effect("main_condition", "0", base="fire_dragon_4")
-    test_abilities2()
+    # diff_effect("continuous_condition", "134", base="ice_witch_2anv_1")
+    # test_abilities2()
 
 
 if __name__ == "__main__":

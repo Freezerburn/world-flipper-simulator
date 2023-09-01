@@ -4,14 +4,15 @@ from typing import Literal, Optional, TYPE_CHECKING
 import math
 
 from .wfabilitymapping import (
-    _main_condition_mapping,
-    _main_effect_mapping,
     _continuous_condition_mapping,
     _continuous_effect_mapping,
 )
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import CharPosition, Element, Debuff
 from .wfgamestate import GameState
+
+from .wfeffects.wfeffect import EffectParams
+from .wfeffects.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
@@ -160,7 +161,7 @@ class WorldFlipperAbility:
         self.continuous_condition_element = data[63]
         self.continuous_condition_min = data[64]
         self.continuous_condition_max = data[65]
-        self.continuous_cooldown_time = data[66]  # TODO: Verify
+        self.continuous_effect_max_multiplier = data[66]  # TODO: Verify
         self.slot67 = data[67]
         # This gets set to "1" for 1st Anniversary Celtie's ability 1, don't know what it does though.
         self.slot68 = data[68]
@@ -267,25 +268,29 @@ class WorldFlipperAbility:
         if self.effect_type != "0":
             return []
         if (
-            self.main_condition_index not in _main_condition_mapping
-            or len(_main_condition_mapping[self.main_condition_index]) == 0
+            self.main_condition_index not in main_condition_mapping
+            or main_condition_mapping[self.main_condition_index] is None
         ):
             raise RuntimeError(
                 f"[{self.name}] Unknown main condition index: {self.main_condition_index}"
             )
-        return _main_condition_mapping[self.main_condition_index]
+        return main_condition_mapping[self.main_condition_index].ui_key()
 
     def main_effect_ui(self) -> list[str]:
         if self.effect_type != "0":
             return []
         if (
-            self.main_effect_index not in _main_effect_mapping
-            or len(_main_effect_mapping[self.main_effect_index]) == 0
+            self.main_effect_index not in main_effect_mapping
+            or len(main_effect_mapping[self.main_effect_index]) == 0
         ):
             raise RuntimeError(
                 f"[{self.name}] Unknown main effect index: {self.main_effect_index}"
             )
-        return _main_effect_mapping[self.main_effect_index]
+        ret = []
+        for e in main_effect_mapping[self.main_effect_index]:
+            for key in e.ui_key():
+                ret.append(key)
+        return ret
 
     def continuous_condition_ui(self):
         if self.is_main_effect():
@@ -425,173 +430,42 @@ class WorldFlipperAbility:
                 )
 
     def _eval_main_effect(
-        self, char: WorldFlipperCharacter, state: GameState
+        self,
+        char: WorldFlipperCharacter,
+        state: GameState,
     ) -> Optional[DamageFormulaContext]:
-        if not self.is_main_effect():
+        condition_ui = self.main_condition_ui()
+        effect_ui = self.main_effect_ui()
+
+        if self.main_condition_index not in main_condition_mapping:
+            raise RuntimeError(
+                f"[{self.name}] Unknown main condition: {self.main_condition_index}"
+            )
+        if self.main_effect_index not in main_effect_mapping:
+            raise RuntimeError(
+                f"[{self.name}] Unknown main effect: {self.main_effect_index}"
+            )
+
+        ab_char_idx, _ = state.ability_index(self)
+        ctx = DamageFormulaContext()
+        condition_param = EffectParams(
+            condition_ui, self, state, char, state.party[ab_char_idx], ctx
+        )
+        effect_param = EffectParams(
+            effect_ui, self, state, char, state.party[ab_char_idx], ctx
+        )
+
+        condition = main_condition_mapping[self.main_condition_index](condition_param)
+
+        if not condition.should_run():
             return None
-        position = state.position(char)
-        if position is None:
+        if not condition.eval():
             return None
-        char_idx = state.party.index(char)
-        ab_char_idx, ab_idx = state.ability_index(self)
-        if ab_char_idx == -1:
-            return None
-        lv = state.ability_lvs[ab_char_idx][ab_idx]
-        if lv == 0:
-            return None
-        # Don't apply an effect if it requires a character to be in a main slot and the unit is
-        # a unison.
-        if (
-            self.requires_main
-            and state.position(state.party[ab_char_idx]) == CharPosition.UNISON
-        ):
-            return None
-        if not self._target_applies_to(
-            self.main_effect_target, self.main_effect_element, char
-        ):
-            return None
-
-        ret = DamageFormulaContext(char, state.enemy)
-        condition_ui_name = self.main_condition_ui()
-        effect_ui_name = self.main_effect_ui()
-
-        match condition_ui_name[0]:
-            case "ability_description_instant_trigger_kind_first_flip":
-                # Apply effect at battle start, so it's always active.
-                #
-                # NOTE: Probably the majority of effects in the game set the condition to this "at battle start"
-                # one, aka effect index "0". But only some of the descriptions in-game actually say that something
-                # is applied at the start, likely for one-off effects such as adding skill charge versus
-                # something that is modifying the base stats of a unit. Such as increasing their attack.
-                self._apply_main_effect(effect_ui_name, ret, state)
-
-            case "ability_description_instant_trigger_kind_power_flip_lv":
-                times = _calc_req_units(
-                    int(self.main_condition_min),
-                    int(self.main_condition_max),
-                    _COUNT_CONVERT,
-                    int(self.main_effect_max_multiplier),
-                    lv,
-                    state.powerflips_by_lv[2],
-                )
-                self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-            case "ability_description_instant_trigger_kind_member":
-                num_element = 0
-                element = self.element_enum(self.condition_target_element)
-                for p in state.party:
-                    if p is None:
-                        continue
-                    if p.element == element:
-                        num_element += 1
-                times = _calc_req_units(
-                    int(self.main_condition_min),
-                    int(self.main_condition_max),
-                    _COUNT_CONVERT,
-                    int(self.main_effect_max_multiplier),
-                    lv,
-                    num_element,
-                )
-                self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-            case "ability_description_instant_trigger_kind_skill_invoke":
-                activations_per_effect = _calc_abil_lv(
-                    int(self.main_condition_min),
-                    int(self.main_condition_max),
-                    _COUNT_CONVERT,
-                    lv,
-                )
-                element = self.element_enum(self.main_condition_element)
-                times = 0
-                for idx, p in enumerate(state.party):
-                    if p is None:
-                        continue
-                    # This buff can apply to individual units when they activate their own skill.
-                    # So if the target type indicates that scenario, we skip any skill activations
-                    # that are not for the target unit given to this function when calculating the
-                    # total multiplier.
-                    if self.main_effect_target == "7" and idx != char_idx:
-                        continue
-                    if element is None or p.element == element:
-                        times += state.skill_activations[idx] / activations_per_effect
-                # If we didn't achieve the activation condition across the entire party, then this damage
-                # calculation is invalid. The best example of this is if there's an activation condition
-                # that has a character getting a buff when activating a skill, but it has an element
-                # restriction on it. In that case if the unit isn't that element, then we'd end up with
-                # an invalid formula.
-                if times == 0:
-                    return None
-                # There are effect types that don't care about multipliers. An example of this is
-                # AHanabi's ability 2, which deals damage to all units when a skill is activated with
-                # a cooldown on how often this can occur.
-                if self.main_effect_max_multiplier == "(None)":
-                    max_mult = 1
-                else:
-                    max_mult = int(self.main_effect_max_multiplier)
-                if times > max_mult:
-                    times = max_mult
-                self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-            case "ability_description_n_times":
-                # Condition requires something to happen a number of times, so we need to check the second
-                # element in the list to figure out what to count, and then check how many times that thing
-                # has happened to see if it currently applies.
-                if len(condition_ui_name) == 1:
-                    raise RuntimeError(
-                        f"[{char.name}] Ability index {self.main_condition_index} "
-                        f"had count condition, but nothing to count."
-                    )
-
-                match condition_ui_name[1]:
-                    case "ability_description_instant_trigger_kind_power_flip":
-                        times = _calc_req_units(
-                            int(self.main_condition_min),
-                            int(self.main_condition_max),
-                            _COUNT_CONVERT,
-                            int(self.main_effect_max_multiplier),
-                            lv,
-                            state.total_powerflips,
-                        )
-                        self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-                    case "ability_description_instant_trigger_kind_skill_hit":
-                        times = _calc_req_units(
-                            int(self.main_condition_min),
-                            int(self.main_condition_max),
-                            _COUNT_CONVERT,
-                            int(self.main_effect_max_multiplier),
-                            lv,
-                            state.skill_hits[ab_char_idx],
-                        )
-                        self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-                    case "ability_description_instant_trigger_kind_ball_flip":
-                        pass
-
-                    case _:
-                        raise RuntimeError(
-                            f"[{self.name}] Failed to eval secondary condition: {condition_ui_name[1]}"
-                        )
-
-            case "ability_description_instant_trigger_kind_skill_max":
-                times = _calc_req_units(
-                    int(self.main_condition_min),
-                    int(self.main_condition_max),
-                    _COUNT_CONVERT,
-                    int(self.main_effect_max_multiplier),
-                    lv,
-                    state.times_skill_reached_100[ab_char_idx],
-                )
-                self._apply_main_effect(effect_ui_name, ret, state, times=times)
-
-            case _:
-                raise RuntimeError(
-                    f"[{self.name}] Failed to eval primary condition: {condition_ui_name[0]}"
-                )
-
-        if not ret.valid:
-            return None
-        return ret
+        effect_param.multiplier = condition.multiplier
+        for e in main_effect_mapping[self.main_effect_index]:
+            if not e(effect_param).eval():
+                return None
+        return effect_param.ctx
 
     def _apply_continuous_effect(
         self,
@@ -611,6 +485,24 @@ class WorldFlipperAbility:
                     lv,
                 )
                 ctx.skill_charge_speed[char_idx] += amt
+
+            case "ability_description_common_content_direct_damage":
+                amt = _calc_abil_lv(
+                    int(self.continuous_effect_min),
+                    int(self.continuous_effect_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                ctx.stat_mod_da_damage += amt * times
+
+            case "ability_description_common_content_attack":
+                amt = _calc_abil_lv(
+                    int(self.continuous_effect_min),
+                    int(self.continuous_effect_max),
+                    _COUNT_CONVERT,
+                    lv,
+                )
+                ctx.attack_modifier += amt * times
 
     # TODO: Implement
     def _eval_continuous_effect(
@@ -678,6 +570,20 @@ class WorldFlipperAbility:
                 if state.skill_charge[target_char_idx] <= amt:
                     return None
                 self._apply_continuous_effect(effect_ui_name, ret, state)
+
+            case "ability_description_during_trigger_kind_one_of_enemy_condition_high_count":
+                element = self.element_enum(self.continuous_effect_element)
+                if element is not None and char.element != element:
+                    return None
+                times = _calc_req_units(
+                    int(self.continuous_condition_min),
+                    int(self.continuous_condition_max),
+                    _COUNT_CONVERT,
+                    int(self.continuous_effect_max_multiplier),
+                    lv,
+                    len(state.enemy.debuffs),
+                )
+                self._apply_continuous_effect(effect_ui_name, ret, state, times=times)
 
         if not ret.valid:
             return None
