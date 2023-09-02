@@ -48,11 +48,11 @@ main_effect_mapping: dict[str, list[Type[WorldFlipperMainEffect]]] = {
     # NOTE: Currently this is hard-coded to Fire Resistance Debuff. Only AHanabi has this.
     "107": [FireResistDebuffSlayerMainEffect],
     "112": [],
-    "116": [],
+    "116": [PoisonSlayerMainEffect],
     "117": [],
     "118": [],
     "123": [],
-    "144": [],
+    "144": [PoisonDirectAttackMainEffect],
     # NOTE: This ALWAYS uses Power Flip Lv3.
     "152": [Lv3PowerFlipDamageMainEffect],
     "155": [],
@@ -139,7 +139,7 @@ main_effect_mapping: dict[str, list[Type[WorldFlipperMainEffect]]] = {
     "505": [],
     "506": [],
     "51": [],
-    "510": [FireResistDebuffSlayerMainEffect],
+    "510": [PoisonAttackMainEffect],
     "512": [],
     "518": [],
     "52": [],

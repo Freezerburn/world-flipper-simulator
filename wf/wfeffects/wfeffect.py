@@ -62,6 +62,13 @@ class WorldFlipperEffect(ABC):
         """
         pass
 
+    def is_target_main(self) -> bool:
+        if self.target_char_position == CharPosition.LEADER:
+            return True
+        if self.target_char_position == CharPosition.MAIN:
+            return True
+        return False
+
 
 class WorldFlipperCondition(WorldFlipperEffect, ABC):
     def _calc_multiplier(self, cap: int, count: int) -> int:

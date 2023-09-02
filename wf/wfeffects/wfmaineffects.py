@@ -92,6 +92,60 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperMainEffect):
             return False
 
 
+class PoisonSlayerMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_condition_slayer"]
+
+    def eval(self) -> bool:
+        if not self.is_target_main():
+            return False
+        if self.state.enemy is None:
+            return False
+        try:
+            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.ctx.condition_slayer += self._calc_abil_lv()
+            return True
+        except ValueError:
+            return False
+
+
+class PoisonAttackMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_condition_slayer_for_attack"]
+
+    def eval(self) -> bool:
+        if not self.is_target_main():
+            return False
+        if self.state.enemy is None:
+            return False
+        try:
+            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.ctx.attack_modifier += self._calc_abil_lv()
+            return True
+        except ValueError:
+            return False
+
+
+class PoisonDirectAttackMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_condition_slayer_for_direct_attack"]
+
+    def eval(self) -> bool:
+        if not self.is_target_main():
+            return False
+        if self.state.enemy is None:
+            return False
+        try:
+            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.ctx.stat_mod_da_damage += self._calc_abil_lv()
+            return True
+        except ValueError:
+            return False
+
+
 class Lv3PowerFlipDamageMainEffect(WorldFlipperMainEffect):
     """
     Technically the underlying UI localization code has a parameter for what level of Power Flip this
