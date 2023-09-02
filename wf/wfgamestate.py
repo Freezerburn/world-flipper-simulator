@@ -62,6 +62,11 @@ class GameState:
             return char_idx
         return char_idx - 1
 
+    def unison_index(self, char_idx: int):
+        if char_idx % 2 == 1:
+            return char_idx
+        return char_idx + 1
+
     def leader(self) -> Optional[WorldFlipperCharacter]:
         return self.party[0]
 

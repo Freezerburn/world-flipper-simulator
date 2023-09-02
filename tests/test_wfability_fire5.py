@@ -118,7 +118,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[1][0].eval_effect(ahanabi, state)
         self.assertAlmostEqual(0.16, df.attack_modifier)
         df = ahanabi.abilities[1][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.08, df.attack_modifier)
+        self.assertIsNone(df)
         df = ahanabi.abilities[1][0].eval_effect(sonia, state)
         self.assertIsNone(df)
 
@@ -150,7 +150,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[2][1].eval_effect(ahanabi, state)
         self.assertAlmostEqual(0.125, df.attack_modifier)
         df = ahanabi.abilities[2][1].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.125, df.attack_modifier)
+        self.assertIsNone(df)
         df = ahanabi.abilities[2][1].eval_effect(sonia, state)
         self.assertIsNone(df)
 
@@ -176,9 +176,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         state.set_member(ahanabi, CharPosition.UNISON, 0)
         state.ability_lvs[1][4] = 6
         df = ahanabi.abilities[4][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
-        df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
         self.assertAlmostEqual(0.1, df.attack_modifier)
+        df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
+        self.assertIsNone(df)
 
     def test_every_pfs_atk_this_unit(self):
         """
@@ -226,7 +226,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         self.assertAlmostEqual(0.16, df.attack_modifier)
 
         df = ahanabi.abilities[1][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.24, df.attack_modifier)
+        self.assertIsNone(df)
 
     def _base_state(self, char_name: str):
         state = GameState()

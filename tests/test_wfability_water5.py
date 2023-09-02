@@ -14,7 +14,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
     def test_sonia_ab1(self):
         sonia, state = self._base_state("brown_fighter")
+        acipher = self.wf_data.find("ice_witch_2anv")
         vagner = self.wf_data.find("fire_dragon")
+        state.set_member(acipher, CharPosition.UNISON, 0)
         state.set_member(vagner, CharPosition.MAIN, 1)
 
         with self.subTest("ab1"):
@@ -23,6 +25,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
             df = sonia.abilities[0][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(0.3, df.attack_modifier)
+            df = sonia.abilities[0][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[0][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -31,6 +35,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
             df = sonia.abilities[1][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(1.5, df.attack_buff_extension)
+            df = sonia.abilities[1][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[1][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -41,6 +47,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = sonia.abilities[2][0].eval_effect(sonia, sub_state)
             self.assertEqual(2, df.stat_mod_additional_da_times)
             self.assertAlmostEqual(0.5, df.stat_mod_additional_da_damage)
+            df = sonia.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[2][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -50,6 +58,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
             df = sonia.abilities[3][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(1.1, df.fever_gain_from_attacks)
+            df = sonia.abilities[3][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[3][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -60,6 +70,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
             df = sonia.abilities[4][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = sonia.abilities[4][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[4][0].eval_effect(vagner, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
 
@@ -70,6 +82,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
             df = sonia.abilities[5][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = sonia.abilities[5][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
             df = sonia.abilities[5][0].eval_effect(vagner, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
 
@@ -163,7 +177,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = acipher.abilities[0][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
             df = acipher.abilities[0][0].eval_effect(sonia, sub_state)
-            self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
+            self.assertIsNone(df)
             df = acipher.abilities[0][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -182,7 +196,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = acipher.abilities[1][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
             df = acipher.abilities[1][0].eval_effect(sonia, sub_state)
-            self.assertAlmostEqual(0.4, df.attack_modifier)
+            self.assertIsNone(df)
             df = acipher.abilities[1][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
@@ -201,14 +215,14 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = acipher.abilities[2][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.2, df.attack_modifier)
             df = acipher.abilities[2][0].eval_effect(sonia, sub_state)
-            self.assertAlmostEqual(0.2, df.attack_modifier)
+            self.assertIsNone(df)
             df = acipher.abilities[2][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
             df = acipher.abilities[2][1].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
             df = acipher.abilities[2][1].eval_effect(sonia, sub_state)
-            self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
+            self.assertIsNone(df)
             df = acipher.abilities[2][1].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 

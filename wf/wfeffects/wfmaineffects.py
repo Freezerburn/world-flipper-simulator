@@ -44,6 +44,8 @@ class AttackMainEffect(WorldFlipperMainEffect):
         return ["ability_description_common_content_attack"]
 
     def eval(self) -> bool:
+        if not self.is_target_main():
+            return False
         self.ctx.attack_modifier += self._calc_abil_lv()
         return True
 
@@ -225,7 +227,7 @@ class PierceMainEffect(WorldFlipperMainEffect):
         return ["ability_description_instant_content_enemy_damage"]
 
     def eval(self) -> bool:
-        if self.target_char_position != CharPosition.LEADER:
+        if not self.is_target_main():
             return False
         self.ctx.pierce_active = True
         return True
@@ -237,6 +239,8 @@ class FeverGainRateMainEffect(WorldFlipperMainEffect):
         return ["ability_description_common_content_fever_point"]
 
     def eval(self) -> bool:
+        if not self.is_target_main():
+            return False
         self.ctx.fever_gain_from_attacks += self._calc_abil_lv()
         return True
 

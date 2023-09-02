@@ -110,11 +110,25 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
     def _target_applies_to(
         self, target: str, element: AbilityElementType, char: WorldFlipperCharacter
     ) -> bool:
+        # Abilities only ever apply to the main units in the party. Code should generally only ever be
+        # trying to apply them to main units, but we want to make sure to guard against it here and
+        # let tests that deliberately do the wrong thing pass so that we know the code is solid.
+        if not self.is_target_main():
+            return False
+
         match target:
             case "":
                 return True
             case "0":
-                return self.ability_char.internal_name == char.internal_name
+                # If the target char is the same as the ability char, apply the ability.
+                if self.ability_char.internal_name == char.internal_name:
+                    return True
+                # Otherwise since index 0 is "self/own", we want to check if the ability belongs to the
+                # unison for a main unit, and if that's the case then we want to apply it.
+                unison = self.state.party[self.state.unison_index(self.target_char_idx)]
+                if unison is None:
+                    return False
+                return unison.internal_name == self.ability_char.internal_name
             case "1":
                 return self.ability_char.internal_name != char.internal_name
             case "2":
