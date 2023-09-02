@@ -1,4 +1,5 @@
 from unittest import TestCase
+import copy
 
 from wf import WorldFlipperData, CharPosition, DamageFormulaContext, Element
 from wf.wfenemy import Enemy
@@ -13,70 +14,63 @@ class TestWorldFlipperAbilityWater5(TestCase):
     def test_sonia_ab1(self):
         sonia, state = self._base_state("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.combos_reached[30] = 3
-
-        df = sonia.abilities[0][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.3, df.attack_modifier)
-        df = sonia.abilities[0][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
-
-    def test_sonia_ab2(self):
-        sonia, state = self._base_state("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
         state.set_member(vagner, CharPosition.MAIN, 1)
 
-        df = sonia.abilities[1][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(1.5, df.attack_buff_extension)
-        df = sonia.abilities[1][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+            sub_state.combos_reached[30] = 3
 
-    def test_sonia_ab3(self):
-        sonia, state = self._base_state("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.buffs[0] = [1]
+            df = sonia.abilities[0][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.3, df.attack_modifier)
+            df = sonia.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-        df = sonia.abilities[2][0].eval_effect(sonia, state)
-        self.assertEqual(2, df.stat_mod_additional_da_times)
-        self.assertAlmostEqual(0.5, df.stat_mod_additional_da_damage)
-        df = sonia.abilities[2][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
 
-    def test_sonia_ab4(self):
-        sonia, state = self._base_state("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.skill_hits[0] = 23
+            df = sonia.abilities[1][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(1.5, df.attack_buff_extension)
+            df = sonia.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-        df = sonia.abilities[3][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(1.1, df.fever_gain_from_attacks)
-        df = sonia.abilities[3][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+            sub_state.buffs[0] = [1]
 
-    def test_sonia_ab5(self):
-        sonia, state = self._base_state("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.in_fever = True
-        state.ability_condition_active[0][4] = True
+            df = sonia.abilities[2][0].eval_effect(sonia, sub_state)
+            self.assertEqual(2, df.stat_mod_additional_da_times)
+            self.assertAlmostEqual(0.5, df.stat_mod_additional_da_damage)
+            df = sonia.abilities[2][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-        df = sonia.abilities[4][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
-        df = sonia.abilities[4][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+            sub_state.skill_hits[0] = 23
 
-    def test_sonia_ab6(self):
-        sonia, state = self._base_state("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.in_fever = True
-        state.ability_condition_active[0][5] = True
+            df = sonia.abilities[3][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(1.1, df.fever_gain_from_attacks)
+            df = sonia.abilities[3][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-        df = sonia.abilities[5][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
-        df = sonia.abilities[5][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+            sub_state.in_fever = True
+            sub_state.ability_condition_active[0][4] = True
+
+            df = sonia.abilities[4][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = sonia.abilities[4][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+            sub_state.in_fever = True
+            sub_state.ability_condition_active[0][5] = True
+
+            df = sonia.abilities[5][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = sonia.abilities[5][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
 
     def test_suizen(self):
         suizen, state = self._base_state("onmyoji_boy")
