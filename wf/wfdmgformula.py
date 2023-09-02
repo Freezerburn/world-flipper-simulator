@@ -25,6 +25,7 @@ class DamageFormulaContext:
 
         # These values aren't actually used for anything when calculating damage, but instead are here
         # to track things that are modified by abilities that we might want to see in the UI.
+        self.combo = 0
         self.pf_combo_reduction = [0] * 3
         self.skill_charge = [0] * 3
         self.skill_charge_speed = [1] * 3
@@ -331,6 +332,10 @@ class DamageFormulaContext:
 
     def changed_values(self):
         out = []
+        for idx, sc in enumerate(self.skill_charge):
+            if sc != 0:
+                out.append((f"SKILL_CHARGE_{idx + 1}", sc))
+
         if self.stat_mod_pf_resist_mult != 1:
             out.append(("PF_RESIST", self.stat_mod_pf_resist_mult))
         if self.stat_mod_da_resist_mult != 1:

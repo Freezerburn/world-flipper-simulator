@@ -65,7 +65,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         vagner, state = self._base_state("fire_dragon")
         df = vagner.abilities[3][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.5, df.skill_charge[0])
-        self.assertEqual(0, len(df.changed_values()))
+        self.assertEqual(1, len(df.changed_values()))
 
     def test_vagner_ab5(self):
         vagner, state = self._base_state("fire_dragon")

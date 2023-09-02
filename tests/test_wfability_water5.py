@@ -12,7 +12,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
     def setUpClass(cls) -> None:
         cls.wf_data = WorldFlipperData("wf_data_json")
 
-    def test_sonia_ab1(self):
+    def test_sonia(self):
         sonia, state = self._base_state("brown_fighter")
         acipher = self.wf_data.find("ice_witch_2anv")
         vagner = self.wf_data.find("fire_dragon")
@@ -163,7 +163,81 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = suizen.abilities[5][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
-    def test_acipher_ab1(self):
+    def test_ellya(self):
+        ellya, state = self._base_state("lightbullet_wiz_ny20")
+        sonia = self.wf_data.find("brown_fighter")
+        acipher = self.wf_data.find("ice_witch_2anv")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(sonia, CharPosition.UNISON, 0)
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.set_member(acipher, CharPosition.UNISON, 1)
+
+        with self.subTest("leader"):
+            # TODO: Implement leader abilities.
+            pass
+
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+            sub_state.skill_activations[0] = 2
+            sub_state.skill_activations[1] = 1
+
+            df = ellya.abilities[0][0].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = ellya.abilities[0][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+            df = ellya.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+            df = ellya.abilities[0][1].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.2, df.skill_charge[0])
+            df = ellya.abilities[0][1].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+            sub_state.combos_reached[30] = 2
+
+            df = ellya.abilities[1][0].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.25, df.attack_modifier)
+
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+            sub_state.skill_activations[0] = 1
+            sub_state.skill_activations[1] = 2
+            sub_state.skill_activations[2] = 1
+
+            df = ellya.abilities[2][0].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.6, df.stat_mod_sd_damage)
+            df = ellya.abilities[2][1].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.3, df.skill_charge[0])
+
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+
+            df = ellya.abilities[3][0].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.5, df.skill_charge[0])
+
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+            sub_state.skill_activations[0] = 1
+            sub_state.skill_activations[1] = 1
+            sub_state.skill_activations[2] = 1
+
+            df = ellya.abilities[4][0].eval_effect(ellya, sub_state)
+            self.assertEqual(10, df.combo)
+            df = ellya.abilities[4][1].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.1, df.stat_mod_sd_damage)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+            sub_state.skill_activations[0] = 1
+            sub_state.skill_activations[1] = 1
+            sub_state.skill_activations[2] = 1
+
+            df = ellya.abilities[5][0].eval_effect(ellya, sub_state)
+            self.assertAlmostEqual(0.15, df.stat_mod_sd_damage)
+
+    def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")

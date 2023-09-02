@@ -266,3 +266,13 @@ class IncreaseHpMainEffect(WorldFlipperMainEffect):
     def eval(self) -> bool:
         self.ctx.increased_hp[self.target_char_idx] += self._calc_abil_lv()
         return True
+
+
+class IncreaseComboMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_condition_content_combo_boost"]
+
+    def eval(self) -> bool:
+        self.ctx.combo += self._calc_abil_lv()
+        return True

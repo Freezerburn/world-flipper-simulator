@@ -73,19 +73,41 @@ class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
         activations_per_effect = self._calc_abil_lv()
         element = element_ab_to_enum(self.ability.main_condition_element)
         self.multiplier = 0
-        for idx, p in enumerate(self.state.party):
-            if p is None:
-                continue
-            # This buff can apply to individual units when they activate their own skill.
-            # So if the target type indicates that scenario, we skip any skill activations
-            # that are not for the target unit given to this function when calculating the
-            # total multiplier.
-            if self.ability.main_effect_target == "7" and idx != self.target_char_idx:
-                continue
-            if element is None or p.element == element:
+        match (self.ability.main_condition_target, self.ability.main_effect_target):
+            case ("0", "0"):
+                # When own skill activates, buff self.
+                if element is not None and self.target_char.element != element:
+                    return False
                 self.multiplier += (
-                    self.state.skill_activations[idx] / activations_per_effect
+                    self.state.skill_activations[self.target_char_idx]
+                    / activations_per_effect
                 )
+            case ("5", "7"):
+                # When anyone's skill activates, buff them.
+                if self.target_char_idx != self.ability_char_idx:
+                    return False
+                if element is None or self.target_char.element != element:
+                    return False
+                self.multiplier += (
+                    self.state.skill_activations[self.target_char_idx]
+                    / activations_per_effect
+                )
+            case ("7", "0") | ("7", ""):
+                # When someone's skill activates, buff self/all.
+                for idx, p in enumerate(self.state.party):
+                    if p is None:
+                        continue
+                    if element is None or p.element == element:
+                        self.multiplier += (
+                            self.state.skill_activations[idx] / activations_per_effect
+                        )
+            case _:
+                raise RuntimeError(
+                    f"[{self.ability.name} Unknown target combo: "
+                    f"{self.ability.main_condition_target}, "
+                    f"{self.ability.main_effect_target}"
+                )
+
         # If we didn't achieve the activation condition across the entire party, then this damage
         # calculation is invalid. The best example of this is if there's an activation condition
         # that has a character getting a buff when activating a skill, but it has an element
@@ -97,7 +119,7 @@ class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
         # AHanabi's ability 2, which deals damage to all units when a skill is activated with
         # a cooldown on how often this can occur.
         if self.ability.main_effect_max_multiplier == "(None)":
-            max_mult = 1
+            max_mult = 9999
         else:
             max_mult = int(self.ability.main_effect_max_multiplier)
         if self.multiplier > max_mult:

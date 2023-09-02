@@ -84,7 +84,7 @@ main_effect_mapping: dict[str, list[Type[WorldFlipperMainEffect]]] = {
     "218": [],
     "221": [],
     "222": [],
-    "224": [],
+    "224": [IncreaseComboMainEffect],
     "225": [],
     "24": [],
     "243": [SecondSkillGaugeMainEffect],
