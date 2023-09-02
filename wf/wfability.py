@@ -147,6 +147,12 @@ class WorldFlipperAbility:
     def is_continuous_effect(self) -> bool:
         return self.effect_type == "1"
 
+    def effect_type_name(self) -> str:
+        if self.is_main_effect():
+            return "main"
+        else:
+            return "continuous"
+
     def main_condition(self) -> EffectParameters:
         return EffectParameters(
             self.main_condition_index,
@@ -258,58 +264,67 @@ class WorldFlipperAbility:
                 ret.append(key)
         return ret
 
-    def _eval_main_effect(
+    def condition_ui(self) -> list[str]:
+        if self.condition_index() not in self.condition_mapping():
+            raise RuntimeError(
+                f"[{self.name} Unknown {self.effect_type_name()} condition index: "
+                f"{self.condition_index()}"
+            )
+        return self.condition_mapping()[self.condition_index()].ui_key()
+
+    def effect_ui(self) -> list[str]:
+        if self.effect_index() not in self.effect_mapping():
+            raise RuntimeError(
+                f"[{self.name} Unknown {self.effect_type_name()} condition index: "
+                f"{self.effect_index()}"
+            )
+        ret = []
+        for e in self.effect_mapping()[self.effect_index()]:
+            for key in e.ui_key():
+                ret.append(key)
+        return ret
+
+    def condition_index(self):
+        if self.is_main_effect():
+            return self.main_condition_index
+        else:
+            return self.continuous_condition_index
+
+    def effect_index(self):
+        if self.is_main_effect():
+            return self.main_effect_index
+        else:
+            return self.continuous_effect_index
+
+    def condition_mapping(self):
+        if self.is_main_effect():
+            return main_condition_mapping
+        else:
+            return continuous_condition_mapping
+
+    def effect_mapping(self):
+        if self.is_main_effect():
+            return main_effect_mapping
+        else:
+            return continuous_effect_mapping
+
+    def _eval_effect(
         self,
         char: WorldFlipperCharacter,
         state: GameState,
     ) -> Optional[DamageFormulaContext]:
-        condition_ui = self.main_condition_ui()
-        effect_ui = self.main_effect_ui()
+        condition_ui = self.condition_ui()
+        effect_ui = self.effect_ui()
 
-        if self.main_condition_index not in main_condition_mapping:
+        if self.condition_index() not in self.condition_mapping():
             raise RuntimeError(
-                f"[{self.name}] Unknown main condition: {self.main_condition_index}"
+                f"[{self.name}] Unknown {self.effect_type_name()} condition: "
+                f"{self.condition_index()}"
             )
-        if self.main_effect_index not in main_effect_mapping:
+        if self.effect_index() not in self.effect_mapping():
             raise RuntimeError(
-                f"[{self.name}] Unknown main effect: {self.main_effect_index}"
-            )
-
-        ab_char_idx, _ = state.ability_index(self)
-        ab_char = state.party[ab_char_idx]
-        if ab_char is None:
-            raise RuntimeError(
-                f"Impossible state: Found ability char but was None in party."
-            )
-        ctx = DamageFormulaContext()
-        condition_param = EffectParams(condition_ui, self, state, char, ab_char, ctx)
-        effect_param = EffectParams(effect_ui, self, state, char, ab_char, ctx)
-
-        condition = main_condition_mapping[self.main_condition_index](condition_param)
-
-        if not condition.should_run():
-            return None
-        if not condition.eval():
-            return None
-        effect_param.multiplier = condition.multiplier
-        for e in main_effect_mapping[self.main_effect_index]:
-            if not e(effect_param).eval():
-                return None
-        return effect_param.ctx
-
-    def _eval_continuous_effect(
-        self, char: WorldFlipperCharacter, state: GameState
-    ) -> Optional[DamageFormulaContext]:
-        condition_ui = self.main_condition_ui()
-        effect_ui = self.main_effect_ui()
-
-        if self.continuous_condition_index not in continuous_condition_mapping:
-            raise RuntimeError(
-                f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
-            )
-        if self.continuous_effect_index not in continuous_effect_mapping:
-            raise RuntimeError(
-                f"[{self.name}] Unknown continuous effect: {self.continuous_effect_index}"
+                f"[{self.name}] Unknown {self.effect_type_name()} effect: "
+                f"{self.effect_index()}"
             )
 
         ab_char_idx, _ = state.ability_index(self)
@@ -322,16 +337,14 @@ class WorldFlipperAbility:
         condition_param = EffectParams(condition_ui, self, state, char, ab_char, ctx)
         effect_param = EffectParams(effect_ui, self, state, char, ab_char, ctx)
 
-        condition = continuous_condition_mapping[self.continuous_condition_index](
-            condition_param
-        )
+        condition = self.condition_mapping()[self.condition_index()](condition_param)
 
         if not condition.should_run():
             return None
         if not condition.eval():
             return None
         effect_param.multiplier = condition.multiplier
-        for e in continuous_effect_mapping[self.continuous_effect_index]:
+        for e in self.effect_mapping()[self.effect_index()]:
             if not e(effect_param).eval():
                 return None
         return effect_param.ctx
@@ -341,10 +354,7 @@ class WorldFlipperAbility:
         char: WorldFlipperCharacter,
         state: GameState,
     ) -> Optional[DamageFormulaContext]:
-        if self.is_main_effect():
-            return self._eval_main_effect(char, state)
-        else:
-            return self._eval_continuous_effect(char, state)
+        return self._eval_effect(char, state)
 
     def __eq__(self, other):
         if isinstance(other, WorldFlipperAbility):
