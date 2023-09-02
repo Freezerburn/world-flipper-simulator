@@ -106,67 +106,62 @@ class TestWorldFlipperAbilityWater5(TestCase):
         vagner = self.wf_data.find("fire_dragon")
         state.set_member(sonia, CharPosition.UNISON, 0)
         state.set_member(vagner, CharPosition.MAIN, 1)
-        state.enemy.debuffs = [1, 2]
 
-        df = acipher.abilities[0][0].eval_effect(acipher, state)
-        self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
-        df = acipher.abilities[0][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
-        df = acipher.abilities[0][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+            sub_state.enemy.debuffs = [1, 2]
 
-        state.set_member(sonia, CharPosition.LEADER)
-        state.set_member(acipher, CharPosition.UNISON, 0)
-        state.ability_lvs[1][0] = 6
-        df = acipher.abilities[0][0].eval_effect(sonia, state)
-        self.assertIsNone(df)
-        df = acipher.abilities[0][0].eval_effect(acipher, state)
-        self.assertIsNone(df)
+            df = acipher.abilities[0][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
+            df = acipher.abilities[0][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
+            df = acipher.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-    def test_acipher_ab2(self):
-        acipher, state = self._base_state("ice_witch_2anv")
-        sonia = self.wf_data.find("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(sonia, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.enemy.debuffs = [1, 2]
+            sub_state.set_member(sonia, CharPosition.LEADER)
+            sub_state.set_member(acipher, CharPosition.UNISON, 0)
+            sub_state.ability_lvs[1][0] = 6
+            df = acipher.abilities[0][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+            df = acipher.abilities[0][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
 
-        df = acipher.abilities[1][0].eval_effect(acipher, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
-        df = acipher.abilities[1][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.4, df.attack_modifier)
-        df = acipher.abilities[1][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+            sub_state.enemy.debuffs = [1, 2]
 
-        state.set_member(sonia, CharPosition.LEADER)
-        state.set_member(acipher, CharPosition.UNISON, 0)
-        state.ability_lvs[1][1] = 6
-        df = acipher.abilities[1][0].eval_effect(sonia, state)
-        self.assertIsNone(df)
-        df = acipher.abilities[1][0].eval_effect(acipher, state)
-        self.assertIsNone(df)
+            df = acipher.abilities[1][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = acipher.abilities[1][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = acipher.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
-    def test_acipher_ab3(self):
-        acipher, state = self._base_state("ice_witch_2anv")
-        sonia = self.wf_data.find("brown_fighter")
-        vagner = self.wf_data.find("fire_dragon")
-        state.set_member(sonia, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.enemy.debuffs = [1, 2]
+            sub_state.set_member(sonia, CharPosition.LEADER)
+            sub_state.set_member(acipher, CharPosition.UNISON, 0)
+            sub_state.ability_lvs[1][1] = 6
+            df = acipher.abilities[1][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+            df = acipher.abilities[1][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
 
-        df = acipher.abilities[2][0].eval_effect(acipher, state)
-        self.assertAlmostEqual(0.2, df.attack_modifier)
-        df = acipher.abilities[2][0].eval_effect(sonia, state)
-        self.assertAlmostEqual(0.2, df.attack_modifier)
-        df = acipher.abilities[2][0].eval_effect(vagner, state)
-        self.assertIsNone(df)
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+            sub_state.enemy.debuffs = [1, 2]
 
-        df = acipher.abilities[2][1].eval_effect(acipher, state)
-        self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
-        df = acipher.abilities[2][1].eval_effect(sonia, state)
-        self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
-        df = acipher.abilities[2][1].eval_effect(vagner, state)
-        self.assertIsNone(df)
+            df = acipher.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = acipher.abilities[2][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = acipher.abilities[2][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+            df = acipher.abilities[2][1].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
+            df = acipher.abilities[2][1].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(1.1, df.stat_mod_element_resists[Element.FIRE])
+            df = acipher.abilities[2][1].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
     def _base_state(self, char_name: str):
         state = GameState()
