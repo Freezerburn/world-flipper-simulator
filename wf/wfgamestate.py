@@ -20,6 +20,8 @@ class GameState:
         self.party: list[Optional[WorldFlipperCharacter]] = [None] * 6
         self.levels = [1] * 6
         self.uncaps = [0] * 6
+        self.max_hp = [0.0] * 3
+        self.current_hp = [0.0] * 3
         # Each entry corresponds to the member at the same entry in party. Each
         # inner list int corresponds to the same number (+1) ability for that
         # character.
@@ -101,6 +103,17 @@ class GameState:
         self.uncaps[idx] = uncaps
         self.ability_lvs[idx] = [0] * 6
         self.ability_condition_active[idx] = [False] * 6
+
+        self.max_hp[column] = char.hp(self.evolved(char), level, uncaps)
+        if position == CharPosition.MAIN and self.party[idx + 1] is not None:
+            unison = self.party[idx + 1]
+            self.max_hp[column] += (
+                unison.hp(
+                    self.evolved(unison), self.levels[idx + 1], self.uncaps[idx + 1]
+                )
+                / 4
+            )
+        self.current_hp[column] = self.max_hp[column]
 
     def set_powerflips(self, lv: int, count: int):
         self.powerflips_by_lv[lv - 1] = count

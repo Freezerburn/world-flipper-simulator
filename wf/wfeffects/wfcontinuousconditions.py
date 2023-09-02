@@ -5,11 +5,18 @@ from wf.wfenum import element_ab_to_enum
 
 
 class WorldFlipperContinuousCondition(WorldFlipperCondition, ABC):
-    def _calc_abil_lv(self) -> int:
-        v_min = int(self.ability.continuous_condition_min) / 100_000
-        v_max = int(self.ability.continuous_condition_max) / 100_000
-        step = abs(v_max - v_min) / 5
-        return v_min + step * (self.lv - 1)
+    pass
+
+
+class HPAbovePercentContinuousCondition(WorldFlipperContinuousCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_hp_high"]
+
+    def eval(self) -> bool:
+        current_hp = self.state.current_hp[self.state.main_index(self.ability_char_idx)]
+        max_hp = self.state.max_hp[self.state.main_index(self.ability_char_idx)]
+        return (max_hp / current_hp) >= self._calc_abil_lv()
 
 
 class MultiballCountContinuousCondition(WorldFlipperContinuousCondition):
@@ -27,7 +34,7 @@ class BuffActiveContinuousCondition(WorldFlipperContinuousCondition):
         return ["ability_description_during_trigger_kind_condition"]
 
     def eval(self) -> bool:
-        return len(self.state.buffs[self.state.main_index(self.target_char_idx)]) > 0
+        return len(self.state.buffs[self.state.main_index(self.eval_char_idx)]) > 0
 
 
 class SkillGaugeAboveContinuousCondition(WorldFlipperContinuousCondition):
@@ -41,7 +48,7 @@ class SkillGaugeAboveContinuousCondition(WorldFlipperContinuousCondition):
             case "0":
                 target_char_idx = self.ability_char_idx
             case "7":
-                target_char_idx = self.target_char_idx
+                target_char_idx = self.eval_char_idx
             case _:
                 raise RuntimeError(
                     f"[{self.ui_name[0]}] Unhandled continuous "
@@ -64,7 +71,7 @@ class DebuffsOnEnemyContinuousCondition(WorldFlipperContinuousCondition):
         if enemy is None:
             return False
         element = element_ab_to_enum(self.ability.continuous_effect_element)
-        if element is not None and self.target_char.element != element:
+        if element is not None and self.eval_char.element != element:
             return False
 
         self.multiplier = len(enemy.debuffs) * self._calc_abil_lv()

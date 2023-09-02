@@ -21,14 +21,14 @@ class EffectParams:
     ui_name: list[str]
     ability: WorldFlipperAbility
     state: GameState
-    target_char: WorldFlipperCharacter
+    eval_char: WorldFlipperCharacter
     ability_char: WorldFlipperCharacter
     ctx: DamageFormulaContext
 
     multiplier: int = 1
 
 
-class WorldFlipperEffect(ABC):
+class WorldFlipperBaseEffect(ABC):
     @staticmethod
     @abstractmethod
     def ui_key() -> list[str]:
@@ -38,14 +38,14 @@ class WorldFlipperEffect(ABC):
         self.ui_name = params.ui_name
         self.ability = params.ability
         self.state = params.state
-        self.target_char = params.target_char
+        self.eval_char = params.eval_char
         self.ability_char = params.ability_char
 
         self.ctx = params.ctx
         self.multiplier = params.multiplier
 
-        self.target_char_idx = self.state.party.index(self.target_char)
-        self.target_char_position = self.state.position(self.target_char)
+        self.eval_char_idx = self.state.party.index(self.eval_char)
+        self.eval_char_position = self.state.position(self.eval_char)
         self.ability_char_idx, self.ability_idx = self.state.ability_index(self.ability)
         self.ability_char_position = self.state.position(self.ability_char)
         self.lv = self.state.ability_lvs[self.ability_char_idx][self.ability_idx]
@@ -55,22 +55,71 @@ class WorldFlipperEffect(ABC):
         pass
 
     @abstractmethod
+    def effect_min(self) -> int:
+        pass
+
+    @abstractmethod
+    def effect_max(self) -> int:
+        pass
+
+    @abstractmethod
+    def is_condition(self) -> bool:
+        pass
+
     def _calc_abil_lv(self) -> int:
         """
         Abilities generally have a linear increment on each level they gain on the mana board between a minimum
         and a maximum. This calculates the current value for an ability based on its current level.
         """
-        pass
+        v_min = self.effect_min() / 100_000
+        v_max = self.effect_max() / 100_000
+        step = abs(v_max - v_min) / 5
+        amt = v_min + step * (self.lv - 1)
+        if not self.is_condition():
+            amt *= self.multiplier
+        return amt
 
     def is_target_main(self) -> bool:
-        if self.target_char_position == CharPosition.LEADER:
+        if self.eval_char_position == CharPosition.LEADER:
             return True
-        if self.target_char_position == CharPosition.MAIN:
+        if self.eval_char_position == CharPosition.MAIN:
             return True
         return False
 
 
-class WorldFlipperCondition(WorldFlipperEffect, ABC):
+class WorldFlipperEffect(WorldFlipperBaseEffect, ABC):
+    def is_condition(self) -> bool:
+        return False
+
+    def effect_min(self) -> int:
+        if self.ability.is_main_effect():
+            return int(self.ability.main_effect_min)
+        else:
+            return int(self.ability.continuous_effect_min)
+
+    def effect_max(self) -> int:
+        if self.ability.is_main_effect():
+            return int(self.ability.main_effect_max)
+        else:
+            return int(self.ability.continuous_effect_max)
+
+
+class WorldFlipperCondition(WorldFlipperBaseEffect, ABC):
+    def is_condition(self) -> bool:
+        return True
+
+    def effect_min(self) -> int:
+        if self.ability.is_main_effect():
+            return int(self.ability.main_condition_min)
+        else:
+            return int(self.ability.continuous_condition_min)
+
+    def effect_max(self) -> int:
+        if self.ability.is_main_effect():
+            return int(self.ability.main_condition_max)
+        else:
+            return int(self.ability.continuous_condition_max)
+
     def _calc_multiplier(self, cap: int, count: int) -> int:
         abil = self._calc_abil_lv()
         times = math.floor(count / abil)
@@ -79,7 +128,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
         return times
 
     def should_run(self) -> bool:
-        if self.target_char_position is None:
+        if self.eval_char_position is None:
             return False
         if self.ability_char_idx == -1:
             return False
@@ -102,7 +151,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
         if not self._target_applies_to(
             target,
             element,
-            self.target_char,
+            self.eval_char,
         ):
             return False
         return True
@@ -125,7 +174,7 @@ class WorldFlipperCondition(WorldFlipperEffect, ABC):
                     return True
                 # Otherwise since index 0 is "self/own", we want to check if the ability belongs to the
                 # unison for a main unit, and if that's the case then we want to apply it.
-                unison = self.state.party[self.state.unison_index(self.target_char_idx)]
+                unison = self.state.party[self.state.unison_index(self.eval_char_idx)]
                 if unison is None:
                     return False
                 return unison.internal_name == self.ability_char.internal_name

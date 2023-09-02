@@ -37,6 +37,7 @@ class CharPosition(StrEnum):
 class Debuff(StrEnum):
     FIRE_RESISTANCE = auto()
     POISON = auto()
+    SLOW = auto()
 
 
 AbilityElementType = Literal["Red", "Yellow", "Green", "Blue", "White", "Black"]

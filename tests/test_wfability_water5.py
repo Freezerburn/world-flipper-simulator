@@ -237,6 +237,89 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = ellya.abilities[5][0].eval_effect(ellya, sub_state)
             self.assertAlmostEqual(0.15, df.stat_mod_sd_damage)
 
+    def test_cipher(self):
+        cipher, state = self._base_state("ice_witch")
+        sonia = self.wf_data.find("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        acipher = self.wf_data.find("ice_witch_2anv")
+        state.set_member(sonia, CharPosition.UNISON, 0)
+        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.set_member(acipher, CharPosition.MAIN, 2)
+
+        with self.subTest("leader"):
+            pass
+
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+            df = cipher.abilities[0][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.enemy.debuffs = [Debuff.SLOW]
+            df = cipher.abilities[0][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.1, df.condition_slayer)
+            df = cipher.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.1, df.condition_slayer)
+
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+
+            df = cipher.abilities[1][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = cipher.abilities[1][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+            df = cipher.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.current_hp[0] = sub_state.max_hp[0] * 0.8
+            df = cipher.abilities[1][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.4, df.attack_modifier)
+
+            sub_state.current_hp[0] = 50
+            df = cipher.abilities[1][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+
+            df = cipher.abilities[2][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(1.3, df.stat_mod_element_resists[Element.FIRE])
+            df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+            df = cipher.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(1.3, df.stat_mod_element_resists[Element.FIRE])
+            df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+
+            sub_state.current_hp[2] = 50
+            df = cipher.abilities[2][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(1.3, df.stat_mod_element_resists[Element.FIRE])
+            df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+            df = cipher.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.current_hp[0] = 50
+            sub_state.current_hp[2] = sub_state.max_hp[2]
+            df = cipher.abilities[2][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+
     def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")

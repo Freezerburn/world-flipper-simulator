@@ -7,16 +7,8 @@ from wf.wfenum import CharPosition, Debuff, Element, element_ab_to_enum
 from wf.wfeffects.wfeffect import WorldFlipperEffect
 
 
-class WorldFlipperMainEffect(WorldFlipperEffect, ABC):
-    def _calc_abil_lv(self) -> int:
-        v_min = int(self.ability.main_effect_min) / 100_000
-        v_max = int(self.ability.main_effect_max) / 100_000
-        step = abs(v_max - v_min) / 5
-        return (v_min + step * (self.lv - 1)) * self.multiplier
-
-
-def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperMainEffect]:
-    class _NoOpMainEffect(WorldFlipperMainEffect):
+def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperEffect]:
+    class _NoOpMainEffect(WorldFlipperEffect):
         @staticmethod
         def ui_key() -> list[str]:
             return ui_key
@@ -27,7 +19,7 @@ def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperMainEffect]:
     return _NoOpMainEffect
 
 
-class ActiveForSecondsMainEffect(WorldFlipperMainEffect):
+class ActiveForSecondsMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_for_second"]
@@ -38,7 +30,7 @@ class ActiveForSecondsMainEffect(WorldFlipperMainEffect):
         ]
 
 
-class AttackMainEffect(WorldFlipperMainEffect):
+class AttackMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_attack"]
@@ -50,7 +42,7 @@ class AttackMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class SkillDamageMainEffect(WorldFlipperMainEffect):
+class SkillDamageMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_skill_damage"]
@@ -60,19 +52,19 @@ class SkillDamageMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class PowerFlipDamageMainEffect(WorldFlipperMainEffect):
+class PowerFlipDamageMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_damage"]
 
     def eval(self) -> bool:
-        if self.target_char_position != CharPosition.LEADER:
+        if self.eval_char_position != CharPosition.LEADER:
             return False
         self.ctx.stat_mod_pf_damage += self._calc_abil_lv()
         return True
 
 
-class FireResistDebuffSlayerMainEffect(WorldFlipperMainEffect):
+class FireResistDebuffSlayerMainEffect(WorldFlipperEffect):
     """
     The underlying UI localization code has a parameter for what condition this effect is used with,
     but so far AHanabi is the only character that actually uses this effect and thus that parameter
@@ -94,7 +86,7 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperMainEffect):
             return False
 
 
-class PoisonSlayerMainEffect(WorldFlipperMainEffect):
+class PoisonSlayerMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
@@ -112,7 +104,7 @@ class PoisonSlayerMainEffect(WorldFlipperMainEffect):
             return False
 
 
-class PoisonAttackMainEffect(WorldFlipperMainEffect):
+class PoisonAttackMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_attack"]
@@ -130,7 +122,7 @@ class PoisonAttackMainEffect(WorldFlipperMainEffect):
             return False
 
 
-class PoisonDirectAttackMainEffect(WorldFlipperMainEffect):
+class PoisonDirectAttackMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_direct_attack"]
@@ -148,7 +140,23 @@ class PoisonDirectAttackMainEffect(WorldFlipperMainEffect):
             return False
 
 
-class Lv3PowerFlipDamageMainEffect(WorldFlipperMainEffect):
+class SlowDebuffSlayerMainEffect(WorldFlipperEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_condition_slayer"]
+
+    def eval(self) -> bool:
+        if self.state.enemy is None:
+            return False
+        try:
+            self.state.enemy.debuffs.index(Debuff.SLOW)
+            self.ctx.condition_slayer += self._calc_abil_lv()
+            return True
+        except ValueError:
+            return False
+
+
+class Lv3PowerFlipDamageMainEffect(WorldFlipperEffect):
     """
     Technically the underlying UI localization code has a parameter for what level of Power Flip this
     is supposed to apply to. But in practice, every single character that has this effect ALWAYS
@@ -165,7 +173,7 @@ class Lv3PowerFlipDamageMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class AttackBuffExtendMainEffect(WorldFlipperMainEffect):
+class AttackBuffExtendMainEffect(WorldFlipperEffect):
     """
     Technically this allows for any kind of condition to be passed in for time extension, but practically
     it's always hard-coded to be for Attack Buffs.
@@ -180,7 +188,7 @@ class AttackBuffExtendMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class PowerFlipComboCountDownMainEffect(WorldFlipperMainEffect):
+class PowerFlipComboCountDownMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_combo_count_down"]
@@ -190,29 +198,29 @@ class PowerFlipComboCountDownMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class IncreaseSkillChargeMainEffect(WorldFlipperMainEffect):
+class IncreaseSkillChargeMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_skill_gauge"]
 
     def eval(self) -> bool:
         self.ctx.skill_charge[
-            self.state.main_index(self.target_char_idx)
+            self.state.main_index(self.eval_char_idx)
         ] += self._calc_abil_lv()
         return True
 
 
-class SecondSkillGaugeMainEffect(WorldFlipperMainEffect):
+class SecondSkillGaugeMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_second_skill_gauge"]
 
     def eval(self) -> bool:
-        self.ctx.skill_gauge_max[self.state.main_index(self.target_char_idx)] += 100
+        self.ctx.skill_gauge_max[self.state.main_index(self.eval_char_idx)] += 100
         return True
 
 
-class InstantDamageMainEffect(WorldFlipperMainEffect):
+class InstantDamageMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
@@ -221,7 +229,7 @@ class InstantDamageMainEffect(WorldFlipperMainEffect):
         return False
 
 
-class PierceMainEffect(WorldFlipperMainEffect):
+class PierceMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
@@ -233,7 +241,7 @@ class PierceMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class FeverGainRateMainEffect(WorldFlipperMainEffect):
+class FeverGainRateMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_fever_point"]
@@ -245,30 +253,30 @@ class FeverGainRateMainEffect(WorldFlipperMainEffect):
         return True
 
 
-class ResistUpMainEffect(WorldFlipperMainEffect):
+class ResistUpMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_element_resistance"]
 
     def eval(self) -> bool:
         element = element_ab_to_enum(self.ability.main_effect_element)
-        if self.target_char.element != element:
+        if self.eval_char.element != element:
             return False
         self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()
         return True
 
 
-class IncreaseHpMainEffect(WorldFlipperMainEffect):
+class IncreaseHpMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_hp"]
 
     def eval(self) -> bool:
-        self.ctx.increased_hp[self.target_char_idx] += self._calc_abil_lv()
+        self.ctx.increased_hp[self.eval_char_idx] += self._calc_abil_lv()
         return True
 
 
-class IncreaseComboMainEffect(WorldFlipperMainEffect):
+class IncreaseComboMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_condition_content_combo_boost"]

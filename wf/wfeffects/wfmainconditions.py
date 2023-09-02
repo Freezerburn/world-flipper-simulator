@@ -9,18 +9,10 @@ from wf.wfeffects.wfeffect import WorldFlipperCondition
 
 if TYPE_CHECKING:
     from wf.wfchar import WorldFlipperCharacter
-    from wf.wfeffects.wfeffect import WorldFlipperEffect
+    from wf.wfeffects.wfeffect import WorldFlipperBaseEffect
 
 
-class WorldFlipperMainCondition(WorldFlipperCondition, ABC):
-    def _calc_abil_lv(self) -> int:
-        v_min = int(self.ability.main_condition_min) / 100_000
-        v_max = int(self.ability.main_condition_max) / 100_000
-        step = abs(v_max - v_min) / 5
-        return v_min + step * (self.lv - 1)
-
-
-class OnBattleStartMainCondition(WorldFlipperMainCondition):
+class OnBattleStartMainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_first_flip"]
@@ -29,8 +21,8 @@ class OnBattleStartMainCondition(WorldFlipperMainCondition):
         return self.should_run()
 
 
-def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperMainCondition]:
-    class _NTimesCondition(WorldFlipperMainCondition):
+def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperCondition]:
+    class _NTimesCondition(WorldFlipperCondition):
         @staticmethod
         def ui_key() -> list[str]:
             return ["ability_description_n_times"]
@@ -64,7 +56,7 @@ def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperMainCondition]:
     return _NTimesCondition
 
 
-class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
+class OnSkillInvokeMainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_invoke"]
@@ -76,20 +68,20 @@ class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
         match (self.ability.main_condition_target, self.ability.main_effect_target):
             case ("0", "0"):
                 # When own skill activates, buff self.
-                if element is not None and self.target_char.element != element:
+                if element is not None and self.eval_char.element != element:
                     return False
                 self.multiplier += (
-                    self.state.skill_activations[self.target_char_idx]
+                    self.state.skill_activations[self.eval_char_idx]
                     / activations_per_effect
                 )
             case ("5", "7"):
                 # When anyone's skill activates, buff them.
-                if self.target_char_idx != self.ability_char_idx:
+                if self.eval_char_idx != self.ability_char_idx:
                     return False
-                if element is None or self.target_char.element != element:
+                if element is None or self.eval_char.element != element:
                     return False
                 self.multiplier += (
-                    self.state.skill_activations[self.target_char_idx]
+                    self.state.skill_activations[self.eval_char_idx]
                     / activations_per_effect
                 )
             case ("7", "0") | ("7", ""):
@@ -127,7 +119,7 @@ class OnSkillInvokeMainCondition(WorldFlipperMainCondition):
         return True
 
 
-class OnSkillGaugeReach100MainCondition(WorldFlipperMainCondition):
+class OnSkillGaugeReach100MainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_max"]
@@ -140,7 +132,7 @@ class OnSkillGaugeReach100MainCondition(WorldFlipperMainCondition):
         return True
 
 
-class PartyMembersAddedMainCondition(WorldFlipperMainCondition):
+class PartyMembersAddedMainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_member"]
@@ -160,7 +152,7 @@ class PartyMembersAddedMainCondition(WorldFlipperMainCondition):
         return True
 
 
-class Lv3PowerFlipsMainCondition(WorldFlipperMainCondition):
+class Lv3PowerFlipsMainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_power_flip_lv"]
@@ -173,7 +165,7 @@ class Lv3PowerFlipsMainCondition(WorldFlipperMainCondition):
         return True
 
 
-class ComboReachedMainCondition(WorldFlipperMainCondition):
+class ComboReachedMainCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_combo"]
@@ -190,7 +182,7 @@ class ComboReachedMainCondition(WorldFlipperMainCondition):
         return True
 
 
-class InFeverCondition(WorldFlipperMainCondition):
+class InFeverCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_fever"]

@@ -1,5 +1,6 @@
 from abc import ABC
 
+from wf.wfenum import Element
 from wf.wfeffects.wfeffect import WorldFlipperCondition
 
 
@@ -37,7 +38,17 @@ class SkillChargeRateContinuousEffect(WorldFlipperContinuousEffect):
         return ["ability_description_common_content_skill_gauge_chaging"]
 
     def eval(self) -> bool:
-        self.ctx.skill_charge_speed[self.target_char_idx] += self._calc_abil_lv()
+        self.ctx.skill_charge_speed[self.eval_char_idx] += self._calc_abil_lv()
+        return True
+
+
+class FireResistsContinuousEffect(WorldFlipperContinuousEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_element_resistance"]
+
+    def eval(self) -> bool:
+        self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()
         return True
 
 

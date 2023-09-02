@@ -309,7 +309,7 @@ class WorldFlipperAbility:
             )
         if self.continuous_effect_index not in continuous_effect_mapping:
             raise RuntimeError(
-                f"[{self.name}] Unknown main effect: {self.continuous_effect_index}"
+                f"[{self.name}] Unknown continuous effect: {self.continuous_effect_index}"
             )
 
         ab_char_idx, _ = state.ability_index(self)
