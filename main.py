@@ -151,7 +151,7 @@ def test_abilities():
     wf = WorldFlipperData("wf_data_json")
     state = GameState()
     vagner = wf.find("Vagner")
-    state.set_member(vagner, 0, CharPosition.LEADER, level=80)
+    state.set_member(vagner, CharPosition.LEADER, 0, level=80)
     state.ability_lvs[0][:] = [6] * 6
     state.ability_lvs[0][4] = 6
     state.ability_lvs[0][5] = 1
