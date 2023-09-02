@@ -32,6 +32,7 @@ class DamageFormulaContext:
         self.attack_buff_extension = 1
         self.pierce_active = False
         self.fever_gain_from_attacks = 1
+        self.increased_hp = [1] * 6
 
         # The different types of methods of applying damage have their own bools to enable each of them.
         # Only a single of these should ever be applied at one time, because the game will only ever have

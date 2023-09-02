@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Literal, Optional, TYPE_CHECKING
+from typing import Literal, Optional, TYPE_CHECKING, cast
 
 from .wfdmgformula import DamageFormulaContext
 from .wfenum import AbilityElementType
@@ -14,6 +14,8 @@ from .wfeffects.wfcontinuousmapping import (
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
+
+EffectType = Literal["0", "1"]
 
 _PERCENT_CONVERT = 100_000
 _COUNT_CONVERT = 100_000
@@ -37,20 +39,20 @@ class EffectParameters:
 
 
 class WorldFlipperAbility:
-    def __init__(self, data, from_char):
+    def __init__(self, data: list[str], from_char):
         self.from_char = from_char
         self.name = data[0]
         self.requires_main = data[1] == "false"
         self.ability_statue_group = data[2]
-        self.effect_type: Literal["0", "1"] = data[
-            3
-        ]  # 0 for "main effect", 1 for continuous
+        self.effect_type: EffectType = cast(
+            EffectType, data[3]
+        )  # 0 for "main effect", 1 for continuous
         self.party_condition_index = data[4]  # TODO: Verify
         self.slot5 = data[5]
         self.slot6 = data[6]
         self.slot7 = data[7]
         self.slot8 = data[8]
-        self.party_condition_element: AbilityElementType = data[9]  # TODO: Verify
+        self.party_condition_element = cast(AbilityElementType, data[9])  # TODO: Verify
         self.slot10 = data[10]
         self.slot11 = data[11]
         self.slot12 = data[12]
@@ -68,7 +70,7 @@ class WorldFlipperAbility:
         self.slot24 = data[24]
         self.main_condition_index = data[25]
         self.main_condition_target = data[26]
-        self.main_condition_element: AbilityElementType = data[27]
+        self.main_condition_element = cast(AbilityElementType, data[27])
         self.main_condition_min = data[28]
         self.main_condition_max = data[29]
         # Valid values:
@@ -77,7 +79,7 @@ class WorldFlipperAbility:
         # "(None)"
         self.main_effect_max_multiplier = data[30]
         self.cooldown_time = data[31]  # Seconds multiplied by 60.
-        self.condition_target_element: AbilityElementType = data[32]
+        self.condition_target_element = cast(AbilityElementType, data[32])
         self.slot33 = data[33]
         self.slot34 = data[34]
         self.slot35 = data[35]
@@ -92,7 +94,7 @@ class WorldFlipperAbility:
         # Element here is used when the effect target needs to discriminate on which characters
         # it's going to actually do something to. e.g.: Increase attack damage for all
         # Water units, versus all units.
-        self.main_effect_element: AbilityElementType = data[44]
+        self.main_effect_element = cast(AbilityElementType, data[44])
         self.main_effect_min = data[45]
         self.main_effect_max = data[46]
         self.slot47 = data[47]
@@ -117,7 +119,7 @@ class WorldFlipperAbility:
         self.slot60 = data[60]
         self.continuous_condition_index = data[61]
         self.continuous_condition_target = data[62]
-        self.continuous_condition_element: AbilityElementType = data[63]
+        self.continuous_condition_element = cast(AbilityElementType, data[63])
         self.continuous_condition_min = data[64]
         self.continuous_condition_max = data[65]
         self.continuous_effect_max_multiplier = data[66]  # TODO: Verify
@@ -130,7 +132,7 @@ class WorldFlipperAbility:
         self.slot72 = data[72]
         self.continuous_effect_index = data[73]
         self.continuous_effect_target = data[74]
-        self.continuous_effect_element: AbilityElementType = data[75]
+        self.continuous_effect_element = cast(AbilityElementType, data[75])
         self.continuous_effect_min = data[76]
         self.continuous_effect_max = data[77]
         self.slot78 = data[78]

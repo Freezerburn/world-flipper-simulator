@@ -78,6 +78,32 @@ class TestWorldFlipperAbilityWater5(TestCase):
         df = sonia.abilities[5][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.4, df.attack_modifier)
 
+    def test_suizen(self):
+        suizen, state = self._base_state("onmyoji_boy")
+        sonia = self.wf_data.find("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.set_member(vagner, CharPosition.MAIN, 2)
+
+        with self.subTest("ab1"):
+            df = suizen.abilities[0][0].eval_effect(suizen, state)
+            self.assertAlmostEqual(1.2, df.increased_hp[0])
+            df = suizen.abilities[0][0].eval_effect(sonia, state)
+            self.assertIsNone(df)
+            df = suizen.abilities[0][0].eval_effect(vagner, state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab2"):
+            pass
+        with self.subTest("ab3"):
+            pass
+        with self.subTest("ab4"):
+            pass
+        with self.subTest("ab5"):
+            pass
+        with self.subTest("ab6"):
+            pass
+
     def test_acipher_ab1(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")

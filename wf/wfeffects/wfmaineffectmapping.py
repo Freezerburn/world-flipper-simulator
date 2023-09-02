@@ -74,7 +74,7 @@ main_effect_mapping: dict[str, list[Type[WorldFlipperMainEffect]]] = {
     "199": [],
     "2": [],
     "201": [],
-    "203": [NoOpMainEffect(["ability_description_instant_content_hp"])],
+    "203": [IncreaseHpMainEffect],
     "204": [],
     "207": [],
     "209": [IncreaseSkillChargeMainEffect],

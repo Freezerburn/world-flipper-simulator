@@ -198,3 +198,13 @@ class ResistUpMainEffect(WorldFlipperMainEffect):
             return False
         self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()
         return True
+
+
+class IncreaseHpMainEffect(WorldFlipperMainEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_instant_content_hp"]
+
+    def eval(self) -> bool:
+        self.ctx.increased_hp[self.target_char_idx] += self._calc_abil_lv()
+        return True
