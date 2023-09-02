@@ -80,11 +80,13 @@ class TestWorldFlipperAbilityWater5(TestCase):
         state.set_member(vagner, CharPosition.MAIN, 2)
 
         with self.subTest("ab1"):
-            df = suizen.abilities[0][0].eval_effect(suizen, state)
+            sub_state = copy.deepcopy(state)
+
+            df = suizen.abilities[0][0].eval_effect(suizen, sub_state)
             self.assertAlmostEqual(1.2, df.increased_hp[0])
-            df = suizen.abilities[0][0].eval_effect(sonia, state)
+            df = suizen.abilities[0][0].eval_effect(sonia, sub_state)
             self.assertIsNone(df)
-            df = suizen.abilities[0][0].eval_effect(vagner, state)
+            df = suizen.abilities[0][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
         with self.subTest("ab2"):
