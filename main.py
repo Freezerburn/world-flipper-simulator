@@ -136,7 +136,7 @@ def debug_unknown_effect_indices():
         for ab_effects in char.abilities:
             for ab in ab_effects:
                 try:
-                    ab.main_effect_ui()
+                    ab.effect_ui()
                 except:
                     unknown_idxs.add(ab.main_effect_index)
                     unknowns.add((char.name, ab.name, ab.main_effect_index))

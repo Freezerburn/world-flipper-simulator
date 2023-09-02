@@ -214,72 +214,22 @@ class WorldFlipperAbility:
         else:
             raise RuntimeError(f"[{self.name}] Unknown target index: {target}")
 
-    def main_condition_ui(self) -> list[str]:
-        if self.effect_type != "0":
-            return []
-        if (
-            self.main_condition_index not in main_condition_mapping
-            or main_condition_mapping[self.main_condition_index] is None
-        ):
-            raise RuntimeError(
-                f"[{self.name}] Unknown main condition index: {self.main_condition_index}"
-            )
-        return main_condition_mapping[self.main_condition_index].ui_key()
-
-    def main_effect_ui(self) -> list[str]:
-        if self.effect_type != "0":
-            return []
-        if (
-            self.main_effect_index not in main_effect_mapping
-            or len(main_effect_mapping[self.main_effect_index]) == 0
-        ):
-            raise RuntimeError(
-                f"[{self.name}] Unknown main effect index: {self.main_effect_index}"
-            )
-        ret = []
-        for e in main_effect_mapping[self.main_effect_index]:
-            for key in e.ui_key():
-                ret.append(key)
-        return ret
-
-    def continuous_condition_ui(self):
-        if self.is_main_effect():
-            return None
-        if self.continuous_condition_index not in continuous_condition_mapping:
-            raise RuntimeError(
-                f"[{self.name}] Unknown continuous condition: {self.continuous_condition_index}"
-            )
-        return continuous_condition_mapping[self.continuous_condition_index].ui_key()
-
-    def continuous_effect_ui(self):
-        if self.is_main_effect():
-            return None
-        if self.continuous_effect_index not in continuous_effect_mapping:
-            raise RuntimeError(
-                f"[{self.name} Unknown continuous effect index: {self.continuous_effect_index}"
-            )
-        ret = []
-        for e in continuous_effect_mapping[self.continuous_effect_index]:
-            for key in e.ui_key():
-                ret.append(key)
-        return ret
-
     def condition_ui(self) -> list[str]:
-        if self.condition_index() not in self.condition_mapping():
+        if self.condition_index() not in self._condition_mapping():
             raise RuntimeError(
                 f"[{self.name} Unknown {self.effect_type_name()} condition index: "
                 f"{self.condition_index()}"
             )
-        return self.condition_mapping()[self.condition_index()].ui_key()
+        return self._condition_mapping()[self.condition_index()].ui_key()
 
     def effect_ui(self) -> list[str]:
-        if self.effect_index() not in self.effect_mapping():
+        if self.effect_index() not in self._effect_mapping():
             raise RuntimeError(
                 f"[{self.name} Unknown {self.effect_type_name()} condition index: "
                 f"{self.effect_index()}"
             )
         ret = []
-        for e in self.effect_mapping()[self.effect_index()]:
+        for e in self._effect_mapping()[self.effect_index()]:
             for key in e.ui_key():
                 ret.append(key)
         return ret
@@ -296,13 +246,13 @@ class WorldFlipperAbility:
         else:
             return self.continuous_effect_index
 
-    def condition_mapping(self):
+    def _condition_mapping(self):
         if self.is_main_effect():
             return main_condition_mapping
         else:
             return continuous_condition_mapping
 
-    def effect_mapping(self):
+    def _effect_mapping(self):
         if self.is_main_effect():
             return main_effect_mapping
         else:
@@ -316,12 +266,12 @@ class WorldFlipperAbility:
         condition_ui = self.condition_ui()
         effect_ui = self.effect_ui()
 
-        if self.condition_index() not in self.condition_mapping():
+        if self.condition_index() not in self._condition_mapping():
             raise RuntimeError(
                 f"[{self.name}] Unknown {self.effect_type_name()} condition: "
                 f"{self.condition_index()}"
             )
-        if self.effect_index() not in self.effect_mapping():
+        if self.effect_index() not in self._effect_mapping():
             raise RuntimeError(
                 f"[{self.name}] Unknown {self.effect_type_name()} effect: "
                 f"{self.effect_index()}"
@@ -337,14 +287,14 @@ class WorldFlipperAbility:
         condition_param = EffectParams(condition_ui, self, state, char, ab_char, ctx)
         effect_param = EffectParams(effect_ui, self, state, char, ab_char, ctx)
 
-        condition = self.condition_mapping()[self.condition_index()](condition_param)
+        condition = self._condition_mapping()[self.condition_index()](condition_param)
 
         if not condition.should_run():
             return None
         if not condition.eval():
             return None
         effect_param.multiplier = condition.multiplier
-        for e in self.effect_mapping()[self.effect_index()]:
+        for e in self._effect_mapping()[self.effect_index()]:
             if not e(effect_param).eval():
                 return None
         return effect_param.ctx
