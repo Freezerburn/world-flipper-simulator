@@ -406,11 +406,25 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = selene.abilities[4][0].eval_effect(selene, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
 
-            sub_state.set_member(selene, CharPosition.UNISON, 1, level=100)
-            sub_state.ability_lvs[4][4] = 6
-            sub_state.ability_condition_active[4][4] = True
+            sub_state.ability_lvs[0][4] = False
             df = selene.abilities[4][0].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.set_member(sonia, CharPosition.MAIN, 0, level=100)
+            sub_state.set_member(selene, CharPosition.UNISON, 0, level=100)
+            sub_state.ability_lvs[1][4] = 6
+            sub_state.ability_condition_active[1][4] = True
+            df = selene.abilities[4][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
+            df = selene.abilities[4][0].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.set_member(selene, CharPosition.UNISON, 1, level=100)
+            sub_state.set_member(acipher, CharPosition.UNISON, 0, level=100)
+            sub_state.ability_lvs[3][4] = 6
+            sub_state.ability_condition_active[3][4] = True
+            df = selene.abilities[4][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
 
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
@@ -420,6 +434,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
             self.assertAlmostEqual(0.1, df.attack_modifier)
             df = selene.abilities[5][0].eval_effect(vagner, sub_state)
             self.assertAlmostEqual(0.1, df.attack_modifier)
+            df = selene.abilities[5][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
 
     def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")

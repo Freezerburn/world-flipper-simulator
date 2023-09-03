@@ -56,7 +56,13 @@ class WorldFlipperBaseEffect(ABC):
         if self.ability.is_main_effect():
             if self.is_condition():
                 target = self.ability.main_condition_target
-                if target == "":
+                # SPECIAL CASE: I *think* when an ability has "if self is a(n) <element> character", this
+                # gets set to 2 and then the random other element index gets set to an element. I first
+                # noticed this for Selene's AB5. The normal locations you would expect to have an element
+                # for a condition don't have elements set in them in this case.
+                if self.ability.party_condition_index == "2":
+                    element = element_ab_to_enum(self.ability.party_condition_element)
+                elif target == "":
                     element = element_ab_to_enum(self.ability.condition_target_element)
                 else:
                     element = element_ab_to_enum(self.ability.main_condition_element)
@@ -101,14 +107,11 @@ class WorldFlipperBaseEffect(ABC):
                 # individual unit does a thing, it affects only itself.
                 if target == "5":
                     if (
-                        (
-                            self.ability.is_main_effect()
-                            and self.ability.main_effect_target == "7"
-                        )
-                        or (
-                            self.ability.is_continuous_effect()
-                            and self.ability.continuous_effect_target == "7"
-                        )
+                        self.ability.is_main_effect()
+                        and self.ability.main_effect_target == "7"
+                    ) or (
+                        self.ability.is_continuous_effect()
+                        and self.ability.continuous_effect_target == "7"
                     ):
                         main = self.state.party[self.eval_main_idx]
                         if main is None:

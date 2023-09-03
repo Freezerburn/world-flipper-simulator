@@ -162,7 +162,7 @@ class OnAttackBuffActivateCondition(WorldFlipperCondition):
         return ["ability_description_instant_trigger_kind_condition"]
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
-        for idx in self._only_mains(char_idxs):
+        for idx in char_idxs:
             if self.state.ability_condition_active[idx][self.ability_idx]:
                 return True
         return False
