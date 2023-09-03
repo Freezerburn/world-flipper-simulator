@@ -45,6 +45,18 @@ class AttackMainEffect(WorldFlipperEffect):
         return True
 
 
+class DirectHitDamageMainEffect(WorldFlipperEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_direct_damage"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        if not self.is_target_main():
+            return False
+        self.ctx.stat_mod_da_damage += self._calc_abil_lv()
+        return True
+
+
 class SkillDamageMainEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:

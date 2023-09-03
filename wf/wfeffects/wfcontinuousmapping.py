@@ -10,6 +10,7 @@ continuous_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
     "5": MultiballCountContinuousCondition,
     "8": BuffActiveContinuousCondition,
     "9": AttackBuffActiveContinuousCondition,
+    "30": PierceActiveContinuousCondition,
     "37": AttackBuffsOnSelfContinuousCondition,
     "105": SkillGaugeAboveContinuousCondition,
     # NOTE: Condition is always hardcoded as Debuff.

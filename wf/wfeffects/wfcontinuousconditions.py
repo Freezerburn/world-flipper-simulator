@@ -99,3 +99,12 @@ class AttackBuffsOnSelfContinuousCondition(WorldFlipperContinuousCondition):
         if self.multiplier == 0:
             return False
         return True
+
+
+class PierceActiveContinuousCondition(WorldFlipperContinuousCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_condition"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        return self.state.pierce_active

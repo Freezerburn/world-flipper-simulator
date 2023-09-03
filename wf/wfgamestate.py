@@ -42,10 +42,13 @@ class GameState:
         self.total_powerflips = 0
         self.total_powerflip_hits = 0
         self.total_ball_flips = 0
+        self.direct_hits = [0] * 3
+        self.total_direct_hits = 0
         self.num_multiballs = 0
         self.buffs = [[], [], []]
         self.combos_reached: dict[int, int] = {}
-        self.in_fever = False
+        self.fever_active = False
+        self.pierce_active = False
         self.enemy: Optional[Enemy] = None
 
     def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:

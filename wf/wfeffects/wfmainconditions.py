@@ -153,7 +153,7 @@ class InFeverCondition(WorldFlipperCondition):
         return ["ability_description_instant_trigger_kind_fever"]
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
-        return self.state.in_fever
+        return self.state.fever_active
 
 
 class OnAttackBuffActivateCondition(WorldFlipperCondition):
@@ -166,3 +166,19 @@ class OnAttackBuffActivateCondition(WorldFlipperCondition):
             if self.state.ability_condition_active[idx][self.ability_idx]:
                 return True
         return False
+
+
+class OnCountDirectHitsCondition(WorldFlipperCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_instant_trigger_kind_direct_attack"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.multiplier = 0
+        amt = self._calc_abil_lv()
+        for idx in self._only_mains(char_idxs):
+            if self.state.direct_hits[idx] >= amt:
+                self.multiplier += math.floor(self.state.direct_hits[idx] / amt)
+        if self.multiplier == 0:
+            return False
+        return True

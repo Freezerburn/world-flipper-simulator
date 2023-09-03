@@ -1,8 +1,7 @@
-import enum
 from unittest import TestCase
 import copy
 
-from wf import WorldFlipperData, CharPosition, DamageFormulaContext, Element, Buff
+from wf import WorldFlipperData, CharPosition, Element, Buff
 from wf.wfenemy import Enemy
 from wf.wfenum import Debuff
 from wf.wfgamestate import GameState
@@ -66,7 +65,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab5"):
             sub_state = copy.deepcopy(state)
-            sub_state.in_fever = True
+            sub_state.fever_active = True
             sub_state.ability_condition_active[0][4] = True
 
             df = sonia.abilities[4][0].eval_effect(sonia, sub_state)
@@ -78,7 +77,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
-            sub_state.in_fever = True
+            sub_state.fever_active = True
             sub_state.ability_condition_active[0][5] = True
 
             df = sonia.abilities[5][0].eval_effect(sonia, sub_state)
@@ -481,6 +480,63 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = selene.abilities[5][0].eval_effect(vagner, sub_state)
             self.assertAlmostEqual(0.1, df.attack_modifier)
             df = selene.abilities[5][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+
+    def test_remnith(self):
+        remnith, state = self._base_state("lakeside_guardian")
+        sonia = self.wf_data.find("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        acipher = self.wf_data.find("ice_witch_2anv")
+        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.set_member(acipher, CharPosition.MAIN, 2, level=100)
+
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+            sub_state.direct_hits[0] = 21
+
+            df = remnith.abilities[0][0].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(0.4, df.stat_mod_da_damage)
+            df = remnith.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = remnith.abilities[0][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+            df = remnith.abilities[1][0].eval_effect(remnith, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.pierce_active = True
+
+            df = remnith.abilities[1][0].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(1.5, df.stat_mod_da_damage)
+            df = remnith.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = remnith.abilities[1][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.set_member(remnith, CharPosition.UNISON, 0, level=100)
+            sub_state.ability_lvs[1][1] = 6
+            df = remnith.abilities[1][0].eval_effect(sonia, sub_state)
+            self.assertAlmostEqual(1.5, df.stat_mod_da_damage)
+
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+            sub_state.buffs[0] = [Buff.ATTACK, Buff.ATTACK]
+            sub_state.buffs[1] = [Buff.ATTACK]
+
+            df = remnith.abilities[2][0].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(1.6, df.stat_mod_da_damage)
+            df = remnith.abilities[2][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = remnith.abilities[2][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.set_member(remnith, CharPosition.UNISON, 0, level=100)
+            df = remnith.abilities[2][0].eval_effect(remnith, sub_state)
             self.assertIsNone(df)
 
     def test_acipher(self):
