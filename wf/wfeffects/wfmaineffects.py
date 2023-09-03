@@ -16,6 +16,9 @@ def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperEffect]:
         def eval(self) -> bool:
             return False
 
+        def _apply_effect(self, char_idxs: list[int]) -> bool:
+            raise RuntimeError("Should never be called.")
+
     return _NoOpMainEffect
 
 
@@ -24,7 +27,7 @@ class ActiveForSecondsMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_for_second"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         return self.state.ability_condition_active[self.ability_char_idx][
             self.ability_idx
         ]
@@ -35,7 +38,7 @@ class AttackMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_attack"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         self.ctx.attack_modifier += self._calc_abil_lv()
@@ -47,7 +50,7 @@ class SkillDamageMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_skill_damage"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.stat_mod_sd_damage += self._calc_abil_lv()
         return True
 
@@ -57,8 +60,8 @@ class PowerFlipDamageMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_damage"]
 
-    def eval(self) -> bool:
-        if self.eval_char_position != CharPosition.LEADER:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        if not self.is_target_main():
             return False
         self.ctx.stat_mod_pf_damage += self._calc_abil_lv()
         return True
@@ -75,7 +78,7 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if self.state.enemy is None:
             return False
         try:
@@ -91,7 +94,7 @@ class PoisonSlayerMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         if self.state.enemy is None:
@@ -109,7 +112,7 @@ class PoisonAttackMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_attack"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         if self.state.enemy is None:
@@ -127,7 +130,7 @@ class PoisonDirectAttackMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_direct_attack"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         if self.state.enemy is None:
@@ -145,7 +148,7 @@ class SlowDebuffSlayerMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if self.state.enemy is None:
             return False
         try:
@@ -167,7 +170,7 @@ class Lv3PowerFlipDamageMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_damage_lv"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.stat_mod_pf_lv_damage_slayer = self._calc_abil_lv()
         self.ctx.stat_mod_pf_lv_damage_slayer_lv = 3
         return True
@@ -183,7 +186,7 @@ class AttackBuffExtendMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_extend"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.attack_buff_extension += self._calc_abil_lv()
         return True
 
@@ -193,7 +196,7 @@ class PowerFlipComboCountDownMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_combo_count_down"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.pf_combo_reduction[2] += self._calc_abil_lv()
         return True
 
@@ -203,10 +206,9 @@ class IncreaseSkillChargeMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_skill_gauge"]
 
-    def eval(self) -> bool:
-        self.ctx.skill_charge[
-            self.state.main_index(self.eval_char_idx)
-        ] += self._calc_abil_lv()
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in self._only_mains(char_idxs):
+            self.ctx.skill_charge[idx] += self._calc_abil_lv()
         return True
 
 
@@ -215,8 +217,9 @@ class SecondSkillGaugeMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_second_skill_gauge"]
 
-    def eval(self) -> bool:
-        self.ctx.skill_gauge_max[self.state.main_index(self.eval_char_idx)] += 100
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in self._only_mains(char_idxs):
+            self.ctx.skill_gauge_max[idx] += 100
         return True
 
 
@@ -225,7 +228,7 @@ class InstantDamageMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         return False
 
 
@@ -234,7 +237,7 @@ class PierceMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         self.ctx.pierce_active = True
@@ -246,7 +249,7 @@ class FeverGainRateMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_fever_point"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         if not self.is_target_main():
             return False
         self.ctx.fever_gain_from_attacks += self._calc_abil_lv()
@@ -258,10 +261,7 @@ class ResistUpMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_common_content_element_resistance"]
 
-    def eval(self) -> bool:
-        element = element_ab_to_enum(self.ability.main_effect_element)
-        if self.eval_char.element != element:
-            return False
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.stat_mod_element_resists[Element.FIRE] += self._calc_abil_lv()
         return True
 
@@ -271,8 +271,9 @@ class IncreaseHpMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_hp"]
 
-    def eval(self) -> bool:
-        self.ctx.increased_hp[self.eval_char_idx] += self._calc_abil_lv()
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in self._only_mains(char_idxs):
+            self.ctx.increased_hp[idx] += self._calc_abil_lv()
         return True
 
 
@@ -281,6 +282,6 @@ class IncreaseComboMainEffect(WorldFlipperEffect):
     def ui_key() -> list[str]:
         return ["ability_description_condition_content_combo_boost"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.combo += self._calc_abil_lv()
         return True

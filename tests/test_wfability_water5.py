@@ -166,8 +166,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
     def test_ellya(self):
         ellya, state = self._base_state("lightbullet_wiz_ny20")
         sonia = self.wf_data.find("brown_fighter")
-        acipher = self.wf_data.find("ice_witch_2anv")
         vagner = self.wf_data.find("fire_dragon")
+        acipher = self.wf_data.find("ice_witch_2anv")
         state.set_member(sonia, CharPosition.UNISON, 0)
         state.set_member(vagner, CharPosition.MAIN, 1)
         state.set_member(acipher, CharPosition.UNISON, 1)
@@ -307,9 +307,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
             df = cipher.abilities[2][0].eval_effect(acipher, sub_state)
-            self.assertIsNone(df)
+            self.assertAlmostEqual(1.3, df.stat_mod_element_resists[Element.FIRE])
             df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
-            self.assertIsNone(df)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
 
         with self.subTest("ab4"):
             sub_state = copy.deepcopy(state)

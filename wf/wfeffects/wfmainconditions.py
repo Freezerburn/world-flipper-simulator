@@ -18,7 +18,10 @@ class OnBattleStartMainCondition(WorldFlipperCondition):
         return ["ability_description_instant_trigger_kind_first_flip"]
 
     def eval(self) -> bool:
-        return self.should_run()
+        return True
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        raise RuntimeError("Should never be called.")
 
 
 def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperCondition]:
@@ -27,7 +30,7 @@ def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperCondition]:
         def ui_key() -> list[str]:
             return ["ability_description_n_times"]
 
-        def eval(self) -> bool:
+        def _apply_effect(self, char_idxs: list[int]) -> bool:
             match following_ui_name:
                 case "ability_description_instant_trigger_kind_power_flip":
                     self.multiplier = self._calc_multiplier(
@@ -61,52 +64,13 @@ class OnSkillInvokeMainCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_invoke"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         activations_per_effect = self._calc_abil_lv()
-        element = element_ab_to_enum(self.ability.main_condition_element)
         self.multiplier = 0
-        match (self.ability.main_condition_target, self.ability.main_effect_target):
-            case ("0", "0"):
-                # When own skill activates, buff self.
-                if element is not None and self.eval_char.element != element:
-                    return False
-                self.multiplier += (
-                    self.state.skill_activations[self.eval_char_idx]
-                    / activations_per_effect
-                )
-            case ("5", "7"):
-                # When anyone's skill activates, buff them.
-                if self.eval_char_idx != self.ability_char_idx:
-                    return False
-                if element is None or self.eval_char.element != element:
-                    return False
-                self.multiplier += (
-                    self.state.skill_activations[self.eval_char_idx]
-                    / activations_per_effect
-                )
-            case ("7", "0") | ("7", ""):
-                # When someone's skill activates, buff self/all.
-                for idx, p in enumerate(self.state.party):
-                    if p is None:
-                        continue
-                    if element is None or p.element == element:
-                        self.multiplier += (
-                            self.state.skill_activations[idx] / activations_per_effect
-                        )
-            case _:
-                raise RuntimeError(
-                    f"[{self.ability.name} Unknown target combo: "
-                    f"{self.ability.main_condition_target}, "
-                    f"{self.ability.main_effect_target}"
-                )
-
-        # If we didn't achieve the activation condition across the entire party, then this damage
-        # calculation is invalid. The best example of this is if there's an activation condition
-        # that has a character getting a buff when activating a skill, but it has an element
-        # restriction on it. In that case if the unit isn't that element, then we'd end up with
-        # an invalid formula.
-        if self.multiplier == 0:
-            return False
+        for idx in char_idxs:
+            self.multiplier += (
+                self.state.skill_activations[idx] / activations_per_effect
+            )
         # There are effect types that don't care about multipliers. An example of this is
         # AHanabi's ability 2, which deals damage to all units when a skill is activated with
         # a cooldown on how often this can occur.
@@ -124,11 +88,19 @@ class OnSkillGaugeReach100MainCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_max"]
 
-    def eval(self) -> bool:
-        self.multiplier = self._calc_multiplier(
-            int(self.ability.main_effect_max_multiplier),
-            self.state.times_skill_reached_100[self.ability_char_idx],
-        )
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.multiplier = 0
+        # Calling code has no idea that we might need to limit the indexes to just the main unit ones.
+        # So we guard against the possibility of being handed, as an example, every unit in the party.
+        # We also need to avoid double-counting any individual set of units in the party.
+        main_idxs: set[int] = set()
+        for idx in char_idxs:
+            main_idxs.add(self.state.main_index(idx))
+        for idx in main_idxs:
+            self.multiplier += self._calc_multiplier(
+                int(self.ability.main_effect_max_multiplier),
+                self.state.times_skill_reached_100[idx],
+            )
         return True
 
 
@@ -137,17 +109,10 @@ class PartyMembersAddedMainCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_member"]
 
-    def eval(self) -> bool:
-        num_element = 0
-        element = element_ab_to_enum(self.ability.condition_target_element)
-        for p in self.state.party:
-            if p is None:
-                continue
-            if p.element == element:
-                num_element += 1
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.multiplier = self._calc_multiplier(
             int(self.ability.main_effect_max_multiplier),
-            num_element,
+            len(char_idxs),
         )
         return True
 
@@ -157,7 +122,7 @@ class Lv3PowerFlipsMainCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_power_flip_lv"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.multiplier = self._calc_multiplier(
             int(self.ability.main_effect_max_multiplier),
             self.state.powerflips_by_lv[2],
@@ -170,7 +135,7 @@ class ComboReachedMainCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_combo"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         combo_req = self._calc_abil_lv()
         num_combos = self.state.combos_reached.get(combo_req, 0)
         max_combos = int(self.ability.main_effect_max_multiplier)
@@ -187,5 +152,5 @@ class InFeverCondition(WorldFlipperCondition):
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_fever"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         return self.state.in_fever

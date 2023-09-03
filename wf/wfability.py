@@ -258,7 +258,7 @@ class WorldFlipperAbility:
         else:
             return continuous_effect_mapping
 
-    def _eval_effect(
+    def eval_effect(
         self,
         char: WorldFlipperCharacter,
         state: GameState,
@@ -298,13 +298,6 @@ class WorldFlipperAbility:
             if not e(effect_param).eval():
                 return None
         return effect_param.ctx
-
-    def eval_effect(
-        self,
-        char: WorldFlipperCharacter,
-        state: GameState,
-    ) -> Optional[DamageFormulaContext]:
-        return self._eval_effect(char, state)
 
     def __eq__(self, other):
         if isinstance(other, WorldFlipperAbility):

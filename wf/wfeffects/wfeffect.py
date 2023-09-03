@@ -45,13 +45,133 @@ class WorldFlipperBaseEffect(ABC):
         self.multiplier = params.multiplier
 
         self.eval_char_idx = self.state.party.index(self.eval_char)
+        self.eval_main_idx = self.state.main_index(self.eval_char_idx)
         self.eval_char_position = self.state.position(self.eval_char)
         self.ability_char_idx, self.ability_idx = self.state.ability_index(self.ability)
+        self.ability_main_idx = self.state.main_index(self.ability_char_idx)
         self.ability_char_position = self.state.position(self.ability_char)
         self.lv = self.state.ability_lvs[self.ability_char_idx][self.ability_idx]
 
-    @abstractmethod
     def eval(self) -> bool:
+        if self.ability.is_main_effect():
+            if self.is_condition():
+                target = self.ability.main_condition_target
+                if target == "":
+                    element = element_ab_to_enum(self.ability.condition_target_element)
+                else:
+                    element = element_ab_to_enum(self.ability.main_condition_element)
+            else:
+                element = element_ab_to_enum(self.ability.main_effect_element)
+                target = self.ability.main_effect_target
+        else:
+            if self.is_condition():
+                element = element_ab_to_enum(self.ability.continuous_condition_element)
+                target = self.ability.continuous_condition_target
+            else:
+                element = element_ab_to_enum(self.ability.continuous_effect_element)
+                target = self.ability.continuous_effect_target
+
+        match target:
+            case "0":
+                # Own/self.
+                # NOTE: As far as I'm aware, this target always refers to the unit whose ability is
+                # being evaluated. NOT the unit that was passed as an argument for evaluation.
+                main = self.state.party[self.ability_main_idx]
+                if main is None:
+                    return False
+                if element is not None and main.element != element:
+                    return False
+                return self._apply_effect([self.ability_char_idx])
+
+            case "2":
+                # Leader.
+                leader = self.state.party[0]
+                if leader is None:
+                    return False
+                if element is not None and leader.element != element:
+                    return False
+                return self._apply_effect([0])
+
+            case "" | "1" | "5":
+                # All (other) party members.
+                # "1" means "all other". In this case I'm defining "other" as any unit that is not the
+                # unit the ability came from.
+
+                # SPECIAL CASE: Condition target 5 with effect target 7. This means that whenever an
+                # individual unit does a thing, it affects only itself.
+                if target == "5":
+                    if (
+                        self.ability.is_main_effect()
+                        and self.ability.main_effect_target == "7"
+                    ) or (
+                        self.ability.is_continuous_effect()
+                        and self.ability.continuous_effect_target == "7"
+                    ):
+                        main = self.state.party[self.eval_main_idx]
+                        if main is None:
+                            return False
+                        if element is not None and main.element != element:
+                            return False
+                        return self._apply_effect([self.eval_main_idx])
+
+                char_idxs: list[int] = []
+                for idx, p in enumerate(self.state.party):
+                    if p is None:
+                        continue
+                    if target == "1" and idx == self.ability_char_idx:
+                        continue
+                    main = self.state.party[self.state.main_index(idx)]
+                    if main is None:
+                        continue
+                    if element is None or main.element == element:
+                        char_idxs.append(idx)
+                if len(char_idxs) == 0:
+                    return False
+                return self._apply_effect(char_idxs)
+
+            case "7":
+                # Triggering unit.
+
+                # SPECIAL CASE: When the condition target is a triggering unit, and the effect target is
+                # a self unit, then we should check the entire party.
+                if (
+                    self.ability.is_main_effect()
+                    and self.ability.main_effect_target in ("0", "")
+                ) or (
+                    self.ability.is_continuous_effect()
+                    and self.ability.continuous_effect_target in ("0", "")
+                ):
+                    char_idxs: list[int] = []
+                    for idx, p in enumerate(self.state.party):
+                        if p is None:
+                            continue
+                        main = self.state.party[self.state.main_index(idx)]
+                        if main is None:
+                            continue
+                        if element is None or main.element == element:
+                            char_idxs.append(idx)
+                    if len(char_idxs) == 0:
+                        return False
+                    return self._apply_effect(char_idxs)
+
+                main = self.state.party[self.eval_main_idx]
+                if main is None:
+                    return False
+                if element is not None and main.element != element:
+                    return False
+                return self._apply_effect([self.eval_char_idx])
+
+            case _:
+                raise RuntimeError(f"[{self.ability.name}] Unhandled target: {target}")
+
+    def _only_mains(self, char_idxs: list[int]):
+        main_idxs: set[int] = set()
+        for idx in char_idxs:
+            main_idxs.add(self.state.main_index(idx))
+        return main_idxs
+
+    @abstractmethod
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         pass
 
     @abstractmethod

@@ -13,10 +13,13 @@ class HPAbovePercentContinuousCondition(WorldFlipperContinuousCondition):
     def ui_key() -> list[str]:
         return ["ability_description_during_trigger_kind_hp_high"]
 
-    def eval(self) -> bool:
-        current_hp = self.state.current_hp[self.state.main_index(self.ability_char_idx)]
-        max_hp = self.state.max_hp[self.state.main_index(self.ability_char_idx)]
-        return (max_hp / current_hp) >= self._calc_abil_lv()
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in char_idxs:
+            current_hp = self.state.current_hp[self.state.mains_only_index(idx)]
+            max_hp = self.state.max_hp[self.state.mains_only_index(idx)]
+            if (max_hp / current_hp) < self._calc_abil_lv():
+                return False
+        return True
 
 
 class MultiballCountContinuousCondition(WorldFlipperContinuousCondition):
@@ -24,7 +27,7 @@ class MultiballCountContinuousCondition(WorldFlipperContinuousCondition):
     def ui_key() -> list[str]:
         return ["ability_description_during_trigger_kind_multiball"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         return self.state.num_multiballs > self._calc_abil_lv()
 
 
@@ -33,8 +36,11 @@ class BuffActiveContinuousCondition(WorldFlipperContinuousCondition):
     def ui_key() -> list[str]:
         return ["ability_description_during_trigger_kind_condition"]
 
-    def eval(self) -> bool:
-        return len(self.state.buffs[self.state.main_index(self.eval_char_idx)]) > 0
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in char_idxs:
+            if len(self.state.buffs[self.state.main_index(idx)]) == 0:
+                return False
+        return True
 
 
 class SkillGaugeAboveContinuousCondition(WorldFlipperContinuousCondition):
@@ -42,20 +48,11 @@ class SkillGaugeAboveContinuousCondition(WorldFlipperContinuousCondition):
     def ui_key() -> list[str]:
         return ["ability_description_during_trigger_kind_skill_gauge_high"]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         amt = self._calc_abil_lv()
-        match self.ability.continuous_effect_target:
-            case "0":
-                target_char_idx = self.ability_char_idx
-            case "7":
-                target_char_idx = self.eval_char_idx
-            case _:
-                raise RuntimeError(
-                    f"[{self.ui_name[0]}] Unhandled continuous "
-                    f"target: {self.ability.continuous_effect_target}"
-                )
-        if self.state.skill_charge[target_char_idx] <= amt:
-            return False
+        for idx in char_idxs:
+            if self.state.skill_charge[self.state.main_index(idx)] <= amt:
+                return False
         return True
 
 
@@ -66,13 +63,9 @@ class DebuffsOnEnemyContinuousCondition(WorldFlipperContinuousCondition):
             "ability_description_during_trigger_kind_one_of_enemy_condition_high_count"
         ]
 
-    def eval(self) -> bool:
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
         enemy = self.state.enemy
         if enemy is None:
             return False
-        element = element_ab_to_enum(self.ability.continuous_effect_element)
-        if element is not None and self.eval_char.element != element:
-            return False
-
         self.multiplier = len(enemy.debuffs) * self._calc_abil_lv()
         return True

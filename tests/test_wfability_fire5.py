@@ -176,7 +176,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         state.set_member(ahanabi, CharPosition.UNISON, 0)
         state.ability_lvs[1][4] = 6
         df = ahanabi.abilities[4][0].eval_effect(vagner, state)
-        self.assertAlmostEqual(0.1, df.attack_modifier)
+        self.assertAlmostEqual(0.2, df.attack_modifier)
         df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
         self.assertIsNone(df)
 

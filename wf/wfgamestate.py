@@ -64,6 +64,11 @@ class GameState:
             return char_idx
         return char_idx - 1
 
+    def mains_only_index(self, char_idx: int) -> int:
+        if char_idx % 2 == 0:
+            return int(char_idx / 2)
+        return int((char_idx - 1) / 2)
+
     def unison_index(self, char_idx: int):
         if char_idx % 2 == 1:
             return char_idx
