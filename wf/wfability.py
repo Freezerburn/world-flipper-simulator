@@ -225,7 +225,7 @@ class WorldFlipperAbility:
     def effect_ui(self) -> list[str]:
         if self.effect_index() not in self._effect_mapping():
             raise RuntimeError(
-                f"[{self.name} Unknown {self.effect_type_name()} condition index: "
+                f"[{self.name} Unknown {self.effect_type_name()} effect index: "
                 f"{self.effect_index()}"
             )
         ret = []

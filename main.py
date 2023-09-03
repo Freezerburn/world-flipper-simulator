@@ -201,6 +201,17 @@ def test_abilities2():
 
 
 def main():
+    # wf = WorldFlipperData("wf_data_json")
+    # selene = wf.find("commander")
+    # cipher = wf.find("ice_witch")
+    # pprint.pprint(
+    #     deepdiff.DeepDiff(
+    #         selene.abilities[0][1],
+    #         cipher.abilities[0][0],
+    #         exclude_types=[WorldFlipperCharacter],
+    #     )
+    # )
+
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")

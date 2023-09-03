@@ -45,6 +45,16 @@ class FireResistsContinuousEffect(WorldFlipperEffect):
         return True
 
 
+class DirectHitDamageContinuousEffect(WorldFlipperEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_direct_damage"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.ctx.stat_mod_da_damage += self._calc_abil_lv()
+        return True
+
+
 class IncreasedDirectHitsContinuousEffect(WorldFlipperEffect):
     @staticmethod
     def ui_key() -> list[str]:

@@ -1,7 +1,7 @@
 from unittest import TestCase
 import copy
 
-from wf import WorldFlipperData, CharPosition, DamageFormulaContext, Element
+from wf import WorldFlipperData, CharPosition, DamageFormulaContext, Element, Buff
 from wf.wfenemy import Enemy
 from wf.wfenum import Debuff
 from wf.wfgamestate import GameState
@@ -242,9 +242,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(sonia, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.set_member(acipher, CharPosition.MAIN, 2)
+        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.set_member(acipher, CharPosition.MAIN, 2, level=100)
 
         with self.subTest("leader"):
             pass
@@ -319,6 +319,107 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
+
+    def test_selene(self):
+        selene, state = self._base_state("commander")
+        sonia = self.wf_data.find("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        acipher = self.wf_data.find("ice_witch_2anv")
+        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.set_member(acipher, CharPosition.UNISON, 1, level=100)
+
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+
+            df = selene.abilities[0][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = selene.abilities[0][1].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(1.15, df.attack_buff_extension)
+
+            df = selene.abilities[0][0].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[0][1].eval_effect(sonia, sub_state)
+            self.assertIsNone(df)
+
+            df = selene.abilities[0][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[0][1].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(1.15, df.attack_buff_extension)
+
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+            sub_state.buffs[0] = [Buff.ATTACK]
+
+            df = selene.abilities[1][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = selene.abilities[1][1].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.2, df.stat_mod_da_damage)
+
+            df = selene.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.2, df.attack_modifier)
+            df = selene.abilities[1][1].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.2, df.stat_mod_da_damage)
+
+            sub_state.buffs[0] = []
+            df = selene.abilities[1][0].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[1][1].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[1][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[1][1].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+
+            df = selene.abilities[2][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.7, df.stat_mod_da_damage)
+            df = selene.abilities[2][1].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(1.5, df.stat_mod_da_damage)
+            df = selene.abilities[2][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[2][1].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.current_hp[0] = sub_state.max_hp[0] * 0.75
+            df = selene.abilities[2][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.7, df.stat_mod_da_damage)
+            df = selene.abilities[2][1].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.current_hp[0] = 50
+            df = selene.abilities[2][0].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+            df = selene.abilities[2][1].eval_effect(selene, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+            df = selene.abilities[3][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.5, df.skill_charge[0])
+
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+            sub_state.ability_condition_active[0][4] = True
+            df = selene.abilities[4][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+
+            sub_state.set_member(selene, CharPosition.UNISON, 1, level=100)
+            sub_state.ability_lvs[4][4] = 6
+            sub_state.ability_condition_active[4][4] = True
+            df = selene.abilities[4][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+            sub_state.buffs[0] = [Buff.ATTACK, Buff.ATTACK]
+
+            df = selene.abilities[5][0].eval_effect(selene, sub_state)
+            self.assertAlmostEqual(0.1, df.attack_modifier)
+            df = selene.abilities[5][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(0.1, df.attack_modifier)
 
     def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")

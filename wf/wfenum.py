@@ -4,6 +4,7 @@ from typing import Optional, Literal
 
 class Element(StrEnum):
     ANY = auto()
+    NONE = auto()
 
     FIRE = auto()
     WATER = auto()
@@ -38,6 +39,10 @@ class Debuff(StrEnum):
     FIRE_RESISTANCE = auto()
     POISON = auto()
     SLOW = auto()
+
+
+class Buff(StrEnum):
+    ATTACK = auto()
 
 
 AbilityElementType = Literal["Red", "Yellow", "Green", "Blue", "White", "Black"]

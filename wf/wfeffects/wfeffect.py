@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
 
-from wf.wfenum import CharPosition, element_ab_to_enum, AbilityElementType
+from wf.wfenum import CharPosition, element_ab_to_enum, AbilityElementType, Element
 
 if TYPE_CHECKING:
     from wf import (
@@ -101,11 +101,14 @@ class WorldFlipperBaseEffect(ABC):
                 # individual unit does a thing, it affects only itself.
                 if target == "5":
                     if (
-                        self.ability.is_main_effect()
-                        and self.ability.main_effect_target == "7"
-                    ) or (
-                        self.ability.is_continuous_effect()
-                        and self.ability.continuous_effect_target == "7"
+                        (
+                            self.ability.is_main_effect()
+                            and self.ability.main_effect_target == "7"
+                        )
+                        or (
+                            self.ability.is_continuous_effect()
+                            and self.ability.continuous_effect_target == "7"
+                        )
                     ):
                         main = self.state.party[self.eval_main_idx]
                         if main is None:

@@ -19,7 +19,7 @@ main_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
     # "20": None,
     # "22": None,
     # "23": None,
-    # "24": None,
+    "24": OnAttackBuffActivateCondition,
     "3": NTimesCondition("ability_description_instant_trigger_kind_ball_flip"),
     # "4": ["ability_description_instant_trigger_kind_fever"],
     "4": InFeverCondition,
