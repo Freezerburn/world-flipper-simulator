@@ -133,7 +133,7 @@ class WorldFlipperBaseEffect(ABC):
                 # Triggering unit.
 
                 # SPECIAL CASE: When the condition target is a triggering unit, and the effect target is
-                # a self unit, then we should check the entire party.
+                # a self unit (or a global effect), then we should check the entire party.
                 if (
                     self.ability.is_main_effect()
                     and self.ability.main_effect_target in ("0", "")
