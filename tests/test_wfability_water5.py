@@ -1,3 +1,4 @@
+import enum
 from unittest import TestCase
 import copy
 
@@ -314,11 +315,56 @@ class TestWorldFlipperAbilityWater5(TestCase):
         with self.subTest("ab4"):
             sub_state = copy.deepcopy(state)
 
+            df = cipher.abilities[3][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(1.15, df.stat_mod_element_resists[Element.FIRE])
+            df = cipher.abilities[3][0].eval_effect(vagner, sub_state)
+            self.assertAlmostEqual(1.15, df.stat_mod_element_resists[Element.FIRE])
+            df = cipher.abilities[3][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(1.15, df.stat_mod_element_resists[Element.FIRE])
+
+            sub_state.current_hp[0] = 50
+            df = cipher.abilities[3][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[3][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[3][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
         with self.subTest("ab5"):
             sub_state = copy.deepcopy(state)
 
+            df = cipher.abilities[4][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.25, df.attack_modifier)
+            df = cipher.abilities[4][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[4][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.25, df.attack_modifier)
+
+            sub_state.current_hp[0] = 50
+            df = cipher.abilities[4][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[4][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[4][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
+
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
+
+            df = cipher.abilities[5][0].eval_effect(cipher, sub_state)
+            self.assertAlmostEqual(0.25, df.attack_modifier)
+            df = cipher.abilities[5][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[5][0].eval_effect(acipher, sub_state)
+            self.assertAlmostEqual(0.25, df.attack_modifier)
+
+            sub_state.current_hp[0] = 50
+            df = cipher.abilities[5][0].eval_effect(cipher, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[5][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = cipher.abilities[5][0].eval_effect(acipher, sub_state)
+            self.assertIsNone(df)
 
     def test_selene(self):
         selene, state = self._base_state("commander")
