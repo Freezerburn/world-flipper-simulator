@@ -2,7 +2,7 @@ from typing import Literal
 import pprint
 import deepdiff
 
-from wf import CharPosition
+from wf import CharPosition, Element
 from wf.wf import WorldFlipperData
 from wf.wfchar import WorldFlipperCharacter
 from wf.wfenemy import Enemy
@@ -211,11 +211,19 @@ def main():
     #         exclude_types=[WorldFlipperCharacter],
     #     )
     # )
+    wf = WorldFlipperData("wf_data_json")
+    for c in wf.characters.values():
+        if c.element != Element.WATER:
+            continue
+        for aa in c.abilities:
+            for a in aa:
+                if a.is_main_effect() and a.main_effect_target == "":
+                    print(a.name)
 
     # debug_unknown_effect_indices()
     # list_effect_indices("main_condition")
     # diff_effect("continuous_effect", "45")
-    find_effect("main_effect", "510")
+    # find_effect("main_effect", "510")
     # diff_effect("main_condition", "0", base="fire_dragon_4")
     # diff_effect("continuous_condition", "134", base="ice_witch_2anv_1")
     # test_abilities2()

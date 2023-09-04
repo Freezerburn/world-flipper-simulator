@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Tuple, Optional
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
 
-from wf.wfenum import CharPosition, element_ab_to_enum, AbilityElementType, Element
+from wf.wfenum import (
+    CharPosition,
+    element_ab_to_enum,
+    AbilityElementType,
+    Element,
+    EffectType,
+)
 
 if TYPE_CHECKING:
     from wf import (
@@ -14,6 +20,40 @@ if TYPE_CHECKING:
         DamageFormulaContext,
     )
     from wf.wfgamestate import GameState
+
+
+# World Flipper's ability target definitions can be... quirky. An example of this is AHanabi's ability 1,
+# second effect. It says that "for every fire character in the party...", but the target for this
+# condition is... an empty string, which seems to mean something is "global" in some way. While you could
+# consider a condition that looks at each party's unit element as "global", it's difficult to reconcile
+# that behavior with most global behavior that looks at an individual unit where the result can apply
+# to the global state.
+#
+# Because of oddities like these (and potentially many more to be found), we're now going to maintain
+# effectively a "quirks mode" for abilities. This will be used to take any targets that just don't seem
+# to make sense, or that might require some logic that is maybe specific to a condition/effect in order
+# to parse out whatever the heck the target is doing, and turn them into something that makes sense
+# according to the general logic of targets.
+_index_target_overrides: dict[Tuple[EffectType, str], str] = {
+    (EffectType.MAIN_CONDITION, "50"): "5",
+}
+
+
+def simulate_timed_effect(
+    state: GameState, time_to_activate: int, time_active: int
+) -> bool:
+    if time_to_activate > state.seconds_passed:
+        return False
+    time_remaining = state.seconds_passed - time_to_activate
+    time_to_activate -= time_active
+    while time_remaining >= 0:
+        if time_remaining <= time_active:
+            return True
+        time_remaining -= time_active
+        if time_remaining <= time_to_activate:
+            return False
+        time_remaining -= time_to_activate
+    return False
 
 
 @dataclass
@@ -55,6 +95,8 @@ class WorldFlipperBaseEffect(ABC):
     def eval(self) -> bool:
         if self.ability.is_main_effect():
             if self.is_condition():
+                index = self.ability.main_condition_index
+                index_type = EffectType.MAIN_CONDITION
                 target = self.ability.main_condition_target
                 # SPECIAL CASE: I *think* when an ability has "if self is a(n) <element> character", this
                 # gets set to 2 and then the random other element index gets set to an element. I first
@@ -67,15 +109,23 @@ class WorldFlipperBaseEffect(ABC):
                 else:
                     element = element_ab_to_enum(self.ability.main_condition_element)
             else:
+                index = self.ability.main_effect_index
+                index_type = EffectType.MAIN_EFFECT
                 element = element_ab_to_enum(self.ability.main_effect_element)
                 target = self.ability.main_effect_target
         else:
             if self.is_condition():
+                index = self.ability.continuous_condition_index
+                index_type = EffectType.CONTINUOUS_CONDITION
                 element = element_ab_to_enum(self.ability.continuous_condition_element)
                 target = self.ability.continuous_condition_target
             else:
+                index = self.ability.continuous_effect_index
+                index_type = EffectType.CONTINOUS_EFFECT
                 element = element_ab_to_enum(self.ability.continuous_effect_element)
                 target = self.ability.continuous_effect_target
+        if (index_type, index) in _index_target_overrides:
+            target = _index_target_overrides[(index_type, index)]
 
         match target:
             case "0":
@@ -98,7 +148,7 @@ class WorldFlipperBaseEffect(ABC):
                     return False
                 return self._apply_effect([0])
 
-            case "" | "1" | "5":
+            case "1" | "5":
                 # All (other) party members.
                 # "1" means "all other". In this case I'm defining "other" as any unit that is not the
                 # unit the ability came from.
@@ -167,6 +217,15 @@ class WorldFlipperBaseEffect(ABC):
                     return False
                 return self._apply_effect([self.eval_char_idx])
 
+            case "":
+                # "Global" effects, such as powerflip damage or combo up or combo for PF Lv reduction, etc.
+                main = self.state.party[self.eval_main_idx]
+                if main is None:
+                    return False
+                if element is not None and main.element != element:
+                    return False
+                return self._apply_effect([self.eval_char_idx])
+
             case _:
                 raise RuntimeError(f"[{self.ability.name}] Unhandled target: {target}")
 
@@ -192,13 +251,46 @@ class WorldFlipperBaseEffect(ABC):
     def is_condition(self) -> bool:
         pass
 
-    def _calc_abil_lv(self) -> int:
+    def _check_timed(self):
+        if self.state.ability_condition_active[self.ability_char_idx][self.ability_idx]:
+            return True
+        if self.ability.cooldown_time in ("", "0") and self.state.seconds_passed >= 0:
+            if self.ability.is_main_effect():
+                time_to_activate = self._calc_abil_lv(
+                    effect_min=int(self.ability.main_condition_min),
+                    effect_max=int(self.ability.main_condition_max),
+                )
+                time_active = self._calc_abil_lv(
+                    effect_min=int(self.ability.main_effect_duration_min),
+                    effect_max=int(self.ability.main_effect_duration_max),
+                )
+            else:
+                time_to_activate = self._calc_abil_lv(
+                    effect_min=int(self.ability.continuous_condition_min),
+                    effect_max=int(self.ability.continuous_condition_max),
+                )
+                time_active = self._calc_abil_lv(
+                    effect_min=int(self.ability.continuous_effect_min),
+                    effect_max=int(self.ability.continuous_effect_max),
+                )
+            return simulate_timed_effect(
+                self.state, int(time_to_activate / 60), int(time_active / 60)
+            )
+        return False
+
+    def _calc_abil_lv(
+        self, effect_min: Optional[int] = None, effect_max: Optional[int] = None
+    ) -> int:
         """
         Abilities generally have a linear increment on each level they gain on the mana board between a minimum
         and a maximum. This calculates the current value for an ability based on its current level.
         """
-        v_min = self.effect_min() / 100_000
-        v_max = self.effect_max() / 100_000
+        if effect_min is None:
+            effect_min = self.effect_min()
+        if effect_max is None:
+            effect_max = self.effect_max()
+        v_min = effect_min / 100_000
+        v_max = effect_max / 100_000
         step = abs(v_max - v_min) / 5
         amt = v_min + step * (self.lv - 1)
         if not self.is_condition():

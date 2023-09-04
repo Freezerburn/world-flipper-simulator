@@ -31,6 +31,7 @@ class DamageFormulaContext:
         self.skill_charge_speed = [1] * 3
         self.skill_gauge_max = [100] * 3
         self.attack_buff_extension = 1
+        self.pierce_buff_extension = 1
         self.pierce_active = False
         self.fever_gain_from_attacks = 1
         self.increased_hp = [1] * 6

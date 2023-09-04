@@ -5,7 +5,7 @@ from abc import ABC
 import math
 
 from wf.wfenum import CharPosition, element_ab_to_enum
-from wf.wfeffects.wfeffect import WorldFlipperCondition
+from wf.wfeffects.wfeffect import WorldFlipperCondition, simulate_timed_effect
 
 if TYPE_CHECKING:
     from wf.wfchar import WorldFlipperCharacter
@@ -147,6 +147,15 @@ class ComboReachedMainCondition(WorldFlipperCondition):
         return True
 
 
+class EveryNSecondsMainCondition(WorldFlipperCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["TODO"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        return self._check_timed()
+
+
 class InFeverCondition(WorldFlipperCondition):
     @staticmethod
     def ui_key() -> list[str]:
@@ -154,6 +163,15 @@ class InFeverCondition(WorldFlipperCondition):
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         return self.state.fever_active
+
+
+class InPierceCondition(WorldFlipperCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["TODO"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        return self.state.pierce_active
 
 
 class OnAttackBuffActivateCondition(WorldFlipperCondition):
@@ -181,4 +199,17 @@ class OnCountDirectHitsCondition(WorldFlipperCondition):
                 self.multiplier += math.floor(self.state.direct_hits[idx] / amt)
         if self.multiplier == 0:
             return False
+        return True
+
+
+class SelfIsElementCondition(WorldFlipperCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["TODO"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        element = element_ab_to_enum(self.ability.condition_target_element)
+        for idx in self._only_mains(char_idxs):
+            if self.state.party[idx].element != element:
+                return False
         return True

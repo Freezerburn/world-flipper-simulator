@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 class GameState:
     def __init__(self):
+        self.seconds_passed = -1
         # 0: LEADER        (col 0)
         # 1: LEADER UNISON (col 1)
         # 2: MAIN          (col 1)

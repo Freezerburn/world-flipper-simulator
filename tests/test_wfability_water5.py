@@ -539,6 +539,50 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = remnith.abilities[2][0].eval_effect(remnith, sub_state)
             self.assertIsNone(df)
 
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+
+            df = remnith.abilities[3][0].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(1.15, df.attack_buff_extension)
+            df = remnith.abilities[3][1].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(1.1, df.pierce_buff_extension)
+
+            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.set_member(remnith, CharPosition.UNISON, 1, level=100)
+            sub_state.ability_lvs[3][3] = 6
+
+            df = remnith.abilities[3][0].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+            df = remnith.abilities[3][1].eval_effect(vagner, sub_state)
+            self.assertIsNone(df)
+
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+            sub_state.seconds_passed = 61
+
+            df = remnith.abilities[4][0].eval_effect(remnith, sub_state)
+            self.assertTrue(df.pierce_active)
+
+            sub_state.seconds_passed = 50
+            df = remnith.abilities[4][0].eval_effect(remnith, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.ability_condition_active[0][4] = True
+            df = remnith.abilities[4][0].eval_effect(remnith, sub_state)
+            self.assertTrue(df.pierce_active)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+            sub_state.pierce_active = True
+            sub_state.seconds_passed = 20
+
+            df = remnith.abilities[5][0].eval_effect(remnith, sub_state)
+            self.assertIsNone(df)
+
+            sub_state.ability_condition_active[0][5] = True
+            df = remnith.abilities[5][0].eval_effect(remnith, sub_state)
+            self.assertAlmostEqual(0.6, df.attack_modifier)
+
     def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")

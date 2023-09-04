@@ -28,9 +28,7 @@ class ActiveForSecondsMainEffect(WorldFlipperEffect):
         return ["ability_description_for_second"]
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
-        return self.state.ability_condition_active[self.ability_char_idx][
-            self.ability_idx
-        ]
+        return self._check_timed()
 
 
 class AttackMainEffect(WorldFlipperEffect):
@@ -200,6 +198,16 @@ class AttackBuffExtendMainEffect(WorldFlipperEffect):
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.attack_buff_extension += self._calc_abil_lv()
+        return True
+
+
+class PierceBuffExtendMainEffect(WorldFlipperEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_condition_extend"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.ctx.pierce_buff_extension += self._calc_abil_lv()
         return True
 
 
