@@ -99,7 +99,7 @@ class WorldFlipperBaseEffect(ABC):
         self.ability_char_position = self.state.position(self.ability_char)
         self.lv = self.state.ability_lvs[self.ability_char_idx][self.ability_idx]
 
-    def eval(self) -> bool:
+    def _effect_info(self):
         if self.ability.is_main_effect():
             if self.is_condition():
                 index = self.ability.main_condition_index
@@ -133,6 +133,10 @@ class WorldFlipperBaseEffect(ABC):
                 target = self.ability.continuous_effect_target
         if (index_type, index) in _index_target_overrides:
             target = _index_target_overrides[(index_type, index)]
+        return index, index_type, target, element
+
+    def eval(self) -> bool:
+        index, index_type, target, element = self._effect_info()
 
         match target:
             case "0":
