@@ -4,11 +4,11 @@ import deepdiff
 
 from wf import CharPosition, Element
 from wf.wf import WorldFlipperData
-from wf.wfchar import WorldFlipperCharacter
-from wf.wfenemy import Enemy
+from wf.character import WorldFlipperCharacter
+from wf.enemy import Enemy
 from wf.enum import Debuff
-from wf.wfgamestate import GameState
-from wf.wfdmgformula import DamageFormulaContext
+from wf.game_state import GameState
+from wf.dmg_formula import DamageFormulaContext
 
 EffectEnum = Literal[
     "main_effect", "main_condition", "continuous_effect", "continuous_condition"

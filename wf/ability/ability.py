@@ -1,9 +1,9 @@
 from __future__ import annotations
 from typing import Literal, Optional, TYPE_CHECKING, cast
 
-from wf.wfdmgformula import DamageFormulaContext
+from wf.dmg_formula import DamageFormulaContext
 from wf.enum import AbilityElementType
-from wf.wfgamestate import GameState
+from wf.game_state import GameState
 
 from wf.effect.wfeffect import EffectParams
 from wf.effect.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
@@ -13,7 +13,7 @@ from wf.effect.wfcontinuousmapping import (
 )
 
 if TYPE_CHECKING:
-    from wf.wfchar import WorldFlipperCharacter
+    from wf.character import WorldFlipperCharacter
 
 EffectType = Literal["0", "1"]
 

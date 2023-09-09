@@ -1,7 +1,7 @@
 import ujson
 import weakref
 
-from .wfchar import WorldFlipperCharacter
+from .character import WorldFlipperCharacter
 from wf.ability import WorldFlipperAbility
 
 

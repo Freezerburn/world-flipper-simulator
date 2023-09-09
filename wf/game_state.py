@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Optional, Tuple
 from .enum import CharPosition
 
 if TYPE_CHECKING:
-    from .wfchar import WorldFlipperCharacter
+    from .character import WorldFlipperCharacter
     from wf.ability import WorldFlipperAbility
-    from .wfenemy import Enemy
+    from .enemy import Enemy
 
 
 class GameState:

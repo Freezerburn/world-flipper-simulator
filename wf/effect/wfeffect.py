@@ -19,7 +19,7 @@ if TYPE_CHECKING:
         WorldFlipperCharacter,
         DamageFormulaContext,
     )
-    from wf.wfgamestate import GameState
+    from wf.game_state import GameState
 
 
 # World Flipper's ability target definitions can be... quirky. An example of this is AHanabi's ability 1,

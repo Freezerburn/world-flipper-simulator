@@ -2,9 +2,9 @@ from unittest import TestCase
 import copy
 
 from wf import WorldFlipperData
-from wf.wfenemy import Enemy
+from wf.enemy import Enemy
 from wf.enum import Debuff, CharPosition, Element, Buff
-from wf.wfgamestate import GameState
+from wf.game_state import GameState
 
 
 class TestWorldFlipperAbilityWater5(TestCase):

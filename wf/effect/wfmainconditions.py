@@ -8,7 +8,7 @@ from wf.enum import CharPosition, element_ab_to_enum
 from wf.effect.wfeffect import WorldFlipperCondition, simulate_timed_effect
 
 if TYPE_CHECKING:
-    from wf.wfchar import WorldFlipperCharacter
+    from wf.character import WorldFlipperCharacter
     from wf.effect.wfeffect import WorldFlipperBaseEffect
 
 

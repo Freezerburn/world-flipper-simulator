@@ -4,8 +4,8 @@ from typing import Self, Optional, TYPE_CHECKING, Tuple
 from .enum import PowerFlip, Element
 
 if TYPE_CHECKING:
-    from .wfchar import WorldFlipperCharacter
-    from .wfgamestate import GameState
+    from .character import WorldFlipperCharacter
+    from .game_state import GameState
 
 
 BOW_FAR_LEFT = 0

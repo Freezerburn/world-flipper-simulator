@@ -8,10 +8,26 @@ class EventKind(Enum):
     POWER_FLIP = auto()
     COMBO_REACHED = auto()
     SKILL_ACTIVATED = auto()
+    SKILL_CHARGE_ADD = auto()
+    SKILL_CHARGE_100 = auto()
     ABILITY_ACTIVATED = auto()
+    TOOK_DAMAGE = auto()
+    FEVER_START = auto()
+    FEVER_END = auto()
+
     DIRECT_HIT = auto()
     POWER_FLIP_HIT = auto()
     SKILL_HIT = auto()
+    ABILITY_HIT = auto()
+
+    GAINED_BARRIER = auto()
+    GAINED_BUFF = auto()
+    GAINED_DEBUFF = auto()
+
+    PIERCE_ACTIVATED = auto()
+    FLOAT_ACTIVATED = auto()
+    PIERCE_DEACTIVATED = auto()
+    FLOAT_DEACTIVATED = auto()
 
 
 class Event:

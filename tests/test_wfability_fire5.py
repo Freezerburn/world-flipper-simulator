@@ -2,8 +2,8 @@ from unittest import TestCase
 
 from wf import WorldFlipperData
 from wf.enum import CharPosition
-from wf.wfenemy import Enemy
-from wf.wfgamestate import GameState
+from wf.enemy import Enemy
+from wf.game_state import GameState
 
 
 class TestWorldFlipperAbilityFire5(TestCase):
