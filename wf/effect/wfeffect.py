@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import StrEnum, auto
 from typing import TYPE_CHECKING, Tuple, Optional
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -10,7 +11,6 @@ from wf.enum import (
     element_ab_to_enum,
     AbilityElementType,
     Element,
-    EffectType,
 )
 
 if TYPE_CHECKING:
@@ -20,6 +20,13 @@ if TYPE_CHECKING:
         DamageFormulaContext,
     )
     from wf.game_state import GameState
+
+
+class EffectType(StrEnum):
+    MAIN_CONDITION = auto()
+    MAIN_EFFECT = auto()
+    CONTINUOUS_CONDITION = auto()
+    CONTINUOUS_EFFECT = auto()
 
 
 # World Flipper's ability target definitions can be... quirky. An example of this is AHanabi's ability 1,

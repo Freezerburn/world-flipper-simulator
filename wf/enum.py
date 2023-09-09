@@ -31,13 +31,6 @@ class CharPosition(StrEnum):
         return self == CharPosition.LEADER or self == CharPosition.MAIN
 
 
-class EffectType(StrEnum):
-    MAIN_CONDITION = auto()
-    MAIN_EFFECT = auto()
-    CONTINUOUS_CONDITION = auto()
-    CONTINUOUS_EFFECT = auto()
-
-
 AbilityElementType = Literal["Red", "Yellow", "Green", "Blue", "White", "Black"]
 
 
