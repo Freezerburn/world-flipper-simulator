@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
 
-from wf.wfenum import (
+from wf.enum import (
     CharPosition,
     element_ab_to_enum,
     AbilityElementType,

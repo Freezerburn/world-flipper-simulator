@@ -1,19 +1,19 @@
 from __future__ import annotations
 from typing import Literal, Optional, TYPE_CHECKING, cast
 
-from .wfdmgformula import DamageFormulaContext
-from .wfenum import AbilityElementType
-from .wfgamestate import GameState
+from wf.wfdmgformula import DamageFormulaContext
+from wf.enum import AbilityElementType
+from wf.wfgamestate import GameState
 
-from .wfeffects.wfeffect import EffectParams
-from .wfeffects.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
-from .wfeffects.wfcontinuousmapping import (
+from wf.effect.wfeffect import EffectParams
+from wf.effect.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
+from wf.effect.wfcontinuousmapping import (
     continuous_condition_mapping,
     continuous_effect_mapping,
 )
 
 if TYPE_CHECKING:
-    from .wfchar import WorldFlipperCharacter
+    from wf.wfchar import WorldFlipperCharacter
 
 EffectType = Literal["0", "1"]
 
@@ -27,15 +27,6 @@ _SEC_CONVERT = 600_000
 # condition for when the effect is going to be applied. Or showing a slider or something for when
 # something requires a certain number of powerflips so that the user can decide what level of buff
 # is currently active for the purposes of calculations.
-
-
-class EffectParameters:
-    def __init__(self, idx: str, target: str, element: str, min_v: str, max_v: str):
-        self.idx = idx
-        self.target = target
-        self.element = element
-        self.min_v = min_v
-        self.max_v = max_v
 
 
 class WorldFlipperAbility:
@@ -152,24 +143,6 @@ class WorldFlipperAbility:
             return "main"
         else:
             return "continuous"
-
-    def main_condition(self) -> EffectParameters:
-        return EffectParameters(
-            self.main_condition_index,
-            self.main_condition_target,
-            self.main_condition_element,
-            self.main_condition_min,
-            self.main_condition_max,
-        )
-
-    def main_effect(self) -> EffectParameters:
-        return EffectParameters(
-            self.main_effect_index,
-            self.main_effect_target,
-            self.main_effect_element,
-            self.main_effect_min,
-            self.main_effect_max,
-        )
 
     def element_friendly(self, element):
         if element == "Red":

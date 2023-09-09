@@ -2,7 +2,7 @@ import ujson
 import weakref
 
 from .wfchar import WorldFlipperCharacter
-from .wfability import WorldFlipperAbility
+from wf.ability import WorldFlipperAbility
 
 
 class WorldFlipperData:

@@ -1,7 +1,7 @@
 from abc import ABC
 
-from wf.wfenum import Element
-from wf.wfeffects.wfeffect import WorldFlipperEffect
+from wf.enum import Element
+from wf.effect.wfeffect import WorldFlipperEffect
 
 
 class AttackContinuousEffect(WorldFlipperEffect):

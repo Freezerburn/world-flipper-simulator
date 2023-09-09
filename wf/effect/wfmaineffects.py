@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Type
 from abc import ABC
 
-from wf.wfenum import CharPosition, Debuff, Element, element_ab_to_enum
-from wf.wfeffects.wfeffect import WorldFlipperEffect
+from wf.enum import CharPosition, Debuff, Element, element_ab_to_enum
+from wf.effect.wfeffect import WorldFlipperEffect
 
 
 def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperEffect]:

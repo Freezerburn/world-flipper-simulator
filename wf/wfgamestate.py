@@ -1,11 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Tuple
 
-from .wfenum import CharPosition
+from .enum import CharPosition
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter
-    from .wfability import WorldFlipperAbility
+    from wf.ability import WorldFlipperAbility
     from .wfenemy import Enemy
 
 

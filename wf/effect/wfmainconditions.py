@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Type
 from abc import ABC
 import math
 
-from wf.wfenum import CharPosition, element_ab_to_enum
-from wf.wfeffects.wfeffect import WorldFlipperCondition, simulate_timed_effect
+from wf.enum import CharPosition, element_ab_to_enum
+from wf.effect.wfeffect import WorldFlipperCondition, simulate_timed_effect
 
 if TYPE_CHECKING:
     from wf.wfchar import WorldFlipperCharacter
-    from wf.wfeffects.wfeffect import WorldFlipperBaseEffect
+    from wf.effect.wfeffect import WorldFlipperBaseEffect
 
 
 class OnBattleStartMainCondition(WorldFlipperCondition):

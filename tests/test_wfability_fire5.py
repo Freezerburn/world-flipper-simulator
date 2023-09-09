@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from wf import WorldFlipperData, CharPosition, DamageFormulaContext
+from wf import WorldFlipperData
+from wf.enum import CharPosition
 from wf.wfenemy import Enemy
 from wf.wfgamestate import GameState
 

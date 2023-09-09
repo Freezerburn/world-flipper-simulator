@@ -6,7 +6,7 @@ from wf import CharPosition, Element
 from wf.wf import WorldFlipperData
 from wf.wfchar import WorldFlipperCharacter
 from wf.wfenemy import Enemy
-from wf.wfenum import Debuff
+from wf.enum import Debuff
 from wf.wfgamestate import GameState
 from wf.wfdmgformula import DamageFormulaContext
 

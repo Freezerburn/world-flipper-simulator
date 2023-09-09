@@ -1,7 +1,7 @@
 from abc import ABC
 
-from wf.wfeffects.wfeffect import WorldFlipperCondition
-from wf.wfenum import element_ab_to_enum, Buff
+from wf.effect.wfeffect import WorldFlipperCondition
+from wf.enum import element_ab_to_enum, Buff
 
 
 class WorldFlipperContinuousCondition(WorldFlipperCondition, ABC):

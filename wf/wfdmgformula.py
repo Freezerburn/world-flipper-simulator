@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Self, Optional, TYPE_CHECKING, Tuple
 
-from .wfenum import PowerFlip, Element
+from .enum import PowerFlip, Element
 
 if TYPE_CHECKING:
     from .wfchar import WorldFlipperCharacter

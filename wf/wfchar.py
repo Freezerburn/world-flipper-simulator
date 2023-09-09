@@ -1,5 +1,5 @@
-from .wfability import WorldFlipperAbility
-from .wfenum import PowerFlip, Element
+from wf.ability import WorldFlipperAbility
+from .enum import PowerFlip, Element
 
 
 class WorldFlipperCharacter:

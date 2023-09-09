@@ -1,9 +1,9 @@
 from unittest import TestCase
 import copy
 
-from wf import WorldFlipperData, CharPosition, Element, Buff
+from wf import WorldFlipperData
 from wf.wfenemy import Enemy
-from wf.wfenum import Debuff
+from wf.enum import Debuff, CharPosition, Element, Buff
 from wf.wfgamestate import GameState
 
 
