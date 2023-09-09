@@ -174,14 +174,14 @@ class DamageFormulaContext:
 
         # 1
         atk = self.char.attack(
-            state.evolved(self.char), state.levels[char_idx], state.uncaps[char_idx]
+            state.is_evolved(self.char), state.levels[char_idx], state.uncaps[char_idx]
         )
         # Main units inherit a quarter of a unison's attack, make sure to include that in the calculation.
         if self.unison is not None:
             unison_idx = state.party.index(self.unison)
             atk += (
                 self.unison.attack(
-                    state.evolved(self.unison),
+                    state.is_evolved(self.unison),
                     state.levels[unison_idx],
                     state.uncaps[unison_idx],
                 )

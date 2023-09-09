@@ -34,6 +34,9 @@ class CharPosition(StrEnum):
     MAIN = auto()
     UNISON = auto()
 
+    def is_main(self) -> bool:
+        return self == CharPosition.LEADER or self == CharPosition.MAIN
+
 
 class Debuff(StrEnum):
     FIRE_RESISTANCE = auto()
