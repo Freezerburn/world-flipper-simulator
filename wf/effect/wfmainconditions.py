@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Type
-from abc import ABC
+from typing import Type
 import math
 
-from wf.enum import CharPosition, element_ab_to_enum
-from wf.effect.wfeffect import WorldFlipperCondition, simulate_timed_effect
-
-if TYPE_CHECKING:
-    from wf.character import WorldFlipperCharacter
-    from wf.effect.wfeffect import WorldFlipperBaseEffect
+from wf.enum import element_ab_to_enum
+from wf.effect.wfeffect import WorldFlipperCondition
 
 
 class OnBattleStartMainCondition(WorldFlipperCondition):

@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Type
 from abc import ABC
 
-from wf.enum import CharPosition, Debuff, Element, element_ab_to_enum
+from wf.enum import CharPosition, Element, element_ab_to_enum
+from wf.status_effect import StatusEffectKind
 from wf.effect.wfeffect import WorldFlipperEffect
 
 
@@ -92,7 +93,7 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index(Debuff.FIRE_RESISTANCE)
+            self.state.enemy.debuffs.index((StatusEffectKind.ELEMENT_RESIST, Element.FIRE))
             self.ctx.condition_slayer += self._calc_abil_lv()
             return True
         except ValueError:
@@ -110,7 +111,7 @@ class PoisonSlayerMainEffect(WorldFlipperEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.state.enemy.debuffs.index(StatusEffectKind.POISON)
             self.ctx.condition_slayer += self._calc_abil_lv()
             return True
         except ValueError:
@@ -128,7 +129,7 @@ class PoisonAttackMainEffect(WorldFlipperEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.state.enemy.debuffs.index(StatusEffectKind.POISON)
             self.ctx.attack_modifier += self._calc_abil_lv()
             return True
         except ValueError:
@@ -146,7 +147,7 @@ class PoisonDirectAttackMainEffect(WorldFlipperEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index(Debuff.POISON)
+            self.state.enemy.debuffs.index(StatusEffectKind.POISON)
             self.ctx.stat_mod_da_damage += self._calc_abil_lv()
             return True
         except ValueError:
@@ -162,7 +163,7 @@ class SlowDebuffSlayerMainEffect(WorldFlipperEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index(Debuff.SLOW)
+            self.state.enemy.debuffs.index(StatusEffectKind.SLOW)
             self.ctx.condition_slayer += self._calc_abil_lv()
             return True
         except ValueError:

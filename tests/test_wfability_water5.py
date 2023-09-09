@@ -3,7 +3,8 @@ import copy
 
 from wf import WorldFlipperData
 from wf.enemy import Enemy
-from wf.enum import Debuff, CharPosition, Element, Buff
+from wf.enum import CharPosition, Element
+from wf.status_effect import StatusEffect, StatusEffectKind
 from wf.game_state import GameState
 
 
@@ -110,7 +111,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab2"):
             sub_state = copy.deepcopy(state)
-            sub_state.enemy.debuffs = [Debuff.POISON]
+            sub_state.enemy.debuffs = [StatusEffect(StatusEffectKind.POISON, 0, 10)]
 
             df = suizen.abilities[1][0].eval_effect(suizen, sub_state)
             self.assertAlmostEqual(0.5, df.attack_modifier)
@@ -123,7 +124,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab3"):
             sub_state = copy.deepcopy(state)
-            sub_state.enemy.debuffs = [Debuff.POISON]
+            sub_state.enemy.debuffs = [StatusEffect(StatusEffectKind.POISON, 0, 10)]
 
             df = suizen.abilities[2][0].eval_effect(suizen, sub_state)
             self.assertAlmostEqual(0.25, df.condition_slayer)
@@ -139,7 +140,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab5"):
             sub_state = copy.deepcopy(state)
-            sub_state.enemy.debuffs = [Debuff.POISON]
+            sub_state.enemy.debuffs = [StatusEffect(StatusEffectKind.POISON, 0, 10)]
 
             df = suizen.abilities[4][0].eval_effect(suizen, sub_state)
             self.assertAlmostEqual(0.3, df.stat_mod_da_damage)
@@ -152,7 +153,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
-            sub_state.enemy.debuffs = [Debuff.POISON]
+            sub_state.enemy.debuffs = [StatusEffect(StatusEffectKind.POISON, 0, 10)]
 
             df = suizen.abilities[5][0].eval_effect(suizen, sub_state)
             self.assertAlmostEqual(0.075, df.condition_slayer)
@@ -254,7 +255,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[0][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
 
-            sub_state.enemy.debuffs = [Debuff.SLOW]
+            sub_state.enemy.debuffs = [StatusEffect(StatusEffectKind.SLOW, 0, 10)]
             df = cipher.abilities[0][0].eval_effect(cipher, sub_state)
             self.assertAlmostEqual(0.1, df.condition_slayer)
             df = cipher.abilities[0][0].eval_effect(vagner, sub_state)
@@ -394,7 +395,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab2"):
             sub_state = copy.deepcopy(state)
-            sub_state.buffs[0] = [Buff.ATTACK]
+            sub_state.buffs[0] = [StatusEffect(StatusEffectKind.ATTACK, 0, 10)]
 
             df = selene.abilities[1][0].eval_effect(selene, sub_state)
             self.assertAlmostEqual(0.2, df.attack_modifier)
@@ -473,7 +474,10 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab6"):
             sub_state = copy.deepcopy(state)
-            sub_state.buffs[0] = [Buff.ATTACK, Buff.ATTACK]
+            sub_state.buffs[0] = [
+                StatusEffect(StatusEffectKind.ATTACK, 0, 10),
+                StatusEffect(StatusEffectKind.ATTACK, 0, 10),
+            ]
 
             df = selene.abilities[5][0].eval_effect(selene, sub_state)
             self.assertAlmostEqual(0.1, df.attack_modifier)
@@ -524,8 +528,13 @@ class TestWorldFlipperAbilityWater5(TestCase):
 
         with self.subTest("ab3"):
             sub_state = copy.deepcopy(state)
-            sub_state.buffs[0] = [Buff.ATTACK, Buff.ATTACK]
-            sub_state.buffs[1] = [Buff.ATTACK]
+            sub_state.buffs[0] = [
+                StatusEffect(StatusEffectKind.ATTACK, 0, 10),
+                StatusEffect(StatusEffectKind.ATTACK, 0, 10),
+            ]
+            sub_state.buffs[1] = [
+                StatusEffect(StatusEffectKind.ATTACK, 0, 10),
+            ]
 
             df = remnith.abilities[2][0].eval_effect(remnith, sub_state)
             self.assertAlmostEqual(1.6, df.stat_mod_da_damage)

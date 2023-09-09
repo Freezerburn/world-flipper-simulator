@@ -14,13 +14,6 @@ class Element(StrEnum):
     LIGHT = auto()
 
 
-class Buff(StrEnum):
-    ATTACK = auto()
-    HP = auto()
-    POWER_FLIP = auto()
-    SKILL_DAMAGE = auto()
-
-
 class PowerFlip(StrEnum):
     SWORD = auto()
     BOW = auto()
@@ -36,12 +29,6 @@ class CharPosition(StrEnum):
 
     def is_main(self) -> bool:
         return self == CharPosition.LEADER or self == CharPosition.MAIN
-
-
-class Debuff(StrEnum):
-    FIRE_RESISTANCE = auto()
-    POISON = auto()
-    SLOW = auto()
 
 
 class EffectType(StrEnum):

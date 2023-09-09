@@ -2,11 +2,11 @@ from typing import Literal
 import pprint
 import deepdiff
 
-from wf import CharPosition, Element
+from wf.enum import CharPosition, Element
 from wf.wf import WorldFlipperData
 from wf.character import WorldFlipperCharacter
 from wf.enemy import Enemy
-from wf.enum import Debuff
+from wf.status_effect import StatusEffectKind, StatusEffect
 from wf.game_state import GameState
 from wf.dmg_formula import DamageFormulaContext
 
@@ -183,7 +183,11 @@ def test_abilities2():
     # state.ability_lvs[0][5] = 1
     # state.set_powerflips(2, 50)
     state.enemy = Enemy()
-    state.enemy.debuffs.append(Debuff.FIRE_RESISTANCE)
+    state.enemy.debuffs.append(
+        StatusEffect(
+            StatusEffectKind.ELEMENT_RESIST, 0, 10, element=Element.FIRE, percent_mod=10
+        )
+    )
 
     dfs = []
     for abs in ahanabi.abilities:

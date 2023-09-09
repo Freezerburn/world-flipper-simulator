@@ -1,7 +1,8 @@
 from abc import ABC
 
 from wf.effect.wfeffect import WorldFlipperCondition
-from wf.enum import element_ab_to_enum, Buff
+from wf.enum import element_ab_to_enum
+from wf.status_effect import StatusEffectKind
 
 
 class WorldFlipperContinuousCondition(WorldFlipperCondition, ABC):
@@ -51,7 +52,7 @@ class AttackBuffActiveContinuousCondition(WorldFlipperContinuousCondition):
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         for idx in self._only_mains(char_idxs):
             try:
-                self.state.buffs[idx].index(Buff.ATTACK)
+                self.state.buffs[idx].index(StatusEffectKind.ATTACK)
             except ValueError:
                 return False
         return True
@@ -94,7 +95,7 @@ class AttackBuffsOnSelfContinuousCondition(WorldFlipperContinuousCondition):
         self.multiplier = 0
         for idx in self._only_mains(char_idxs):
             self.multiplier += (
-                self.state.buffs[idx].count(Buff.ATTACK) * self._calc_abil_lv()
+                self.state.buffs[idx].count(StatusEffectKind.ATTACK) * self._calc_abil_lv()
             )
         if self.multiplier == 0:
             return False
