@@ -35,7 +35,7 @@ class EffectType(StrEnum):
     MAIN_CONDITION = auto()
     MAIN_EFFECT = auto()
     CONTINUOUS_CONDITION = auto()
-    CONTINOUS_EFFECT = auto()
+    CONTINUOUS_EFFECT = auto()
 
 
 AbilityElementType = Literal["Red", "Yellow", "Green", "Blue", "White", "Black"]

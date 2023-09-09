@@ -121,7 +121,7 @@ class WorldFlipperBaseEffect(ABC):
                 target = self.ability.continuous_condition_target
             else:
                 index = self.ability.continuous_effect_index
-                index_type = EffectType.CONTINOUS_EFFECT
+                index_type = EffectType.CONTINUOUS_EFFECT
                 element = element_ab_to_enum(self.ability.continuous_effect_element)
                 target = self.ability.continuous_effect_target
         if (index_type, index) in _index_target_overrides:
