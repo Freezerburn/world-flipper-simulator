@@ -43,6 +43,7 @@ class StatusEffectKwargs(TypedDict, total=False):
     percent_mod: float
     element: Element
     combo: int
+    nullify: bool
 
 
 class StatusEffect:
@@ -53,9 +54,10 @@ class StatusEffect:
         self.kind = kind
         self.time_start = time_start
         self.time_active = time_active
-        self.percent_mod = typed_kwargs.get("percent_mod")
+        self.percent_mod = typed_kwargs.get("percent_mod", 0.0)
         self.element = typed_kwargs.get("element")
-        self.combo = typed_kwargs.get("combo")
+        self.combo = typed_kwargs.get("combo", 0)
+        self.nullify = typed_kwargs.get("nullify", False)
 
     def __eq__(self, other):
         if isinstance(other, StatusEffect):

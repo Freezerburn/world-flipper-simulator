@@ -10,16 +10,14 @@ from wf.enum import (
     CharPosition,
     element_ab_to_enum,
     AbilityElementType,
-    Element,
 )
 
 if TYPE_CHECKING:
-    from wf import (
-        WorldFlipperAbility,
-        WorldFlipperCharacter,
-        DamageFormulaContext,
-    )
+    from wf.ability import WorldFlipperAbility
+    from wf.character import WorldFlipperCharacter
+    from wf.dmg_formula import DamageFormulaContext
     from wf.game_state import GameState
+    from wf.timeline import Event
 
 
 class EffectType(StrEnum):
@@ -239,6 +237,9 @@ class WorldFlipperBaseEffect(ABC):
 
             case _:
                 raise RuntimeError(f"[{self.ability.name}] Unhandled target: {target}")
+
+    def battle_start(self) -> list[Event]:
+        return []
 
     def _only_mains(self, char_idxs: list[int]):
         main_idxs: set[int] = set()
