@@ -2,11 +2,28 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Tuple
 
 from .enum import CharPosition
+from .character import WorldFlipperCharacter
 
 if TYPE_CHECKING:
-    from .character import WorldFlipperCharacter
     from .ability import WorldFlipperAbility
     from .enemy import Enemy
+
+
+# noinspection PyProtectedMember
+class _PartyAccessor:
+    def __init__(self, state: GameState):
+        self._state = state
+
+    def index(self, key: Optional[WorldFlipperCharacter]) -> int:
+        return self._state._party.index(key)
+
+    def __getitem__(self, idx: int):
+        return self._state._party[idx]
+
+    def __setitem__(self, idx: int, value: Optional[WorldFlipperCharacter]):
+        position = self._state.position(idx)
+        column = self._state.mains_only_index(idx)
+        self._state.set_member(self._state._party[idx], position, column)
 
 
 class GameState:
@@ -18,7 +35,7 @@ class GameState:
         # 3: UNISON        (col 1)
         # 4: MAIN          (col 2)
         # 5: UNISON        (col 2)
-        self.party: list[Optional[WorldFlipperCharacter]] = [None] * 6
+        self._party: list[Optional[WorldFlipperCharacter]] = [None] * 6
         self.levels = [1] * 6
         self.uncaps = [0] * 6
         self.max_hp = [0.0] * 3
@@ -52,16 +69,28 @@ class GameState:
         self.pierce_active = False
         self.enemy: Optional[Enemy] = None
 
-    def position(self, char: WorldFlipperCharacter) -> Optional[CharPosition]:
-        try:
-            idx = self.party.index(char)
-            if idx == 0:
-                return CharPosition.LEADER
-            if idx % 2 == 0:
-                return CharPosition.MAIN
-            return CharPosition.UNISON
-        except ValueError:
+    @property
+    def party(self) -> _PartyAccessor:
+        return _PartyAccessor(self)
+
+    def position(
+        self, char: Optional[WorldFlipperCharacter | int]
+    ) -> Optional[CharPosition]:
+        if char is None:
             return None
+
+        if isinstance(char, WorldFlipperCharacter):
+            try:
+                idx = self._party.index(char)
+            except ValueError:
+                return None
+        else:
+            idx = char
+        if idx == 0:
+            return CharPosition.LEADER
+        if idx % 2 == 0:
+            return CharPosition.MAIN
+        return CharPosition.UNISON
 
     def main_index(self, char_idx: int):
         if char_idx % 2 == 0:
@@ -79,11 +108,11 @@ class GameState:
         return char_idx + 1
 
     def leader(self) -> Optional[WorldFlipperCharacter]:
-        return self.party[0]
+        return self._party[0]
 
     def is_evolved(self, char: WorldFlipperCharacter) -> bool:
         try:
-            idx = self.party.index(char)
+            idx = self._party.index(char)
             # A unit evoles when the entire MB1 has been unlocked. Effectively this means that the first
             # three abilities are level 6 (they are unlocked at LV1 and enhance 2-6) and the skill is
             # level 5 (skill is always unlocked, so it just needs to be enhanced 5 times).
@@ -100,9 +129,9 @@ class GameState:
         if isinstance(char, int):
             level = self.levels[char]
             uncaps = self.uncaps[char]
-            char = self.party[char]
+            char = self._party[char]
         else:
-            idx = self.party.index(char)
+            idx = self._party.index(char)
             level = self.levels[idx]
             uncaps = self.uncaps[idx]
         return char.attack(self.is_evolved(char), level, uncaps)
@@ -111,9 +140,9 @@ class GameState:
         if isinstance(char, int):
             level = self.levels[char]
             uncaps = self.uncaps[char]
-            char = self.party[char]
+            char = self._party[char]
         else:
-            idx = self.party.index(char)
+            idx = self._party.index(char)
             level = self.levels[idx]
             uncaps = self.uncaps[idx]
         if char is None:
@@ -134,7 +163,7 @@ class GameState:
 
         if char is not None:
             try:
-                existing = self.party.index(char)
+                existing = self._party.index(char)
                 to_idx = self._index(position, column)
                 if to_idx == existing:
                     return
@@ -164,7 +193,7 @@ class GameState:
         uncaps=0,
     ):
         idx = self._index(position, column)
-        self.party[idx] = char
+        self._party[idx] = char
         self.levels[idx] = level
         self.uncaps[idx] = uncaps
         self.ability_lvs[idx] = [0] * 6
@@ -174,27 +203,23 @@ class GameState:
     def _update_hp(self):
         for column in range(3):
             idx = column * 2
-            char = self.party[idx]
-            position = self.position(char)
+            char = self._party[idx]
 
             if char is not None:
                 self.max_hp[column] = self.char_hp(char)
-                if position.is_main() and self.party[idx + 1] is not None:
+                if self._party[idx + 1] is not None:
                     self.max_hp[column] += self.char_hp(idx + 1) / 4
             else:
-                if position.is_main():
-                    if self.party[idx + 1] is not None:
-                        self.max_hp[column] = self.char_hp(idx + 1) / 4
-                    else:
-                        self.max_hp[column] = 0
+                if self._party[idx + 1] is not None:
+                    self.max_hp[column] = self.char_hp(idx + 1) / 4
                 else:
-                    self.max_hp[column] = self.char_hp(idx)
+                    self.max_hp[column] = 0
             self.current_hp[column] = self.max_hp[column]
 
     def swap(self, char_idx: int, to_idx: int):
-        self.party[to_idx], self.party[char_idx] = (
-            self.party[char_idx],
-            self.party[to_idx],
+        self._party[to_idx], self._party[char_idx] = (
+            self._party[char_idx],
+            self._party[to_idx],
         )
         self.levels[to_idx], self.levels[char_idx] = (
             self.levels[char_idx],
@@ -225,11 +250,11 @@ class GameState:
         if isinstance(char, int):
             self.skill_activations[char] = count
         else:
-            self.skill_activations[self.party.index(char)] = count
+            self.skill_activations[self._party.index(char)] = count
         self.total_skill_activations = sum(self.skill_activations)
 
     def ability_index(self, ability: WorldFlipperAbility) -> Tuple[int, int]:
-        for char_idx, char in enumerate(self.party):
+        for char_idx, char in enumerate(self._party):
             if char is None:
                 continue
             for char_abs_idx, char_abs in enumerate(char.abilities):

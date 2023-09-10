@@ -1,5 +1,10 @@
-from wf.ability import WorldFlipperAbility
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from .enum import PowerFlip, Element
+
+if TYPE_CHECKING:
+    from .ability import WorldFlipperAbility
 
 
 class WorldFlipperCharacter:
