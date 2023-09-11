@@ -8,6 +8,36 @@ if TYPE_CHECKING:
     from .ability import WorldFlipperAbility
 
 
+def _index(position: CharPosition, column: int):
+    match position:
+        case CharPosition.LEADER:
+            return 0
+        case CharPosition.MAIN:
+            return column * 2
+        case CharPosition.UNISON:
+            return column * 2 + 1
+        case _:
+            raise ValueError(f"Unknown position type: {position}")
+
+
+def unison_index(char_idx: int):
+    if char_idx % 2 == 1:
+        return char_idx
+    return char_idx + 1
+
+
+def mains_only_index(char_idx: int) -> int:
+    if char_idx % 2 == 0:
+        return int(char_idx / 2)
+    return int((char_idx - 1) / 2)
+
+
+def main_index(char_idx: int):
+    if char_idx % 2 == 0:
+        return char_idx
+    return char_idx - 1
+
+
 class Party:
     def __init__(self):
         # 0: LEADER        (col 0)
@@ -49,21 +79,6 @@ class Party:
         if idx % 2 == 0:
             return CharPosition.MAIN
         return CharPosition.UNISON
-
-    def main_index(self, char_idx: int):
-        if char_idx % 2 == 0:
-            return char_idx
-        return char_idx - 1
-
-    def mains_only_index(self, char_idx: int) -> int:
-        if char_idx % 2 == 0:
-            return int(char_idx / 2)
-        return int((char_idx - 1) / 2)
-
-    def unison_index(self, char_idx: int):
-        if char_idx % 2 == 1:
-            return char_idx
-        return char_idx + 1
 
     def leader(self) -> Optional[WorldFlipperCharacter]:
         return self._party[0]
@@ -122,7 +137,7 @@ class Party:
         if char is not None:
             try:
                 existing = self._party.index(char)
-                to_idx = self._index(position, column)
+                to_idx = _index(position, column)
                 if to_idx == existing:
                     return
                 self.swap(existing, to_idx)
@@ -130,17 +145,6 @@ class Party:
                 self._set_char(char, position, column, level, uncaps)
         else:
             self._set_char(None, position, column, level, uncaps)
-
-    def _index(self, position: CharPosition, column: int):
-        match position:
-            case CharPosition.LEADER:
-                return 0
-            case CharPosition.MAIN:
-                return column * 2
-            case CharPosition.UNISON:
-                return column * 2 + 1
-            case _:
-                raise ValueError(f"Unknown position type: {position}")
 
     def _set_char(
         self,
@@ -150,7 +154,7 @@ class Party:
         level=1,
         uncaps=0,
     ):
-        idx = self._index(position, column)
+        idx = _index(position, column)
         self._party[idx] = char
         self.levels[idx] = level
         self.uncaps[idx] = uncaps
@@ -218,7 +222,7 @@ class Party:
 
     def __setitem__(self, idx: int, value: Optional[WorldFlipperCharacter]):
         position = self.position(idx)
-        column = self.mains_only_index(idx)
+        column = mains_only_index(idx)
         self.set_member(self._party[idx], position, column)
 
     def __delitem__(self, idx: int):

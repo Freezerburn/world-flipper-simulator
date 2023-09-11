@@ -11,6 +11,7 @@ from wf.enum import (
     element_ab_to_enum,
     AbilityElementType,
 )
+from wf.party import main_index, unison_index
 
 if TYPE_CHECKING:
     from wf.ability import WorldFlipperAbility
@@ -90,10 +91,10 @@ class WorldFlipperBaseEffect(ABC):
         self.multiplier = params.multiplier
 
         self.eval_char_idx = self.state.party.characters.index(self.eval_char)
-        self.eval_main_idx = self.state.party.main_index(self.eval_char_idx)
+        self.eval_main_idx = main_index(self.eval_char_idx)
         self.eval_char_position = self.state.party.position(self.eval_char)
         self.ability_char_idx, self.ability_idx = self.state.party.ability_index(self.ability)
-        self.ability_main_idx = self.state.party.main_index(self.ability_char_idx)
+        self.ability_main_idx = main_index(self.ability_char_idx)
         self.ability_char_position = self.state.party.position(self.ability_char)
         self.lv = self.state.party.ability_lvs[self.ability_char_idx][self.ability_idx]
 
@@ -185,7 +186,7 @@ class WorldFlipperBaseEffect(ABC):
                         continue
                     if target == "1" and idx == self.ability_char_idx:
                         continue
-                    main = self.state.party[self.state.party.main_index(idx)]
+                    main = self.state.party[main_index(idx)]
                     if main is None:
                         continue
                     if element is None or main.element == element:
@@ -210,7 +211,7 @@ class WorldFlipperBaseEffect(ABC):
                     for idx, p in enumerate(self.state.party):
                         if p is None:
                             continue
-                        main = self.state.party[self.state.party.main_index(idx)]
+                        main = self.state.party[main_index(idx)]
                         if main is None:
                             continue
                         if element is None or main.element == element:
@@ -244,7 +245,7 @@ class WorldFlipperBaseEffect(ABC):
     def _only_mains(self, char_idxs: list[int]):
         main_idxs: set[int] = set()
         for idx in char_idxs:
-            main_idxs.add(self.state.party.main_index(idx))
+            main_idxs.add(main_index(idx))
         return main_idxs
 
     @abstractmethod
@@ -404,7 +405,7 @@ class WorldFlipperCondition(WorldFlipperBaseEffect, ABC):
                     return True
                 # Otherwise since index 0 is "self/own", we want to check if the ability belongs to the
                 # unison for a main unit, and if that's the case then we want to apply it.
-                unison = self.state.party[self.state.party.unison_index(self.eval_char_idx)]
+                unison = self.state.party[unison_index(self.eval_char_idx)]
                 if unison is None:
                     return False
                 return unison.internal_name == self.ability_char.internal_name

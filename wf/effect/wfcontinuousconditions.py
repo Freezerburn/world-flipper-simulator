@@ -2,6 +2,7 @@ from abc import ABC
 
 from wf.effect.wfeffect import WorldFlipperCondition
 from wf.enum import element_ab_to_enum
+from wf.party import main_index, mains_only_index
 from wf.status_effect import StatusEffectKind
 
 
@@ -16,8 +17,8 @@ class HPAbovePercentContinuousCondition(WorldFlipperContinuousCondition):
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         for idx in char_idxs:
-            current_hp = self.state.party.current_hp[self.state.party.mains_only_index(idx)]
-            max_hp = self.state.party.max_hp[self.state.party.mains_only_index(idx)]
+            current_hp = self.state.party.current_hp[mains_only_index(idx)]
+            max_hp = self.state.party.max_hp[mains_only_index(idx)]
             if (current_hp / max_hp) < self._calc_abil_lv():
                 return False
         return True
@@ -39,7 +40,7 @@ class BuffActiveContinuousCondition(WorldFlipperContinuousCondition):
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         for idx in char_idxs:
-            if len(self.state.buffs[self.state.party.main_index(idx)]) == 0:
+            if len(self.state.buffs[main_index(idx)]) == 0:
                 return False
         return True
 
@@ -66,7 +67,7 @@ class SkillGaugeAboveContinuousCondition(WorldFlipperContinuousCondition):
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         amt = self._calc_abil_lv()
         for idx in char_idxs:
-            if self.state.skill_charge[self.state.party.main_index(idx)] <= amt:
+            if self.state.skill_charge[main_index(idx)] <= amt:
                 return False
         return True
 
