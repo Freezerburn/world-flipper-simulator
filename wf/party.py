@@ -1,28 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, Self
 
 from .enum import CharPosition
 from .character import WorldFlipperCharacter
 
 if TYPE_CHECKING:
     from .ability import WorldFlipperAbility
-
-
-# noinspection PyProtectedMember
-class _PartyAccessor:
-    def __init__(self, party: Party):
-        self._party = party
-
-    def index(self, key: Optional[WorldFlipperCharacter]) -> int:
-        return self._party._party.index(key)
-
-    def __getitem__(self, idx: int):
-        return self._party._party[idx]
-
-    def __setitem__(self, idx: int, value: Optional[WorldFlipperCharacter]):
-        position = self._party.position(idx)
-        column = self._party.mains_only_index(idx)
-        self._party.set_member(self._party._party[idx], position, column)
 
 
 class Party:
@@ -45,8 +28,8 @@ class Party:
         self.skill_lvs = [0] * 6
 
     @property
-    def characters(self) -> _PartyAccessor:
-        return _PartyAccessor(self)
+    def characters(self) -> Self:
+        return self
 
     def position(
         self, char: Optional[WorldFlipperCharacter | int]
@@ -219,6 +202,9 @@ class Party:
                         return char_idx, char_abs_idx
         return -1, -1
 
+    def index(self, key: Optional[WorldFlipperCharacter]) -> int:
+        return self._party.index(key)
+
     def __iter__(self):
         for p in self._party:
             yield p
@@ -231,4 +217,9 @@ class Party:
         raise IndexError(f"Unknown index type: {type(idx).__name__}")
 
     def __setitem__(self, idx: int, value: Optional[WorldFlipperCharacter]):
-        pass
+        position = self.position(idx)
+        column = self.mains_only_index(idx)
+        self.set_member(self._party[idx], position, column)
+
+    def __delitem__(self, idx: int):
+        self.__setitem__(idx, None)
