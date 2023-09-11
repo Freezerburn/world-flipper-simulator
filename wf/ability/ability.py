@@ -251,7 +251,7 @@ class WorldFlipperAbility:
             )
 
         ab_char_idx, _ = state.party.ability_index(self)
-        ab_char = state.party.characters[ab_char_idx]
+        ab_char = state.party[ab_char_idx]
         if ab_char is None:
             raise RuntimeError(
                 f"Impossible state: Found ability char but was None in party."

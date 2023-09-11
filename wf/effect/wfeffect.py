@@ -90,7 +90,7 @@ class WorldFlipperBaseEffect(ABC):
         self.ctx = params.ctx
         self.multiplier = params.multiplier
 
-        self.eval_char_idx = self.state.party.characters.index(self.eval_char)
+        self.eval_char_idx = self.state.party.index(self.eval_char)
         self.eval_main_idx = main_index(self.eval_char_idx)
         self.eval_char_position = self.state.party.position(self.eval_char)
         self.ability_char_idx, self.ability_idx = self.state.party.ability_index(self.ability)
@@ -142,7 +142,7 @@ class WorldFlipperBaseEffect(ABC):
                 # Own/self.
                 # NOTE: As far as I'm aware, this target always refers to the unit whose ability is
                 # being evaluated. NOT the unit that was passed as an argument for evaluation.
-                main = self.state.party.characters[self.ability_main_idx]
+                main = self.state.party[self.ability_main_idx]
                 if main is None:
                     return False
                 if element is not None and main.element != element:

@@ -57,10 +57,6 @@ class Party:
         self.ability_lvs = [[0] * 6] * 6
         self.skill_lvs = [0] * 6
 
-    @property
-    def characters(self) -> Self:
-        return self
-
     def position(
         self, char: Optional[WorldFlipperCharacter | int]
     ) -> Optional[CharPosition]:
