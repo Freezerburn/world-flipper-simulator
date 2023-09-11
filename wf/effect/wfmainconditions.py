@@ -90,7 +90,7 @@ class OnSkillGaugeReach100MainCondition(WorldFlipperCondition):
         # We also need to avoid double-counting any individual set of units in the party.
         main_idxs: set[int] = set()
         for idx in char_idxs:
-            main_idxs.add(self.state.main_index(idx))
+            main_idxs.add(self.state.party.main_index(idx))
         for idx in main_idxs:
             self.multiplier += self._calc_multiplier(
                 int(self.ability.main_effect_max_multiplier),

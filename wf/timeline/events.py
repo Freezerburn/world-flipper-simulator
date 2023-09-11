@@ -36,9 +36,6 @@ class Event:
         self.kind: EventKind = kind
 
         self.powerflip_level: Literal[-1, 1, 2, 3] = -1
-        self.combo: int = -1
         self.skill_unit: Literal[-1, 0, 1, 2] = -1
         self.ability: Literal[-1, 0, 1, 2, 3, 4, 5] = -1
-        self.direct_hits: int = -1
-        self.power_flip_hits: int = -1
-        self.skill_hits: int = -1
+        self.count: int = 0

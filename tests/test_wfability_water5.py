@@ -17,8 +17,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia, state = self._base_state("brown_fighter")
         acipher = self.wf_data.find("ice_witch_2anv")
         vagner = self.wf_data.find("fire_dragon")
-        state.set_member(acipher, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.party.set_member(acipher, CharPosition.UNISON, 0)
+        state.party.set_member(vagner, CharPosition.MAIN, 1)
 
         with self.subTest("ab1"):
             sub_state = copy.deepcopy(state)
@@ -93,9 +93,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(acipher, CharPosition.UNISON, 0)
-        state.set_member(sonia, CharPosition.MAIN, 1)
-        state.set_member(vagner, CharPosition.MAIN, 2)
+        state.party.set_member(acipher, CharPosition.UNISON, 0)
+        state.party.set_member(sonia, CharPosition.MAIN, 1)
+        state.party.set_member(vagner, CharPosition.MAIN, 2)
 
         with self.subTest("ab1"):
             sub_state = copy.deepcopy(state)
@@ -169,9 +169,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(sonia, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
-        state.set_member(acipher, CharPosition.UNISON, 1)
+        state.party.set_member(sonia, CharPosition.UNISON, 0)
+        state.party.set_member(vagner, CharPosition.MAIN, 1)
+        state.party.set_member(acipher, CharPosition.UNISON, 1)
 
         with self.subTest("leader"):
             # TODO: Implement leader abilities.
@@ -243,9 +243,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
-        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
-        state.set_member(acipher, CharPosition.MAIN, 2, level=100)
+        state.party.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.party.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.party.set_member(acipher, CharPosition.MAIN, 2, level=100)
 
         with self.subTest("leader"):
             pass
@@ -271,11 +271,11 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[1][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
-            sub_state.current_hp[0] = sub_state.max_hp[0] * 0.8
+            sub_state.party.current_hp[0] = sub_state.party.max_hp[0] * 0.8
             df = cipher.abilities[1][0].eval_effect(cipher, sub_state)
             self.assertAlmostEqual(0.4, df.attack_modifier)
 
-            sub_state.current_hp[0] = 50
+            sub_state.party.current_hp[0] = 50
             df = cipher.abilities[1][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
 
@@ -291,7 +291,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
 
-            sub_state.current_hp[2] = 50
+            sub_state.party.current_hp[2] = 50
             df = cipher.abilities[2][0].eval_effect(cipher, sub_state)
             self.assertAlmostEqual(1.3, df.stat_mod_element_resists[Element.FIRE])
             df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
@@ -301,8 +301,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[2][1].eval_effect(acipher, sub_state)
             self.assertIsNone(df)
 
-            sub_state.current_hp[0] = 50
-            sub_state.current_hp[2] = sub_state.max_hp[2]
+            sub_state.party.current_hp[0] = 50
+            sub_state.party.current_hp[2] = sub_state.party.max_hp[2]
             df = cipher.abilities[2][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
             df = cipher.abilities[2][1].eval_effect(cipher, sub_state)
@@ -322,7 +322,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[3][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(1.15, df.stat_mod_element_resists[Element.FIRE])
 
-            sub_state.current_hp[0] = 50
+            sub_state.party.current_hp[0] = 50
             df = cipher.abilities[3][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
             df = cipher.abilities[3][0].eval_effect(vagner, sub_state)
@@ -340,7 +340,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[4][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.25, df.attack_modifier)
 
-            sub_state.current_hp[0] = 50
+            sub_state.party.current_hp[0] = 50
             df = cipher.abilities[4][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
             df = cipher.abilities[4][0].eval_effect(vagner, sub_state)
@@ -358,7 +358,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = cipher.abilities[5][0].eval_effect(acipher, sub_state)
             self.assertAlmostEqual(0.25, df.attack_modifier)
 
-            sub_state.current_hp[0] = 50
+            sub_state.party.current_hp[0] = 50
             df = cipher.abilities[5][0].eval_effect(cipher, sub_state)
             self.assertIsNone(df)
             df = cipher.abilities[5][0].eval_effect(vagner, sub_state)
@@ -371,9 +371,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
-        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
-        state.set_member(acipher, CharPosition.UNISON, 1, level=100)
+        state.party.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.party.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.party.set_member(acipher, CharPosition.UNISON, 1, level=100)
 
         with self.subTest("ab1"):
             sub_state = copy.deepcopy(state)
@@ -429,13 +429,13 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = selene.abilities[2][1].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
-            sub_state.current_hp[0] = sub_state.max_hp[0] * 0.75
+            sub_state.party.current_hp[0] = sub_state.party.max_hp[0] * 0.75
             df = selene.abilities[2][0].eval_effect(selene, sub_state)
             self.assertAlmostEqual(0.7, df.stat_mod_da_damage)
             df = selene.abilities[2][1].eval_effect(selene, sub_state)
             self.assertIsNone(df)
 
-            sub_state.current_hp[0] = 50
+            sub_state.party.current_hp[0] = 50
             df = selene.abilities[2][0].eval_effect(selene, sub_state)
             self.assertIsNone(df)
             df = selene.abilities[2][1].eval_effect(selene, sub_state)
@@ -452,22 +452,22 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = selene.abilities[4][0].eval_effect(selene, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
 
-            sub_state.ability_lvs[0][4] = False
+            sub_state.party.ability_lvs[0][4] = False
             df = selene.abilities[4][0].eval_effect(selene, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(sonia, CharPosition.MAIN, 0, level=100)
-            sub_state.set_member(selene, CharPosition.UNISON, 0, level=100)
-            sub_state.ability_lvs[1][4] = 6
+            sub_state.party.set_member(sonia, CharPosition.MAIN, 0, level=100)
+            sub_state.party.set_member(selene, CharPosition.UNISON, 0, level=100)
+            sub_state.party.ability_lvs[1][4] = 6
             sub_state.ability_condition_active[1][4] = True
             df = selene.abilities[4][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
             df = selene.abilities[4][0].eval_effect(selene, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(selene, CharPosition.UNISON, 1, level=100)
-            sub_state.set_member(acipher, CharPosition.UNISON, 0, level=100)
-            sub_state.ability_lvs[3][4] = 6
+            sub_state.party.set_member(selene, CharPosition.UNISON, 1, level=100)
+            sub_state.party.set_member(acipher, CharPosition.UNISON, 0, level=100)
+            sub_state.party.ability_lvs[3][4] = 6
             sub_state.ability_condition_active[3][4] = True
             df = selene.abilities[4][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
@@ -491,9 +491,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
         acipher = self.wf_data.find("ice_witch_2anv")
-        state.set_member(sonia, CharPosition.UNISON, 0, level=100)
-        state.set_member(vagner, CharPosition.MAIN, 1, level=100)
-        state.set_member(acipher, CharPosition.MAIN, 2, level=100)
+        state.party.set_member(sonia, CharPosition.UNISON, 0, level=100)
+        state.party.set_member(vagner, CharPosition.MAIN, 1, level=100)
+        state.party.set_member(acipher, CharPosition.MAIN, 2, level=100)
 
         with self.subTest("ab1"):
             sub_state = copy.deepcopy(state)
@@ -520,9 +520,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = remnith.abilities[1][0].eval_effect(acipher, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
-            sub_state.set_member(remnith, CharPosition.UNISON, 0, level=100)
-            sub_state.ability_lvs[1][1] = 6
+            sub_state.party.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.party.set_member(remnith, CharPosition.UNISON, 0, level=100)
+            sub_state.party.ability_lvs[1][1] = 6
             df = remnith.abilities[1][0].eval_effect(sonia, sub_state)
             self.assertAlmostEqual(1.5, df.stat_mod_da_damage)
 
@@ -543,8 +543,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = remnith.abilities[2][0].eval_effect(acipher, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
-            sub_state.set_member(remnith, CharPosition.UNISON, 0, level=100)
+            sub_state.party.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.party.set_member(remnith, CharPosition.UNISON, 0, level=100)
             df = remnith.abilities[2][0].eval_effect(remnith, sub_state)
             self.assertIsNone(df)
 
@@ -556,9 +556,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = remnith.abilities[3][1].eval_effect(remnith, sub_state)
             self.assertAlmostEqual(1.1, df.pierce_buff_extension)
 
-            sub_state.set_member(sonia, CharPosition.LEADER, level=100)
-            sub_state.set_member(remnith, CharPosition.UNISON, 1, level=100)
-            sub_state.ability_lvs[3][3] = 6
+            sub_state.party.set_member(sonia, CharPosition.LEADER, level=100)
+            sub_state.party.set_member(remnith, CharPosition.UNISON, 1, level=100)
+            sub_state.party.ability_lvs[3][3] = 6
 
             df = remnith.abilities[3][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
@@ -596,8 +596,8 @@ class TestWorldFlipperAbilityWater5(TestCase):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")
         vagner = self.wf_data.find("fire_dragon")
-        state.set_member(sonia, CharPosition.UNISON, 0)
-        state.set_member(vagner, CharPosition.MAIN, 1)
+        state.party.set_member(sonia, CharPosition.UNISON, 0)
+        state.party.set_member(vagner, CharPosition.MAIN, 1)
 
         with self.subTest("ab1"):
             sub_state = copy.deepcopy(state)
@@ -610,9 +610,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = acipher.abilities[0][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(sonia, CharPosition.LEADER)
-            sub_state.set_member(acipher, CharPosition.UNISON, 0)
-            sub_state.ability_lvs[1][0] = 6
+            sub_state.party.set_member(sonia, CharPosition.LEADER)
+            sub_state.party.set_member(acipher, CharPosition.UNISON, 0)
+            sub_state.party.ability_lvs[1][0] = 6
             df = acipher.abilities[0][0].eval_effect(sonia, sub_state)
             self.assertIsNone(df)
             df = acipher.abilities[0][0].eval_effect(acipher, sub_state)
@@ -629,9 +629,9 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = acipher.abilities[1][0].eval_effect(vagner, sub_state)
             self.assertIsNone(df)
 
-            sub_state.set_member(sonia, CharPosition.LEADER)
-            sub_state.set_member(acipher, CharPosition.UNISON, 0)
-            sub_state.ability_lvs[1][1] = 6
+            sub_state.party.set_member(sonia, CharPosition.LEADER)
+            sub_state.party.set_member(acipher, CharPosition.UNISON, 0)
+            sub_state.party.ability_lvs[1][1] = 6
             df = acipher.abilities[1][0].eval_effect(sonia, sub_state)
             self.assertIsNone(df)
             df = acipher.abilities[1][0].eval_effect(acipher, sub_state)
@@ -658,7 +658,7 @@ class TestWorldFlipperAbilityWater5(TestCase):
     def _base_state(self, char_name: str):
         state = GameState()
         char = self.wf_data.find(char_name)
-        state.set_member(char, CharPosition.LEADER, level=80)
-        state.ability_lvs[0][:] = [6] * 6
+        state.party.set_member(char, CharPosition.LEADER, level=80)
+        state.party.ability_lvs[0][:] = [6] * 6
         state.enemy = Enemy()
         return char, state

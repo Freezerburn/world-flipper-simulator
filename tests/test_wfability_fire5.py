@@ -21,9 +21,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         self.assertAlmostEqual(0.3, df.stat_mod_pf_damage)
 
         ahanabi = self.wf_data.find("kunoichi_1anv")
-        state.set_member(ahanabi, CharPosition.LEADER)
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.ability_lvs[1][0] = 6
+        state.party.set_member(ahanabi, CharPosition.LEADER)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.ability_lvs[1][0] = 6
 
         df = vagner.abilities[0][0].eval_effect(ahanabi, state)
         self.assertAlmostEqual(0.3, df.stat_mod_pf_damage)
@@ -37,7 +37,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         """
         vagner, state = self._base_state("fire_dragon")
         ahanabi = self.wf_data.find("kunoichi_1anv")
-        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.party.set_member(ahanabi, CharPosition.UNISON, 0)
         state.set_powerflips(1, 11)
 
         df = vagner.abilities[1][0].eval_effect(vagner, state)
@@ -53,9 +53,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = vagner.abilities[2][1].eval_effect(vagner, state)
         self.assertAlmostEqual(0.4, df.stat_mod_pf_damage)
 
-        state.set_member(ahanabi, CharPosition.LEADER)
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.ability_lvs[1][3] = 6
+        state.party.set_member(ahanabi, CharPosition.LEADER)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.ability_lvs[1][3] = 6
 
         df = vagner.abilities[2][1].eval_effect(ahanabi, state)
         self.assertIsNone(df)
@@ -84,8 +84,8 @@ class TestWorldFlipperAbilityFire5(TestCase):
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("fire_dragon")
         sonia = self.wf_data.find("brown_fighter")
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.set_member(sonia, CharPosition.MAIN, 1)
 
         df = ahanabi.abilities[0][0].eval_effect(ahanabi, state)
         self.assertEqual(200, df.skill_gauge_max[0])
@@ -99,9 +99,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[0][1].eval_effect(vagner, state)
         self.assertIsNone(df)
 
-        state.set_member(vagner, CharPosition.LEADER)
-        state.set_member(ahanabi, CharPosition.UNISON, 0)
-        state.ability_lvs[1][0] = 6
+        state.party.set_member(vagner, CharPosition.LEADER)
+        state.party.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.party.ability_lvs[1][0] = 6
         df = ahanabi.abilities[0][1].eval_effect(vagner, state)
         self.assertIsNone(df)
         df = ahanabi.abilities[0][1].eval_effect(ahanabi, state)
@@ -111,8 +111,8 @@ class TestWorldFlipperAbilityFire5(TestCase):
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("fire_dragon")
         sonia = self.wf_data.find("brown_fighter")
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.set_member(sonia, CharPosition.MAIN, 1)
         state.skill_activations[0] = 2
         state.skill_activations[1] = 1
 
@@ -126,9 +126,9 @@ class TestWorldFlipperAbilityFire5(TestCase):
         df = ahanabi.abilities[1][1].eval_effect(ahanabi, state)
         self.assertIsNone(df)
 
-        state.set_member(vagner, CharPosition.LEADER)
-        state.set_member(ahanabi, CharPosition.UNISON, 0)
-        state.ability_lvs[1][1] = 6
+        state.party.set_member(vagner, CharPosition.LEADER)
+        state.party.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.party.ability_lvs[1][1] = 6
         df = ahanabi.abilities[1][0].eval_effect(vagner, state)
         self.assertIsNone(df)
         df = ahanabi.abilities[1][1].eval_effect(ahanabi, state)
@@ -138,8 +138,8 @@ class TestWorldFlipperAbilityFire5(TestCase):
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("fire_dragon")
         sonia = self.wf_data.find("brown_fighter")
-        state.set_member(vagner, CharPosition.UNISON, 0)
-        state.set_member(sonia, CharPosition.MAIN, 1)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.set_member(sonia, CharPosition.MAIN, 1)
         state.skill_charge[0] = 100
         state.times_skill_reached_100[0] = 1
 
@@ -166,16 +166,16 @@ class TestWorldFlipperAbilityFire5(TestCase):
         vagner = self.wf_data.find("fire_dragon")
         state.times_skill_reached_100[0] = 2
         state.times_skill_reached_100[1] = 1
-        state.set_member(vagner, CharPosition.UNISON, 0)
+        state.party.set_member(vagner, CharPosition.UNISON, 0)
 
         df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
         self.assertAlmostEqual(0.2, df.attack_modifier)
         df = ahanabi.abilities[4][0].eval_effect(vagner, state)
         self.assertIsNone(df)
 
-        state.set_member(vagner, CharPosition.LEADER)
-        state.set_member(ahanabi, CharPosition.UNISON, 0)
-        state.ability_lvs[1][4] = 6
+        state.party.set_member(vagner, CharPosition.LEADER)
+        state.party.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.party.ability_lvs[1][4] = 6
         df = ahanabi.abilities[4][0].eval_effect(vagner, state)
         self.assertAlmostEqual(0.2, df.attack_modifier)
         df = ahanabi.abilities[4][0].eval_effect(ahanabi, state)
@@ -190,7 +190,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         """
         vagner, state = self._base_state("fire_dragon")
         ahanabi = self.wf_data.find("kunoichi_1anv")
-        state.set_member(ahanabi, CharPosition.UNISON, 0)
+        state.party.set_member(ahanabi, CharPosition.UNISON, 0)
         state.set_powerflips(1, 15)
 
         df = vagner.abilities[1][0].eval_effect(vagner, state)
@@ -219,7 +219,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
         """
         ahanabi, state = self._base_state("kunoichi_1anv")
         vagner = self.wf_data.find("Vagner")
-        state.set_member(vagner, CharPosition.UNISON, 0, level=80)
+        state.party.set_member(vagner, CharPosition.UNISON, 0, level=80)
         state.set_skill_activations(0, 2)
         state.set_skill_activations(1, 3)
 
@@ -232,7 +232,7 @@ class TestWorldFlipperAbilityFire5(TestCase):
     def _base_state(self, char_name: str):
         state = GameState()
         char = self.wf_data.find(char_name)
-        state.set_member(char, CharPosition.LEADER, level=80)
-        state.ability_lvs[0][:] = [6] * 6
+        state.party.set_member(char, CharPosition.LEADER, level=80)
+        state.party.ability_lvs[0][:] = [6] * 6
         state.enemy = Enemy()
         return char, state
