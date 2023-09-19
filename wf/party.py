@@ -82,9 +82,7 @@ class Party:
     def is_evolved(self, char: WorldFlipperCharacter) -> bool:
         try:
             idx = self._party.index(char)
-            # A unit evoles when the entire MB1 has been unlocked. Effectively this means that the first
-            # three abilities are level 6 (they are unlocked at LV1 and enhance 2-6) and the skill is
-            # level 5 (skill is always unlocked, so it just needs to be enhanced 5 times).
+            # A unit evolves when every MB1 ability is unlocked AND their skill has been upgraded at least once.
             return (
                 self.ability_lvs[idx][0] >= 1
                 and self.ability_lvs[idx][1] >= 1
