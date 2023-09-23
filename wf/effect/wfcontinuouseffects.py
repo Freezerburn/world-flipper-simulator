@@ -1,10 +1,10 @@
 from abc import ABC
 
 from wf.enum import Element
-from wf.effect.wfeffect import WorldFlipperEffect
+from wf.effect.wfeffect import WorldFlipperBaseEffect
 
 
-class AttackContinuousEffect(WorldFlipperEffect):
+class AttackContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_attack"]
@@ -14,7 +14,7 @@ class AttackContinuousEffect(WorldFlipperEffect):
         return True
 
 
-class DirectDamageContinuousEffect(WorldFlipperEffect):
+class DirectDamageContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_direct_damage"]
@@ -24,7 +24,7 @@ class DirectDamageContinuousEffect(WorldFlipperEffect):
         return True
 
 
-class SkillChargeRateContinuousEffect(WorldFlipperEffect):
+class SkillChargeRateContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_skill_gauge_chaging"]
@@ -35,7 +35,7 @@ class SkillChargeRateContinuousEffect(WorldFlipperEffect):
         return True
 
 
-class FireResistsContinuousEffect(WorldFlipperEffect):
+class FireResistsContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_element_resistance"]
@@ -45,7 +45,7 @@ class FireResistsContinuousEffect(WorldFlipperEffect):
         return True
 
 
-class DirectHitDamageContinuousEffect(WorldFlipperEffect):
+class DirectHitDamageContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_direct_damage"]
@@ -55,7 +55,7 @@ class DirectHitDamageContinuousEffect(WorldFlipperEffect):
         return True
 
 
-class IncreasedDirectHitsContinuousEffect(WorldFlipperEffect):
+class IncreasedDirectHitsContinuousEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_aditional_direct_attack_and_damage"]

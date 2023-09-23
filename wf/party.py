@@ -203,6 +203,10 @@ class Party:
     def index(self, key: Optional[WorldFlipperCharacter]) -> int:
         return self._party.index(key)
 
+    def main_chars(self):
+        for i in range(3):
+            yield self._party[i * 2]
+
     def __iter__(self):
         for p in self._party:
             yield p

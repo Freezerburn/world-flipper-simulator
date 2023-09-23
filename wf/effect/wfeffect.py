@@ -75,6 +75,8 @@ class EffectParams:
 
 
 class WorldFlipperBaseEffect(ABC):
+    _is_condition = False
+
     @staticmethod
     @abstractmethod
     def ui_key() -> list[str]:
@@ -93,14 +95,16 @@ class WorldFlipperBaseEffect(ABC):
         self.eval_char_idx = self.state.party.index(self.eval_char)
         self.eval_main_idx = main_index(self.eval_char_idx)
         self.eval_char_position = self.state.party.position(self.eval_char)
-        self.ability_char_idx, self.ability_idx = self.state.party.ability_index(self.ability)
+        self.ability_char_idx, self.ability_idx = self.state.party.ability_index(
+            self.ability
+        )
         self.ability_main_idx = main_index(self.ability_char_idx)
         self.ability_char_position = self.state.party.position(self.ability_char)
         self.lv = self.state.party.ability_lvs[self.ability_char_idx][self.ability_idx]
 
     def _effect_info(self):
         if self.ability.is_main_effect():
-            if self.is_condition():
+            if self._is_condition:
                 index = self.ability.main_condition_index
                 index_type = EffectType.MAIN_CONDITION
                 target = self.ability.main_condition_target
@@ -120,7 +124,7 @@ class WorldFlipperBaseEffect(ABC):
                 element = element_ab_to_enum(self.ability.main_effect_element)
                 target = self.ability.main_effect_target
         else:
-            if self.is_condition():
+            if self._is_condition:
                 index = self.ability.continuous_condition_index
                 index_type = EffectType.CONTINUOUS_CONDITION
                 element = element_ab_to_enum(self.ability.continuous_condition_element)
@@ -252,17 +256,29 @@ class WorldFlipperBaseEffect(ABC):
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         pass
 
-    @abstractmethod
     def effect_min(self) -> int:
-        pass
+        if self._is_condition:
+            if self.ability.is_main_effect():
+                return int(self.ability.main_condition_min)
+            else:
+                return int(self.ability.continuous_condition_min)
+        else:
+            if self.ability.is_main_effect():
+                return int(self.ability.main_effect_min)
+            else:
+                return int(self.ability.continuous_effect_min)
 
-    @abstractmethod
     def effect_max(self) -> int:
-        pass
-
-    @abstractmethod
-    def is_condition(self) -> bool:
-        pass
+        if self._is_condition:
+            if self.ability.is_main_effect():
+                return int(self.ability.main_condition_max)
+            else:
+                return int(self.ability.continuous_condition_max)
+        else:
+            if self.ability.is_main_effect():
+                return int(self.ability.main_effect_max)
+            else:
+                return int(self.ability.continuous_effect_max)
 
     def _check_timed(self):
         if self.state.ability_condition_active[self.ability_char_idx][self.ability_idx]:
@@ -306,7 +322,7 @@ class WorldFlipperBaseEffect(ABC):
         v_max = effect_max / 100_000
         step = abs(v_max - v_min) / 5
         amt = v_min + step * (self.lv - 1)
-        if not self.is_condition():
+        if not self._is_condition:
             amt *= self.multiplier
         return amt
 
@@ -318,38 +334,8 @@ class WorldFlipperBaseEffect(ABC):
         return False
 
 
-class WorldFlipperEffect(WorldFlipperBaseEffect, ABC):
-    def is_condition(self) -> bool:
-        return False
-
-    def effect_min(self) -> int:
-        if self.ability.is_main_effect():
-            return int(self.ability.main_effect_min)
-        else:
-            return int(self.ability.continuous_effect_min)
-
-    def effect_max(self) -> int:
-        if self.ability.is_main_effect():
-            return int(self.ability.main_effect_max)
-        else:
-            return int(self.ability.continuous_effect_max)
-
-
-class WorldFlipperCondition(WorldFlipperBaseEffect, ABC):
-    def is_condition(self) -> bool:
-        return True
-
-    def effect_min(self) -> int:
-        if self.ability.is_main_effect():
-            return int(self.ability.main_condition_min)
-        else:
-            return int(self.ability.continuous_condition_min)
-
-    def effect_max(self) -> int:
-        if self.ability.is_main_effect():
-            return int(self.ability.main_condition_max)
-        else:
-            return int(self.ability.continuous_condition_max)
+class WorldFlipperBaseCondition(WorldFlipperBaseEffect, ABC):
+    _is_condition = True
 
     def _calc_multiplier(self, cap: int, count: int) -> int:
         abil = self._calc_abil_lv()

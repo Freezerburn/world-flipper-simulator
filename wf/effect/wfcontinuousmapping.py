@@ -5,7 +5,7 @@ from .wfcontinuousconditions import *
 from .wfcontinuouseffects import *
 
 
-continuous_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
+continuous_condition_mapping: dict[str, Type[WorldFlipperBaseCondition]] = {
     "0": HPAbovePercentContinuousCondition,
     "5": MultiballCountContinuousCondition,
     "8": BuffActiveContinuousCondition,
@@ -17,7 +17,7 @@ continuous_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
     "134": DebuffsOnEnemyContinuousCondition,
 }
 
-continuous_effect_mapping: dict[str, list[Type[WorldFlipperEffect]]] = {
+continuous_effect_mapping: dict[str, list[Type[WorldFlipperBaseEffect]]] = {
     "0": [AttackContinuousEffect],
     "1": [DirectDamageContinuousEffect],
     "3": [SkillChargeRateContinuousEffect],

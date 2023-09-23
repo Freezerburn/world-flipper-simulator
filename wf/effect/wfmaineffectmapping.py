@@ -1,7 +1,7 @@
 from .wfmainconditions import *
 from .wfmaineffects import *
 
-main_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
+main_condition_mapping: dict[str, Type[WorldFlipperBaseCondition]] = {
     "0": OnBattleStartMainCondition,
     "1": NTimesCondition("ability_description_instant_trigger_kind_power_flip"),
     "100": NTimesCondition("ability_description_instant_trigger_kind_skill_hit"),
@@ -39,7 +39,7 @@ main_condition_mapping: dict[str, Type[WorldFlipperCondition]] = {
     # "8": None,
 }
 
-main_effect_mapping: dict[str, list[Type[WorldFlipperEffect]]] = {
+main_effect_mapping: dict[str, list[Type[WorldFlipperBaseEffect]]] = {
     "0": [
         ActiveForSecondsMainEffect,
         AttackMainEffect,

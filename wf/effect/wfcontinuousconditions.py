@@ -1,12 +1,12 @@
 from abc import ABC
 
-from wf.effect.wfeffect import WorldFlipperCondition
+from wf.effect.wfeffect import WorldFlipperBaseCondition
 from wf.enum import element_ab_to_enum
 from wf.party import main_index, mains_only_index
 from wf.status_effect import StatusEffectKind
 
 
-class WorldFlipperContinuousCondition(WorldFlipperCondition, ABC):
+class WorldFlipperContinuousCondition(WorldFlipperBaseCondition, ABC):
     pass
 
 

@@ -5,11 +5,11 @@ from abc import ABC
 
 from wf.enum import CharPosition, Element, element_ab_to_enum
 from wf.status_effect import StatusEffectKind
-from wf.effect.wfeffect import WorldFlipperEffect
+from wf.effect.wfeffect import WorldFlipperBaseEffect
 
 
-def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperEffect]:
-    class _NoOpMainEffect(WorldFlipperEffect):
+def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperBaseEffect]:
+    class _NoOpMainEffect(WorldFlipperBaseEffect):
         @staticmethod
         def ui_key() -> list[str]:
             return ui_key
@@ -23,7 +23,7 @@ def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperEffect]:
     return _NoOpMainEffect
 
 
-class ActiveForSecondsMainEffect(WorldFlipperEffect):
+class ActiveForSecondsMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_for_second"]
@@ -32,7 +32,7 @@ class ActiveForSecondsMainEffect(WorldFlipperEffect):
         return self._check_timed()
 
 
-class AttackMainEffect(WorldFlipperEffect):
+class AttackMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_attack"]
@@ -44,7 +44,7 @@ class AttackMainEffect(WorldFlipperEffect):
         return True
 
 
-class DirectHitDamageMainEffect(WorldFlipperEffect):
+class DirectHitDamageMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_direct_damage"]
@@ -56,7 +56,7 @@ class DirectHitDamageMainEffect(WorldFlipperEffect):
         return True
 
 
-class SkillDamageMainEffect(WorldFlipperEffect):
+class SkillDamageMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_skill_damage"]
@@ -66,7 +66,7 @@ class SkillDamageMainEffect(WorldFlipperEffect):
         return True
 
 
-class PowerFlipDamageMainEffect(WorldFlipperEffect):
+class PowerFlipDamageMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_damage"]
@@ -78,7 +78,7 @@ class PowerFlipDamageMainEffect(WorldFlipperEffect):
         return True
 
 
-class FireResistDebuffSlayerMainEffect(WorldFlipperEffect):
+class FireResistDebuffSlayerMainEffect(WorldFlipperBaseEffect):
     """
     The underlying UI localization code has a parameter for what condition this effect is used with,
     but so far AHanabi is the only character that actually uses this effect and thus that parameter
@@ -100,7 +100,7 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperEffect):
             return False
 
 
-class PoisonSlayerMainEffect(WorldFlipperEffect):
+class PoisonSlayerMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
@@ -118,7 +118,7 @@ class PoisonSlayerMainEffect(WorldFlipperEffect):
             return False
 
 
-class PoisonAttackMainEffect(WorldFlipperEffect):
+class PoisonAttackMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_attack"]
@@ -136,7 +136,7 @@ class PoisonAttackMainEffect(WorldFlipperEffect):
             return False
 
 
-class PoisonDirectAttackMainEffect(WorldFlipperEffect):
+class PoisonDirectAttackMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer_for_direct_attack"]
@@ -154,7 +154,7 @@ class PoisonDirectAttackMainEffect(WorldFlipperEffect):
             return False
 
 
-class SlowDebuffSlayerMainEffect(WorldFlipperEffect):
+class SlowDebuffSlayerMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_slayer"]
@@ -170,7 +170,7 @@ class SlowDebuffSlayerMainEffect(WorldFlipperEffect):
             return False
 
 
-class Lv3PowerFlipDamageMainEffect(WorldFlipperEffect):
+class Lv3PowerFlipDamageMainEffect(WorldFlipperBaseEffect):
     """
     Technically the underlying UI localization code has a parameter for what level of Power Flip this
     is supposed to apply to. But in practice, every single character that has this effect ALWAYS
@@ -187,7 +187,7 @@ class Lv3PowerFlipDamageMainEffect(WorldFlipperEffect):
         return True
 
 
-class AttackBuffExtendMainEffect(WorldFlipperEffect):
+class AttackBuffExtendMainEffect(WorldFlipperBaseEffect):
     """
     Technically this allows for any kind of condition to be passed in for time extension, but practically
     it's always hard-coded to be for Attack Buffs.
@@ -202,7 +202,7 @@ class AttackBuffExtendMainEffect(WorldFlipperEffect):
         return True
 
 
-class PierceBuffExtendMainEffect(WorldFlipperEffect):
+class PierceBuffExtendMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_condition_extend"]
@@ -212,7 +212,7 @@ class PierceBuffExtendMainEffect(WorldFlipperEffect):
         return True
 
 
-class PowerFlipComboCountDownMainEffect(WorldFlipperEffect):
+class PowerFlipComboCountDownMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_power_flip_combo_count_down"]
@@ -222,7 +222,7 @@ class PowerFlipComboCountDownMainEffect(WorldFlipperEffect):
         return True
 
 
-class IncreaseSkillChargeMainEffect(WorldFlipperEffect):
+class IncreaseSkillChargeMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_skill_gauge"]
@@ -233,7 +233,7 @@ class IncreaseSkillChargeMainEffect(WorldFlipperEffect):
         return True
 
 
-class SecondSkillGaugeMainEffect(WorldFlipperEffect):
+class SecondSkillGaugeMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_second_skill_gauge"]
@@ -244,7 +244,7 @@ class SecondSkillGaugeMainEffect(WorldFlipperEffect):
         return True
 
 
-class InstantDamageMainEffect(WorldFlipperEffect):
+class InstantDamageMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
@@ -253,7 +253,7 @@ class InstantDamageMainEffect(WorldFlipperEffect):
         return False
 
 
-class PierceMainEffect(WorldFlipperEffect):
+class PierceMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_enemy_damage"]
@@ -265,7 +265,7 @@ class PierceMainEffect(WorldFlipperEffect):
         return True
 
 
-class FeverGainRateMainEffect(WorldFlipperEffect):
+class FeverGainRateMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_fever_point"]
@@ -277,7 +277,7 @@ class FeverGainRateMainEffect(WorldFlipperEffect):
         return True
 
 
-class ResistUpMainEffect(WorldFlipperEffect):
+class ResistUpMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_element_resistance"]
@@ -287,7 +287,7 @@ class ResistUpMainEffect(WorldFlipperEffect):
         return True
 
 
-class IncreaseHpMainEffect(WorldFlipperEffect):
+class IncreaseHpMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_content_hp"]
@@ -298,7 +298,7 @@ class IncreaseHpMainEffect(WorldFlipperEffect):
         return True
 
 
-class IncreaseComboMainEffect(WorldFlipperEffect):
+class IncreaseComboMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_condition_content_combo_boost"]

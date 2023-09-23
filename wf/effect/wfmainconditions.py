@@ -4,11 +4,11 @@ from typing import Type
 import math
 
 from wf.enum import element_ab_to_enum
-from wf.effect.wfeffect import WorldFlipperCondition
+from wf.effect.wfeffect import WorldFlipperBaseCondition
 from wf.party import main_index
 
 
-class OnBattleStartMainCondition(WorldFlipperCondition):
+class OnBattleStartMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_first_flip"]
@@ -20,8 +20,8 @@ class OnBattleStartMainCondition(WorldFlipperCondition):
         raise RuntimeError("Should never be called.")
 
 
-def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperCondition]:
-    class _NTimesCondition(WorldFlipperCondition):
+def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperBaseCondition]:
+    class _NTimesCondition(WorldFlipperBaseCondition):
         @staticmethod
         def ui_key() -> list[str]:
             return ["ability_description_n_times"]
@@ -55,7 +55,7 @@ def NTimesCondition(following_ui_name: str) -> Type[WorldFlipperCondition]:
     return _NTimesCondition
 
 
-class OnSkillInvokeMainCondition(WorldFlipperCondition):
+class OnSkillInvokeMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_invoke"]
@@ -79,7 +79,7 @@ class OnSkillInvokeMainCondition(WorldFlipperCondition):
         return True
 
 
-class OnSkillGaugeReach100MainCondition(WorldFlipperCondition):
+class OnSkillGaugeReach100MainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_skill_max"]
@@ -100,7 +100,7 @@ class OnSkillGaugeReach100MainCondition(WorldFlipperCondition):
         return True
 
 
-class PartyMembersAddedMainCondition(WorldFlipperCondition):
+class PartyMembersAddedMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_member"]
@@ -113,7 +113,7 @@ class PartyMembersAddedMainCondition(WorldFlipperCondition):
         return True
 
 
-class Lv3PowerFlipsMainCondition(WorldFlipperCondition):
+class Lv3PowerFlipsMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_power_flip_lv"]
@@ -126,7 +126,7 @@ class Lv3PowerFlipsMainCondition(WorldFlipperCondition):
         return True
 
 
-class ComboReachedMainCondition(WorldFlipperCondition):
+class ComboReachedMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_combo"]
@@ -143,7 +143,7 @@ class ComboReachedMainCondition(WorldFlipperCondition):
         return True
 
 
-class EveryNSecondsMainCondition(WorldFlipperCondition):
+class EveryNSecondsMainCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["TODO"]
@@ -152,7 +152,7 @@ class EveryNSecondsMainCondition(WorldFlipperCondition):
         return self._check_timed()
 
 
-class InFeverCondition(WorldFlipperCondition):
+class InFeverCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_fever"]
@@ -161,7 +161,7 @@ class InFeverCondition(WorldFlipperCondition):
         return self.state.fever_active
 
 
-class InPierceCondition(WorldFlipperCondition):
+class InPierceCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["TODO"]
@@ -170,7 +170,7 @@ class InPierceCondition(WorldFlipperCondition):
         return self.state.pierce_active
 
 
-class OnAttackBuffActivateCondition(WorldFlipperCondition):
+class OnAttackBuffActivateCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_condition"]
@@ -182,7 +182,7 @@ class OnAttackBuffActivateCondition(WorldFlipperCondition):
         return False
 
 
-class OnCountDirectHitsCondition(WorldFlipperCondition):
+class OnCountDirectHitsCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_instant_trigger_kind_direct_attack"]
@@ -198,7 +198,7 @@ class OnCountDirectHitsCondition(WorldFlipperCondition):
         return True
 
 
-class SelfIsElementCondition(WorldFlipperCondition):
+class SelfIsElementCondition(WorldFlipperBaseCondition):
     @staticmethod
     def ui_key() -> list[str]:
         return ["TODO"]
