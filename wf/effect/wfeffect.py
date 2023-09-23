@@ -82,6 +82,10 @@ class WorldFlipperBaseEffect(ABC):
     def ui_key() -> list[str]:
         pass
 
+    @abstractmethod
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        pass
+
     def __init__(self, params: EffectParams):
         self.ui_name = params.ui_name
         self.ability = params.ability
@@ -251,10 +255,6 @@ class WorldFlipperBaseEffect(ABC):
         for idx in char_idxs:
             main_idxs.add(main_index(idx))
         return main_idxs
-
-    @abstractmethod
-    def _apply_effect(self, char_idxs: list[int]) -> bool:
-        pass
 
     def effect_min(self) -> int:
         if self._is_condition:
