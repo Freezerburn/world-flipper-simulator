@@ -1,5 +1,5 @@
-from .wfmainconditions import *
-from .wfmaineffects import *
+from .conditions import *
+from .effects import *
 
 main_condition_mapping: dict[str, Type[WorldFlipperBaseCondition]] = {
     "0": OnBattleStartMainCondition,
@@ -111,7 +111,7 @@ main_effect_mapping: dict[str, list[Type[WorldFlipperBaseEffect]]] = {
     "34": [],
     "35": [],
     "354": [],
-    "36": [ResistUpMainEffect],
+    "36": [FireResistEffect],
     "366": [],
     "37": [],
     "38": [],

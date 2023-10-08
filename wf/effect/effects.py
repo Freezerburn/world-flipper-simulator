@@ -5,7 +5,7 @@ from abc import ABC
 
 from wf.enum import CharPosition, Element, element_ab_to_enum
 from wf.status_effect import StatusEffectKind
-from wf.effect.wfeffect import WorldFlipperBaseEffect
+from wf.effect.base_effect import WorldFlipperBaseEffect
 
 
 def NoOpMainEffect(ui_key: list[str]) -> Type[WorldFlipperBaseEffect]:
@@ -93,7 +93,9 @@ class FireResistDebuffSlayerMainEffect(WorldFlipperBaseEffect):
         if self.state.enemy is None:
             return False
         try:
-            self.state.enemy.debuffs.index((StatusEffectKind.ELEMENT_RESIST, Element.FIRE))
+            self.state.enemy.debuffs.index(
+                (StatusEffectKind.ELEMENT_RESIST, Element.FIRE)
+            )
             self.ctx.condition_slayer += self._calc_abil_lv()
             return True
         except ValueError:
@@ -233,6 +235,17 @@ class IncreaseSkillChargeMainEffect(WorldFlipperBaseEffect):
         return True
 
 
+class SkillChargeRateEffect(WorldFlipperBaseEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_skill_gauge_chaging"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in self._only_mains(char_idxs):
+            self.ctx.skill_charge_speed[idx] += self._calc_abil_lv()
+        return True
+
+
 class SecondSkillGaugeMainEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
@@ -277,7 +290,7 @@ class FeverGainRateMainEffect(WorldFlipperBaseEffect):
         return True
 
 
-class ResistUpMainEffect(WorldFlipperBaseEffect):
+class FireResistEffect(WorldFlipperBaseEffect):
     @staticmethod
     def ui_key() -> list[str]:
         return ["ability_description_common_content_element_resistance"]
@@ -305,4 +318,15 @@ class IncreaseComboMainEffect(WorldFlipperBaseEffect):
 
     def _apply_effect(self, char_idxs: list[int]) -> bool:
         self.ctx.combo += self._calc_abil_lv()
+        return True
+
+
+class IncreasedDirectHitsEffect(WorldFlipperBaseEffect):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_common_content_aditional_direct_attack_and_damage"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.ctx.stat_mod_additional_da_damage += self._calc_abil_lv()
+        self.ctx.stat_mod_additional_da_times = 2
         return True

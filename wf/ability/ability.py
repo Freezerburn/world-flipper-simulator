@@ -5,9 +5,9 @@ from wf.dmg_formula import DamageFormulaContext
 from wf.enum import AbilityElementType
 from wf.game_state import GameState
 
-from wf.effect.wfeffect import EffectParams
-from wf.effect.wfmaineffectmapping import main_condition_mapping, main_effect_mapping
-from wf.effect.wfcontinuousmapping import (
+from wf.effect.base_effect import EffectParams
+from wf.effect.main_mapping import main_condition_mapping, main_effect_mapping
+from wf.effect.continuous_mapping import (
     continuous_condition_mapping,
     continuous_effect_mapping,
 )

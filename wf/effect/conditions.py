@@ -4,8 +4,9 @@ from typing import Type
 import math
 
 from wf.enum import element_ab_to_enum
-from wf.effect.wfeffect import WorldFlipperBaseCondition
-from wf.party import main_index
+from wf.effect.base_effect import WorldFlipperBaseCondition
+from wf.party import main_index, mains_only_index
+from wf.status_effect import StatusEffectKind
 
 
 class OnBattleStartMainCondition(WorldFlipperBaseCondition):
@@ -209,3 +210,106 @@ class SelfIsElementCondition(WorldFlipperBaseCondition):
             if self.state.party[idx].element != element:
                 return False
         return True
+
+
+class HPAbovePercentCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_hp_high"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in char_idxs:
+            current_hp = self.state.party.current_hp[mains_only_index(idx)]
+            max_hp = self.state.party.max_hp[mains_only_index(idx)]
+            if (current_hp / max_hp) < self._calc_abil_lv():
+                return False
+        return True
+
+
+class MultiballCountCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_multiball"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        return self.state.num_multiballs > self._calc_abil_lv()
+
+
+class BuffActiveCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_condition"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in char_idxs:
+            if len(self.state.buffs[main_index(idx)]) == 0:
+                return False
+        return True
+
+
+class AttackBuffActiveCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_condition"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        for idx in self._only_mains(char_idxs):
+            try:
+                self.state.buffs[idx].index(StatusEffectKind.ATTACK)
+            except ValueError:
+                return False
+        return True
+
+
+class AttackBuffsOnSelfCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_condition_high_count"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        self.multiplier = 0
+        for idx in self._only_mains(char_idxs):
+            self.multiplier += (
+                self.state.buffs[idx].count(StatusEffectKind.ATTACK)
+                * self._calc_abil_lv()
+            )
+        if self.multiplier == 0:
+            return False
+        return True
+
+
+class SkillGaugeAboveCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_skill_gauge_high"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        amt = self._calc_abil_lv()
+        for idx in char_idxs:
+            if self.state.skill_charge[main_index(idx)] <= amt:
+                return False
+        return True
+
+
+class DebuffsOnEnemyCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return [
+            "ability_description_during_trigger_kind_one_of_enemy_condition_high_count"
+        ]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        enemy = self.state.enemy
+        if enemy is None:
+            return False
+        self.multiplier = len(enemy.debuffs) * self._calc_abil_lv()
+        return True
+
+
+class PierceActiveCondition(WorldFlipperBaseCondition):
+    @staticmethod
+    def ui_key() -> list[str]:
+        return ["ability_description_during_trigger_kind_condition"]
+
+    def _apply_effect(self, char_idxs: list[int]) -> bool:
+        return self.state.pierce_active
