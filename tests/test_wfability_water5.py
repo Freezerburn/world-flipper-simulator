@@ -592,6 +592,33 @@ class TestWorldFlipperAbilityWater5(TestCase):
             df = remnith.abilities[5][0].eval_effect(remnith, sub_state)
             self.assertAlmostEqual(0.6, df.attack_modifier)
 
+    def test_rakisha(self):
+        rakisha, state = self._base_state("drawing_witch")
+        sonia = self.wf_data.find("brown_fighter")
+        vagner = self.wf_data.find("fire_dragon")
+        acipher = self.wf_data.find("ice_witch_2anv")
+        state.party.set_member(sonia, CharPosition.UNISON, 0, level=80)
+        state.party.set_member(vagner, CharPosition.MAIN, 1, level=80)
+        state.party.set_member(acipher, CharPosition.UNISON, 1, level=80)
+
+        with self.subTest("ab1"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab2"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab3"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab4"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab5"):
+            sub_state = copy.deepcopy(state)
+
+        with self.subTest("ab6"):
+            sub_state = copy.deepcopy(state)
+
     def test_acipher(self):
         acipher, state = self._base_state("ice_witch_2anv")
         sonia = self.wf_data.find("brown_fighter")
