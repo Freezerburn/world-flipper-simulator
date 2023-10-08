@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import StrEnum, auto
-from typing import TYPE_CHECKING, Tuple, Optional
+from typing import TYPE_CHECKING, Tuple, Optional, Generator
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import math
@@ -250,11 +250,15 @@ class WorldFlipperBaseEffect(ABC):
     def battle_start(self) -> list[Event]:
         return []
 
-    def _only_mains(self, char_idxs: list[int]):
-        main_idxs: set[int] = set()
+    def _only_mains(self, char_idxs: list[int]) -> Generator[int, None, None]:
+        seen: set[int] = set()
         for idx in char_idxs:
-            main_idxs.add(main_index(idx))
-        return main_idxs
+            main = main_index(idx)
+            if main in seen:
+                continue
+            seen.add(main)
+            if self.state.party[main] is not None:
+                yield main
 
     def effect_min(self) -> int:
         if self._is_condition:
